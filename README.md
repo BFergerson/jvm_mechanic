@@ -11,6 +11,7 @@ Using Byteman, inject event generating code in pre-defined locations related to 
  - Determine all data points to collect
  - Determine method of collection for method invocations related to work stream
  - Process to turn collection of method invocations into rules which will inject the proper events
+ - Event processor/log
  - Find fast stream to file library
  - Find function flow diagram library
  - Process to tail data stream and make necessary calculations to create insights/charts
