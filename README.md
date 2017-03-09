@@ -6,7 +6,7 @@ Provide detailed real-time statistics & diagrams for contextual request/response
 ##Method
 Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are feed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time function flow diagrams (and others) to assist in monitoring application performance degradation.
 
-##Design
+##Technical Design
 
 ###WorkRequest
 Request by client to process and respond to (request/response model)
