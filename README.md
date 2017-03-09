@@ -1,7 +1,7 @@
 # jvm_mechanic
 
 ##Goal
-Provide detailed real-time statistics & diagrams for contextual request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
+Provide detailed real-time statistics & diagrams for conceptual request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
 
 ##Method
 Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are feed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time function flow diagrams (and others) to assist in monitoring application performance degradation.
