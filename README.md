@@ -1,10 +1,29 @@
 # jvm_mechanic
 
 ##Goal
-Provide real-time function flow diagrams (and others) for real-time server work requests and processing on the JVM.
+Provide detailed real-time statistics & diagrams for contextual request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
 
 ##Method
 Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are feed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time function flow diagrams (and others) to assist in monitoring application performance degradation.
+
+##Design
+
+###WorkRequest
+Request by client to process and respond to (request/response model)
+
+###WorkProcessor
+Component that processes work requests (request/response model)
+
+###WorkSession
+Complete lifecycle of a single request/response
+
+###WorkStream
+Aggregate collection of work sessions
+
+###MechanicEvent
+Event triggered during the processing of a work stream. Each event contains the following base metrics (as well as metrics relevant to that event):
+ - Current time
+ - Context (App/Server/Method/Work session/Etc)
 
 ##Collected Data Points
  - Method invocation count/frequency
