@@ -5,5 +5,21 @@ package com.codebrig.jvmmechanic.agent.event;
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
-public class MechanicEvent {
+public abstract class MechanicEvent {
+
+    public final MechanicEventType eventType;
+    public long eventId;
+    public long workStreamId;
+    public long eventTimestamp;
+    public Object eventSourceType;
+    public Object eventSource;
+    public String eventThread;
+    public Object garbageStats;
+
+    public MechanicEvent(MechanicEventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public abstract byte[] getEventData();
+
 }
