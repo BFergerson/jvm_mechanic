@@ -21,7 +21,9 @@ Complete life-cycle of a single request/response
 Aggregate collection of work sessions
 
 ###MechanicEvent
-Event triggered during the processing of a work stream. Each event contains the following base metrics (as well as metrics relevant to that event):
+Event triggered during the processing of a work stream.
+
+Each event contains the following base metrics (as well as metrics relevant to that event):
  - Current time
  - Context (App/Server/Method/Work session/Etc)
 
