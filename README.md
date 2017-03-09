@@ -15,7 +15,7 @@ Request by client to process and respond to (request/response model)
 Component that processes work requests (request/response model)
 
 ###WorkSession
-Complete lifecycle of a single request/response
+Complete life-cycle of a single request/response
 
 ###WorkStream
 Aggregate collection of work sessions
