@@ -31,13 +31,18 @@ Each event contains the following base metrics (as well as metrics relevant to t
  - Method invocation count/frequency
  - Method runtime (absolute/relative/total)
  - Work stream processing rate/speed (min/max/mean/avg)
- - Measured/Unmeasured work stream runtime/ratio
+ - Measured/unmeasured work stream runtime/ratio
  - App/server runtime/ratio
  - Garbage collection time/ratio
  - Garbage collection contribution (max/min/mean/avg/ratio) by method (relative/absolute by method/stream)
  - Concrete & apparent performance correlations between methods
  - Monitored execution paths / Utilized execution paths
  - Various growth rates
+ - Method exception rate/count/growth
+ - Work session exception rate/count/growth
+ - Work session success/fail/exception
+ - Active/total work sesions
+ - Method duration/frequency predictability
 
 ##Available Insights
  - What is the current real-time work request processing duration?
