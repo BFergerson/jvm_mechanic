@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/jvm_mechanic.iml" filepath="$PROJECT_DIR$/.idea/modules/jvm_mechanic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/jvm_mechanic_main.iml" filepath="$PROJECT_DIR$/.idea/modules/jvm_mechanic_main.iml" group="jvm_mechanic" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/jvm_mechanic_test.iml" filepath="$PROJECT_DIR$/.idea/modules/jvm_mechanic_test.iml" group="jvm_mechanic" />
+    </modules>
+  </component>
+</project>
