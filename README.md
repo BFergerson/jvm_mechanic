@@ -23,9 +23,9 @@ Using Byteman, inject event generating code in pre-defined locations related to 
  - To what degree is the volatility of work request processing durations?
  - What is the current real-time work stream method(s) processing duration?
  - To what degree is the volatility of work stream method(s) processing durations?
- - Is work processing degradation due to application or server code?
- - Which method(s) are most susceptible to performance degradation?
- - Could method(s) experiencing degradation cause others method(s) to experience degradation and to what degree?
+ - Is work stream processing degradation due to application or server code?
+ - Which work stream method(s) are most susceptible to performance degradation?
+ - To what degree do work stream method(s) experiencing degradation cause others method(s) to degrade?
 
 ##Todo
  - Basic events in Byteman
