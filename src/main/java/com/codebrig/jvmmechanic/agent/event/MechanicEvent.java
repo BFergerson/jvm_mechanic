@@ -7,7 +7,6 @@ package com.codebrig.jvmmechanic.agent.event;
  */
 public abstract class MechanicEvent {
 
-    public final MechanicEventType eventType;
     public long eventId;
     public long workStreamId;
     public long eventTimestamp;
@@ -15,6 +14,7 @@ public abstract class MechanicEvent {
     public Object eventSource;
     public String eventThread;
     public Object garbageStats;
+    public final MechanicEventType eventType;
 
     public MechanicEvent(MechanicEventType eventType) {
         this.eventType = eventType;
