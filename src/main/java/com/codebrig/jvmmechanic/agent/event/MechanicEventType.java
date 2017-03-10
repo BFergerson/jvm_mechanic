@@ -10,8 +10,7 @@ public enum MechanicEventType {
     ENTER_EVENT,
     EXIT_EVENT,
     BEGIN_WORK_EVENT,
-    END_WORK_EVENT,
-    GC_PAUSE_EVENT;
+    END_WORK_EVENT;
 
     public byte toEventTypeId() {
         return (byte) ordinal();

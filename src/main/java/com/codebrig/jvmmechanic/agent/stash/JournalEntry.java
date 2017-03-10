@@ -8,23 +8,19 @@ package com.codebrig.jvmmechanic.agent.stash;
 public class JournalEntry {
 
     private final long eventId;
-    private final long workStreamId;
     private final long eventTimestamp;
     private final byte eventType;
+    private final int stashDataSize;
 
-    public JournalEntry(long eventId, long workStreamId, long eventTimestamp, byte eventType) {
+    public JournalEntry(long eventId, long eventTimestamp, byte eventType, int stashDataSize) {
         this.eventId = eventId;
-        this.workStreamId = workStreamId;
         this.eventTimestamp = eventTimestamp;
         this.eventType = eventType;
+        this.stashDataSize = stashDataSize;
     }
 
     public long getEventId() {
         return eventId;
-    }
-
-    public long getWorkStreamId() {
-        return workStreamId;
     }
 
     public long getEventTimestamp() {
@@ -33,6 +29,10 @@ public class JournalEntry {
 
     public byte getEventType() {
         return eventType;
+    }
+
+    public int getStashDataSize() {
+        return stashDataSize;
     }
 
 }

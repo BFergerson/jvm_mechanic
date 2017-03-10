@@ -26,7 +26,7 @@ public class StashPersistenceStream {
         executorService = Executors.newFixedThreadPool(writeThreadPoolCount);
     }
 
-    public static void stashMechanicEvent(MechanicEvent mechanicEvent) {
+    public void stashMechanicEvent(MechanicEvent mechanicEvent) {
         //todo: persist mechanic event; update ledger; write data; etc
     }
 

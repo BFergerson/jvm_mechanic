@@ -8,16 +8,20 @@ package com.codebrig.jvmmechanic.agent.event;
 public abstract class MechanicEvent {
 
     public long eventId;
-    public long workStreamId;
     public long eventTimestamp;
-    public Object eventSourceType;
-    public Object eventSource;
+    public long eventNanoTime;
+    public String eventContext;
     public String eventThread;
-    public Object garbageStats;
+    public String eventMethod;
+    public String eventTriggerMethod;
+    public String eventAttribute;
+    public boolean success = true;
     public final MechanicEventType eventType;
 
     public MechanicEvent(MechanicEventType eventType) {
         this.eventType = eventType;
+        this.eventTimestamp = System.currentTimeMillis();
+        this.eventNanoTime = System.nanoTime();
     }
 
     public abstract byte[] getEventData();
