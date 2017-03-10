@@ -17,7 +17,7 @@ public class StashDataFile {
     }
 
     public void stashDataEntry(DataEntry dataEntry) {
-        //todo: persist journal entry
+        //todo: persist data entry
     }
 
     public void close() throws IOException {
