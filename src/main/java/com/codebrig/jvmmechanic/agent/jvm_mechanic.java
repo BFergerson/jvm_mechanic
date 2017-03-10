@@ -54,6 +54,8 @@ public class jvm_mechanic {
         init();
         if (Math.random() > self.sessionSampleAccuracy) {
             return; //ignore sample
+        } else {
+            //todo: mark something so following events know; thread local maybe
         }
 
         EnterEvent event = new EnterEvent();
