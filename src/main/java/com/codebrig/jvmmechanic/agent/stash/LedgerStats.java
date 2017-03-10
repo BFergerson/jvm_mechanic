@@ -5,5 +5,5 @@ package com.codebrig.jvmmechanic.agent.stash;
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
-public class StashLedger {
+public class LedgerStats {
 }
