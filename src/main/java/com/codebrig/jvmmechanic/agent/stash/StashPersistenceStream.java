@@ -20,7 +20,7 @@ public class StashPersistenceStream {
 
     public StashPersistenceStream(String ledgerFileName, String dataFileName, int writeThreadPoolCount) throws FileNotFoundException {
         RandomAccessFile ledgerStream = new RandomAccessFile(ledgerFileName, "rw");
-        RandomAccessFile dataStream = new RandomAccessFile(dataFileName, "w");
+        RandomAccessFile dataStream = new RandomAccessFile(dataFileName, "rw");
         stashLedgerFile = new StashLedgerFile(ledgerStream.getChannel());
         stashDataFile = new StashDataFile(dataStream.getChannel());
         executorService = Executors.newFixedThreadPool(writeThreadPoolCount);

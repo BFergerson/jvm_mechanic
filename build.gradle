@@ -3,11 +3,24 @@ version '1.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.7
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    compile group: 'org.jboss.byteman', name: 'byteman', version: '3.0.7'
+}
+
+task uberJar(type: Jar, dependsOn:[':compileJava']) {
+    from files(sourceSets.main.output)
+    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+
+    manifest {
+        attributes 'Premain-Class': 'org.jboss.byteman.agent.Main'
+        attributes 'Agent-Class': 'org.jboss.byteman.agent.Main'
+        attributes 'Can-Redefine-Classes': 'true'
+        attributes 'Can-Retransform-Classes': 'true'
+    }
 }
