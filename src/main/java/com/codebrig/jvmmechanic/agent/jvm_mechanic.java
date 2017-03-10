@@ -55,8 +55,8 @@ public class jvm_mechanic extends Helper {
         EnterEvent event = new EnterEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
     }
@@ -69,8 +69,8 @@ public class jvm_mechanic extends Helper {
         ExitEvent event = new ExitEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
     }
@@ -84,22 +84,22 @@ public class jvm_mechanic extends Helper {
         event.success = false;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
     }
 
-    public static void begin_work(String eventContext) {
+    public void begin_work(String eventContext) {
         begin_work(eventContext, null);
     }
 
-    public static void begin_work(String eventContext, String eventAttribute) {
+    public void begin_work(String eventContext, String eventAttribute) {
         BeginWorkEvent event = new BeginWorkEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
     }
@@ -113,8 +113,8 @@ public class jvm_mechanic extends Helper {
         event.success = false;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
     }
@@ -127,8 +127,8 @@ public class jvm_mechanic extends Helper {
         EndWorkEvent event = new EndWorkEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
     }
@@ -142,10 +142,21 @@ public class jvm_mechanic extends Helper {
         event.success = false;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = "whatever method"; //todo: get method
-        event.eventTriggerMethod = "whatever calling method"; //todo: get method
+        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+        event.eventTriggerMethod = getCallerMethod();
         event.eventAttribute = eventAttribute;
         stashStream.stashMechanicEvent(event);
+    }
+
+    private static String getCallerMethod() {
+        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+        for (int i = 1; i < stacktrace.length; i++) {
+            String callerMethod = stacktrace[i].getClassName() + "." + stacktrace[i].getMethodName();
+            if (!callerMethod.contains("org.jboss.byteman") && !callerMethod.contains("com.codebrig.jvmmechanic")) {
+                return stacktrace[i + 1].getClassName() + "." + stacktrace[i + 1].getMethodName();
+            }
+        }
+        return null;
     }
 
 }
