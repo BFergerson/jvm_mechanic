@@ -11,9 +11,4 @@ public class EnterEvent extends MechanicEvent {
         super(MechanicEventType.ENTER_EVENT);
     }
 
-    @Override
-    public byte[] getEventData() {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
 }

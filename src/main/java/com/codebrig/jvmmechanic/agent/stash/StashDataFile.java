@@ -16,8 +16,9 @@ public class StashDataFile {
         this.fileChannel = fileChannel;
     }
 
-    public void stashDataEntry(DataEntry dataEntry) {
-        //todo: persist data entry
+    public void stashDataEntry(DataEntry dataEntry) throws IOException {
+        fileChannel.write(dataEntry.toByteBuffer());
+        //fileChannel.force(false);
     }
 
     public void close() throws IOException {

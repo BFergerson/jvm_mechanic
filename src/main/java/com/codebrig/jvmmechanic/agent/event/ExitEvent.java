@@ -11,9 +11,4 @@ public class ExitEvent extends MechanicEvent {
         super(MechanicEventType.EXIT_EVENT);
     }
 
-    @Override
-    public byte[] getEventData() {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
 }

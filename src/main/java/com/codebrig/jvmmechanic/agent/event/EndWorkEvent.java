@@ -11,9 +11,4 @@ public class EndWorkEvent extends MechanicEvent {
         super(MechanicEventType.END_WORK_EVENT);
     }
 
-    @Override
-    public byte[] getEventData() {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
 }

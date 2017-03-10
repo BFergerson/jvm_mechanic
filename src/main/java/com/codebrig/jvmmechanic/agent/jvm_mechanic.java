@@ -8,7 +8,7 @@ import com.codebrig.jvmmechanic.agent.stash.StashPersistenceStream;
 import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * todo: this
@@ -21,7 +21,7 @@ public class jvm_mechanic extends Helper {
     private static StashPersistenceStream stashStream;
     private static final Object singletonLock = new Object();
 
-    public jvm_mechanic(Rule rule) throws FileNotFoundException {
+    public jvm_mechanic(Rule rule) throws IOException {
         super(rule);
 
         String sessionSampleAccuracyProperty = System.getProperty("jvm_mechanic.event.session_sample_accuracy", "50.00");
@@ -29,7 +29,7 @@ public class jvm_mechanic extends Helper {
         initStashStream();
     }
 
-    private void initStashStream() throws FileNotFoundException {
+    private void initStashStream() throws IOException {
         if (stashStream != null) return;
         synchronized (singletonLock) {
             if (stashStream == null) {

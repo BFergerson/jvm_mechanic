@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
+import java.nio.ByteBuffer;
+
 /**
  * todo: this
  *
@@ -7,16 +9,16 @@ package com.codebrig.jvmmechanic.agent.stash;
  */
 public class JournalEntry {
 
+    public static final int JOURNAL_ENTRY_SIZE = 17;
+
     private final long eventId;
     private final long eventTimestamp;
     private final byte eventType;
-    private final int stashDataSize;
 
-    public JournalEntry(long eventId, long eventTimestamp, byte eventType, int stashDataSize) {
+    public JournalEntry(long eventId, long eventTimestamp, byte eventType) {
         this.eventId = eventId;
         this.eventTimestamp = eventTimestamp;
         this.eventType = eventType;
-        this.stashDataSize = stashDataSize;
     }
 
     public long getEventId() {
@@ -31,8 +33,15 @@ public class JournalEntry {
         return eventType;
     }
 
-    public int getStashDataSize() {
-        return stashDataSize;
+    public ByteBuffer toByteBuffer() {
+        //buffer allocation: eventId (8) + eventTimestamp (8) + eventType (1) = 17
+        ByteBuffer buffer = ByteBuffer.allocate(JOURNAL_ENTRY_SIZE);
+        buffer.putLong(eventId);
+        buffer.putLong(eventTimestamp);
+        buffer.put(eventType);
+
+        buffer.position(0);
+        return buffer;
     }
 
 }
