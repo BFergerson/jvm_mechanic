@@ -70,4 +70,69 @@ public abstract class MechanicEvent {
         return rawData;
     }
 
+    public static MechanicEvent toMechanicEvent(long eventId, ByteBuffer buffer) {
+        long eventTimestamp = buffer.getLong();
+        long eventNanoTime = buffer.getLong();
+        boolean success = buffer.get() == 1;
+        byte eventType = buffer.get();
+
+        //buffer.put((byte)(eventContext != null ? 1 : 0));
+        int eventContextLength = buffer.getInt();
+        byte[] eventContextBytes = new byte[eventContextLength];
+        buffer.get(eventContextBytes);
+        String eventContext = new String(eventContextBytes);
+
+        //buffer.put((byte)(eventThread != null ? 1 : 0));
+        int eventThreadLength = buffer.getInt();
+        byte[] eventThreadBytes = new byte[eventThreadLength];
+        buffer.get(eventThreadBytes);
+        String eventThread = new String(eventThreadBytes);
+
+        //buffer.put((byte)(eventMethod != null ? 1 : 0));
+        int eventMethodLength = buffer.getInt();
+        byte[] eventMethodBytes = new byte[eventMethodLength];
+        buffer.get(eventMethodBytes);
+        String eventMethod = new String(eventMethodBytes);
+
+        String eventTriggerMethod = null;
+        if (buffer.get() == 1) {
+            int eventTriggerLength = buffer.getInt();
+            byte[] eventTriggerBytes = new byte[eventTriggerLength];
+            buffer.get(eventTriggerBytes);
+            eventTriggerMethod = new String(eventTriggerBytes);
+        }
+
+        String eventAttributeMethod = null;
+        if (buffer.get() == 1) {
+            int eventAttributeLength = buffer.getInt();
+            byte[] eventAttributeBytes = new byte[eventAttributeLength];
+            buffer.get(eventAttributeBytes);
+            eventAttributeMethod = new String(eventAttributeBytes);
+        }
+
+        MechanicEvent event;
+        if (eventType == MechanicEventType.ENTER_EVENT.toEventTypeId()) {
+            event = new EnterEvent();
+        } else if (eventType == MechanicEventType.EXIT_EVENT.toEventTypeId()) {
+            event = new ExitEvent();
+        } else if (eventType == MechanicEventType.BEGIN_WORK_EVENT.toEventTypeId()) {
+            event = new BeginWorkEvent();
+        } else if (eventType == MechanicEventType.END_WORK_EVENT.toEventTypeId()) {
+            event = new EndWorkEvent();
+        } else {
+            throw new RuntimeException("Invalid event type:" + eventType);
+        }
+
+        event.eventId = eventId;
+        event.eventTimestamp = eventTimestamp;
+        event.eventNanoTime = eventNanoTime;
+        event.success = success;
+        event.eventContext = eventContext;
+        event.eventThread = eventThread;
+        event.eventMethod = eventMethod;
+        event.eventTriggerMethod = eventTriggerMethod;
+        event.eventAttribute = eventAttributeMethod;
+        return event;
+    }
+
 }

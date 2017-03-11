@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
+import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -25,6 +27,10 @@ public class DataEntry {
         return rawData;
     }
 
+    public int getDataEntrySize() {
+        return 8 + rawData.length;
+    }
+
     public ByteBuffer toByteBuffer() {
         //buffer allocation: eventId (8) + rawData (*)
         ByteBuffer buffer = ByteBuffer.allocate(8 + rawData.length);
@@ -33,6 +39,10 @@ public class DataEntry {
 
         buffer.position(0);
         return buffer;
+    }
+
+    public MechanicEvent toMechanicEvent() {
+        return MechanicEvent.toMechanicEvent(eventId, ByteBuffer.wrap(rawData));
     }
 
 }

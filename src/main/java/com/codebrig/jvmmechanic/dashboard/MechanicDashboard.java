@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.dashboard;
 
+import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
 import com.codebrig.jvmmechanic.agent.stash.DataEntry;
 import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 import com.codebrig.jvmmechanic.agent.stash.StashDataFile;
@@ -43,6 +44,7 @@ public class MechanicDashboard {
         }
 
         private Response handleLedgerRequest(IHTTPSession session) {
+            //read all journal entries
             List<JournalEntry> journalEntryList;
             try {
                 journalEntryList = stashLedgerFile.readAllJournalEntries();
@@ -51,6 +53,7 @@ public class MechanicDashboard {
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
             }
 
+            //output json
             String jsonData;
             try {
                 ObjectMapper mapper = new ObjectMapper();
@@ -104,6 +107,7 @@ public class MechanicDashboard {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
             }
 
+            //read data entries from file
             List<DataEntry> dataEntryList = new ArrayList<>();
             for (int i = 0; i < eventPositionList.size(); i++) {
                 long eventPosition = eventPositionList.get(i);
@@ -116,10 +120,17 @@ public class MechanicDashboard {
                 }
             }
 
+            //convert data entries into mechanic events
+            List<MechanicEvent> mechanicEventList = new ArrayList<>();
+            for (DataEntry dataEntry : dataEntryList) {
+                mechanicEventList.add(dataEntry.toMechanicEvent());
+            }
+
+            //output json
             String jsonData;
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                jsonData = mapper.writeValueAsString(dataEntryList);
+                jsonData = mapper.writeValueAsString(mechanicEventList);
             } catch (JsonProcessingException ex) {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
