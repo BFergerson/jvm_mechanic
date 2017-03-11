@@ -1,7 +1,10 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * todo: this
@@ -19,6 +22,25 @@ public class StashLedgerFile {
     public void stashJournalEntry(JournalEntry journalEntry) throws IOException {
         fileChannel.write(journalEntry.toByteBuffer());
         //fileChannel.force(false);
+    }
+
+    public List<JournalEntry> readAllJournalEntries() throws IOException {
+        fileChannel.position(0);
+
+        int journalRecords = (int) fileChannel.size() / JournalEntry.JOURNAL_ENTRY_SIZE;
+        ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
+        fileChannel.read(buffer);
+        buffer.position(0);
+
+        List<JournalEntry> journalEntryList = new ArrayList<>();
+        for (int i = 0; i < journalRecords; i++) {
+            long eventId = buffer.getLong();
+            long eventTimestamp = buffer.getLong();
+            int eventSize = buffer.getInt();
+            byte eventType = buffer.get();
+            journalEntryList.add(new JournalEntry(eventId, eventTimestamp, eventSize, eventType));
+        }
+        return journalEntryList;
     }
 
     public void close() throws IOException {

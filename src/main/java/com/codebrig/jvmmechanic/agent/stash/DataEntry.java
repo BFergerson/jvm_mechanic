@@ -10,13 +10,11 @@ import java.nio.ByteBuffer;
 public class DataEntry {
 
     private final long eventId;
-    private final int rawDataSize;
     private final byte[] rawData;
 
     public DataEntry(long eventId, byte[] rawData) {
         this.eventId = eventId;
         this.rawData = rawData;
-        this.rawDataSize = rawData.length;
     }
 
     public long getEventId() {
@@ -28,10 +26,9 @@ public class DataEntry {
     }
 
     public ByteBuffer toByteBuffer() {
-        //buffer allocation: eventId (8) + rawDataSize (4) + rawData (*)
-        ByteBuffer buffer = ByteBuffer.allocate(8 + 4 + rawData.length);
+        //buffer allocation: eventId (8) + rawData (*)
+        ByteBuffer buffer = ByteBuffer.allocate(8 + rawData.length);
         buffer.putLong(eventId);
-        buffer.putInt(rawDataSize);
         buffer.put(rawData);
 
         buffer.position(0);

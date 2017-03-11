@@ -11,6 +11,18 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="jvm_mechanic_main" />
     <orderEntry type="library" name="Gradle: org.jboss.byteman:byteman:3.0.7" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.8.7" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.8.7" level="project" />
+    <orderEntry type="library" name="Gradle: me.tomassetti:java-symbol-solver-core:0.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.beust:jcommander:1.7" level="project" />
+    <orderEntry type="library" name="Gradle: org.nanohttpd:nanohttpd:2.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.8.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.javaparser:javaparser-core:2.3.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.javassist:javassist:3.19.0-GA" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:18.0" level="project" />
+    <orderEntry type="library" name="Gradle: me.tomassetti:java-symbol-solver-model:0.2" level="project" />
+    <orderEntry type="library" name="Gradle: me.tomassetti:java-symbol-solver-logic:0.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.javaslang:javaslang:2.0.0-beta" level="project" />
   </component>
   <component name="TestModuleProperties" production-module="jvm_mechanic_main" />
 </module>

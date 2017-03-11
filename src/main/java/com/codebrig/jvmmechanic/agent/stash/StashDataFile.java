@@ -1,6 +1,7 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
@@ -19,6 +20,19 @@ public class StashDataFile {
     public void stashDataEntry(DataEntry dataEntry) throws IOException {
         fileChannel.write(dataEntry.toByteBuffer());
         //fileChannel.force(false);
+    }
+
+    public DataEntry readDataEntry(long filePosition, int length) throws IOException {
+        fileChannel.position(filePosition);
+
+        ByteBuffer buffer = ByteBuffer.allocate(length);
+        fileChannel.read(buffer);
+        buffer.position(0);
+
+        long eventId = buffer.getLong();
+        byte[] rawData = new byte[length - 8];
+        buffer.get(rawData);
+        return new DataEntry(eventId, rawData);
     }
 
     public void close() throws IOException {

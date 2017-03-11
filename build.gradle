@@ -11,6 +11,11 @@ repositories {
 
 dependencies {
     compile group: 'org.jboss.byteman', name: 'byteman', version: '3.0.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.7'
+    compile group: 'me.tomassetti', name: 'java-symbol-solver-core', version: '0.2'
+    compile group: 'com.beust', name: 'jcommander', version: '1.7'
+    compile group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'
 }
 
 task uberJar(type: Jar, dependsOn:[':compileJava']) {
