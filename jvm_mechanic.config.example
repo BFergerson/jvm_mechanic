@@ -1,0 +1,11 @@
+#Event
+jvm_mechanic.event.session_sample_accuracy=50.00
+
+#Stash
+jvm_mechanic.stash.ledger.filename=C:\temp\jvm_mechanic.ledger
+jvm_mechanic.stash.data.filename=C:\temp\jvm_mechanic.data
+jvm_mechanic.stash.thread_count=10
+
+#Dashboard
+jvm_mechanic.dashboard.data.display_package_name=false
+jvm_mechanic.dashboard.data.display_class_name=true
