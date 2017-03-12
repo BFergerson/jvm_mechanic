@@ -42,7 +42,7 @@ public class DataEntry {
     }
 
     public MechanicEvent toMechanicEvent() {
-        return MechanicEvent.toMechanicEvent(eventId, ByteBuffer.wrap(rawData));
+        return MechanicEvent.toMechanicEvent(ByteBuffer.wrap(rawData));
     }
 
 }

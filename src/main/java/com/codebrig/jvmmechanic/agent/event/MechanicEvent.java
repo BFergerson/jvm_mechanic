@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.agent.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -28,6 +30,7 @@ public abstract class MechanicEvent {
         this.eventNanoTime = System.nanoTime();
     }
 
+    @JsonIgnore
     public byte[] getEventData() {
         ByteBuffer buffer = ByteBuffer.allocate(DEFAULT_MECHANIC_EVENT_BUFFER_SIZE);
         buffer.putLong(eventId);
@@ -70,7 +73,8 @@ public abstract class MechanicEvent {
         return rawData;
     }
 
-    public static MechanicEvent toMechanicEvent(long eventId, ByteBuffer buffer) {
+    public static MechanicEvent toMechanicEvent(ByteBuffer buffer) {
+        long eventId = buffer.getLong();
         long eventTimestamp = buffer.getLong();
         long eventNanoTime = buffer.getLong();
         boolean success = buffer.get() == 1;

@@ -62,7 +62,10 @@ public class MechanicDashboard {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
             }
-            return newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+
+            NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+            res.addHeader("Access-Control-Allow-Origin", "*");
+            return res;
         }
 
         private Response handleDataRequest(IHTTPSession session) {
@@ -135,7 +138,10 @@ public class MechanicDashboard {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
             }
-            return newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+
+            NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+            res.addHeader("Access-Control-Allow-Origin", "*");
+            return res;
         }
     }
 
