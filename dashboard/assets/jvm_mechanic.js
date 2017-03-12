@@ -1,9 +1,10 @@
 window.onload = function () {
+  var host = "http://localhost:9000";
   var ledgerdb = TAFFY();
   var eventdb = TAFFY();
-  var eventSizeList = [];
+  var configdb = TAFFY();
   var eventPositionList = [];
-  var host = "http://localhost:9000";
+  var eventSizeList = [];
 
   $('#sidebar-toggle-button').on('click', function () {
     $('#sidebar').toggleClass('sidebar-toggle');
@@ -28,19 +29,24 @@ window.onload = function () {
         $.each(result, function(i, event){
           eventdb.insert(event);
           $("#eventTable > tbody").append(
-            "<tr>" + 
-              "<td>" + event["eventId"] + "</td>" + 
-              "<td>" + event["eventAttribute"] + "</td>" + 
-              "<td>" + event["eventContext"] + "</td>" + 
-              "<td>" + event["eventMethod"] + "</td>" + 
+            "<tr" + (event["success"] === false ? " class=\"table-danger\"" : "") + ">" +
+              "<td>" + event["eventId"] + "</td>" +
+              "<td>" + event["eventContext"] + "</td>" +
+              "<td>" + removePackageName(event["eventMethod"]) + "</td>" +
               "<td>" + event["eventNanoTime"] + "</td>" + 
               "<td>" + event["eventThread"] + "</td>" + 
-              "<td>" + event["eventTimestamp"] + "</td>" + 
-              "<td>" + event["eventTriggerMethod"] + "</td>" + 
-              "<td>" + event["eventType"] + "</td>" + 
-              "<td>" + event["success"] + "</td>" + 
+              "<td>" + moment.unix(event["eventTimestamp"]).format("HH:mm:ss a") + "</td>" +
+              "<td>" + removePackageName(event["eventTriggerMethod"]) + "</td>" +
+              "<td>" + event["eventType"].replace("_EVENT", "") + "</td>" +
+              "<td>" + event["success"] + "</td>" +
+              "<td>" + (event["eventAttribute"] == null ? "n/a" : event["eventAttribute"]) + "</td>" +
             "</tr>");
         });
     });
   });
+
+  function removePackageName(fullyQuantifiedMethodName) {
+    var methodNameArr = fullyQuantifiedMethodName.split(".");
+    return methodNameArr[methodNameArr.length - 2]  + "." + methodNameArr[methodNameArr.length - 1];
+  }
 }

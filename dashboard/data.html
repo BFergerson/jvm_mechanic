@@ -19,7 +19,8 @@
 	<script src="assets/tether/tether.min.js"></script>
 	<script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
 	<script src="assets/canvasjs.min.js"></script>
-  <script src="assets/taffy-min.js"></script>
+    <script src="assets/moment.js"></script>
+    <script src="assets/taffy-min.js"></script>
 	<script src="assets/jvm_mechanic.js"></script>
 </head>
 <body>
@@ -70,20 +71,25 @@
 
 	<!-- page-content-wrapper -->
 	<div class="page-content-toggle" id="page-content-wrapper">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Work Streams</a>
+            </li>
+        </ul>
 		<div class="container-fluid">
       <table id="eventTable" class="table table-striped">
         <thead class="thead-inverse">
           <tr>
             <th>#</th>
-            <th>eventAttribute</th>
-            <th>eventContext</th>
-            <th>eventMethod</th>
-            <th>eventNanoTime</th>
-            <th>eventThread</th>
-            <th>eventTimestamp</th>
-            <th>eventTriggerMethod</th>
-            <th>eventType</th>
-            <th>success</th>
+              <th>Context</th>
+              <th>Method</th>
+              <th>NanoTime</th>
+              <th>Thread</th>
+              <th>Timestamp</th>
+              <th>Trigger Method</th>
+              <th>Type</th>
+              <th>Success</th>
+              <th>Attribute</th>
           </tr>
         </thead>
         <tbody>
