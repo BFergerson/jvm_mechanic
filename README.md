@@ -1,4 +1,6 @@
-# jvm_mechanic
+jvm_mechanic - Lightweight JVM Performance Monitoring
+==================================
+[![Build Status](https://travis-ci.org/BFergerson/jvm_mechanic.svg?branch=master)](https://travis-ci.org/BFergerson/jvm_mechanic)
 
 ##Goal
 Provide detailed real-time statistics & diagrams for thread-based request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
