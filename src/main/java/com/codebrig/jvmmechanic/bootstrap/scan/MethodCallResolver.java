@@ -21,21 +21,10 @@ import java.util.Set;
  */
 public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
-    private final Set<String> targetPackageSet;
-    private final Set<String> visitedFunctionSet;
-    private final Set<String> targetFunctionSet;
-    private final Set<String> failedFunctionSet;
-    private final Set<String> visitedConstructorSet;
-    private final Set<String> failedConstructorSet;
+    private final RecursiveMethodExplorer methodExplorer;
 
-    public MethodCallResolver(Set<String> targetPackageSet, Set<String> visitedFunctionSet, Set<String> targetFunctionSet,
-                              Set<String> failedFunctionSet, Set<String> visitedConstructorSet, Set<String> failedConstructorSet) {
-        this.targetPackageSet = targetPackageSet;
-        this.visitedFunctionSet = visitedFunctionSet;
-        this.targetFunctionSet = targetFunctionSet;
-        this.failedFunctionSet = failedFunctionSet;
-        this.visitedConstructorSet = visitedConstructorSet;
-        this.failedConstructorSet = failedConstructorSet;
+    public MethodCallResolver(RecursiveMethodExplorer methodExplorer) {
+        this.methodExplorer = methodExplorer;
     }
 
     @Override
@@ -49,14 +38,14 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
                 String qualifiedName = referenceTypeUsage.getTypeDeclaration().getQualifiedName();
 
                 boolean monitor = false;
-                for (String packageName : targetPackageSet) {
+                for (String packageName : methodExplorer.getTargetPackageSet()) {
                     if (qualifiedName.startsWith(packageName)) {
                         monitor = true;
                         break;
                     }
                 }
-                if (monitor && !visitedConstructorSet.contains(qualifiedName)) {
-                    visitedConstructorSet.add(qualifiedName);
+                if (monitor && !methodExplorer.getVisitedConstructorSet().contains(qualifiedName)) {
+                    methodExplorer.getVisitedConstructorSet().add(qualifiedName);
                     System.out.println("Will monitor constructor(s) of class: " + qualifiedName);
                 }
             }
@@ -67,8 +56,8 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 //            }
         } catch(Exception ex) {
             String objectType = objectCreation.getType().toStringWithoutComments();
-            if (!failedConstructorSet.contains(objectType)) {
-                failedConstructorSet.add(objectType);
+            if (!methodExplorer.getFailedConstructorSet().contains(objectType)) {
+                methodExplorer.getFailedConstructorSet().add(objectType);
                 //System.err.println("Unable monitor constructor(s): " + objectType);
             }
             //ex.printStackTrace();
@@ -110,9 +99,9 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
             String qualifiedClassName = compilationUnit.getPackage().getName().toStringWithoutComments() + "." + compilationUnit.getTypes().get(0).getName();
             String functionSignature = Utils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
-            if (!visitedFunctionSet.contains(functionSignature)) {
-                targetFunctionSet.add(functionSignature);
-                TargetFunctionVisitor targetFunctionVisitor = new TargetFunctionVisitor(qualifiedClassName, targetPackageSet, targetFunctionSet, failedFunctionSet, visitedFunctionSet, visitedConstructorSet, failedConstructorSet);
+            if (!methodExplorer.getVisitedFunctionSet().contains(functionSignature)) {
+                methodExplorer.getTargetFunctionSet().add(functionSignature);
+                TargetFunctionVisitor targetFunctionVisitor = new TargetFunctionVisitor(qualifiedClassName, methodExplorer);
                 methodDeclaration.accept(targetFunctionVisitor, javaParserFacade);
             }
         } catch (Exception ex) {
@@ -136,8 +125,8 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
             }
 
             String functionSignature = getFunctionSignatureFromMethodCall(methodCall, javaParserFacade).toString();
-            if (!failedFunctionSet.contains(functionSignature)) {
-                failedFunctionSet.add(methodCall.toStringWithoutComments());
+            if (!methodExplorer.getFailedFunctionSet().contains(functionSignature)) {
+                methodExplorer.getFailedFunctionSet().add(methodCall.toStringWithoutComments());
 //                System.err.println("Unable to resolve method call: " + methodCall.toStringWithoutComments());
 //                System.err.println("Failed rule injection on method: " + functionSignature);
 //                System.err.println("Reason: " + reason);
@@ -178,22 +167,6 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
             methodCallExprList.addAll(tmpMethodCallExprList);
         }
         return methodCallExprList;
-    }
-
-    public Set<String> getTargetPackageSet() {
-        return targetPackageSet;
-    }
-
-    public Set<String> getVisitedFunctionSet() {
-        return visitedFunctionSet;
-    }
-
-    public Set<String> getTargetFunctionSet() {
-        return targetFunctionSet;
-    }
-
-    public Set<String> getFailedFunctionSet() {
-        return failedFunctionSet;
     }
 
 }

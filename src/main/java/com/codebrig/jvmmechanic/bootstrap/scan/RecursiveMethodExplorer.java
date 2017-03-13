@@ -55,10 +55,22 @@ public class RecursiveMethodExplorer {
                 File sourceFile = new File(sourceDirectory, filePath.toString());
                 if (sourceFile.exists()) {
                     final CompilationUnit cu = JavaParser.parse(sourceFile);
-                    cu.accept(new TargetFunctionVisitor(qualifiedClassName.toString(), targetPackageSet, targetFunctionSet, failedFunctionSet, visitedFunctionSet, visitedConstructorSet, failedConstructorSet), javaParserFacade);
+                    cu.accept(new TargetFunctionVisitor(qualifiedClassName.toString(), this), javaParserFacade);
                 }
             }
         }
+    }
+
+    public Set<String> getTargetPackageSet() {
+        return targetPackageSet;
+    }
+
+    public Set<String> getSourceDirectorySet() {
+        return sourceDirectorySet;
+    }
+
+    public Set<String> getTargetFunctionSet() {
+        return targetFunctionSet;
     }
 
     public Set<String> getFailedFunctionSet() {

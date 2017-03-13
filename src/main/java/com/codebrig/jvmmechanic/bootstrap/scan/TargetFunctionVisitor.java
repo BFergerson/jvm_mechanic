@@ -1,12 +1,8 @@
 package com.codebrig.jvmmechanic.bootstrap.scan;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * todo: this
@@ -16,22 +12,11 @@ import java.util.Set;
 public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> {
 
     private final String qualifiedClassName;
-    private final Set<String> targetPackageSet;
-    private final Set<String> targetFunctionSet;
-    private final Set<String> failedFunctionSet;
-    private final Set<String> visitedFunctionSet;
-    private final Set<String> visitedConstructorSet;
-    private final Set<String> failedConstructorSet;
+    private final RecursiveMethodExplorer methodExplorer;
 
-    public TargetFunctionVisitor(String qualifiedClassName, Set<String> targetPackageSet, Set<String> targetFunctionSet,
-                                 Set<String> failedFunctionSet, Set<String> visitedFunctionSet, Set<String> visitedConstructorSet, Set<String> failedConstructorSet) {
+    public TargetFunctionVisitor(String qualifiedClassName, RecursiveMethodExplorer methodExplorer) {
         this.qualifiedClassName = qualifiedClassName;
-        this.targetPackageSet = targetPackageSet;
-        this.targetFunctionSet = targetFunctionSet;
-        this.failedFunctionSet = failedFunctionSet;
-        this.visitedFunctionSet = visitedFunctionSet;
-        this.visitedConstructorSet = visitedConstructorSet;
-        this.failedConstructorSet = failedConstructorSet;
+        this.methodExplorer = methodExplorer;
     }
 
     @Override
@@ -40,17 +25,17 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
 
         String functionSignature = Utils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
         boolean monitor = false;
-        for (String packageName : targetPackageSet) {
+        for (String packageName : methodExplorer.getTargetPackageSet()) {
             if (functionSignature.startsWith(packageName)) {
                 monitor = true;
                 break;
             }
         }
-        if (monitor && targetFunctionSet.contains(functionSignature)
-                && !visitedFunctionSet.contains(functionSignature)) {
-            visitedFunctionSet.add(functionSignature);
+        if (monitor && methodExplorer.getTargetFunctionSet().contains(functionSignature)
+                && !methodExplorer.getVisitedFunctionSet().contains(functionSignature)) {
+            methodExplorer.getVisitedFunctionSet().add(functionSignature);
             System.out.println("Exploring method: " + functionSignature);
-            methodDeclaration.accept(new MethodCallResolver(targetPackageSet, visitedFunctionSet, targetFunctionSet, failedFunctionSet, visitedConstructorSet, failedConstructorSet), javaParserFacade);
+            methodDeclaration.accept(new MethodCallResolver(methodExplorer), javaParserFacade);
         }
     }
 

@@ -137,6 +137,12 @@ public class BootstrapCLI {
         explorer.explore(JavaParserFacade.get(typeSolver));
         System.out.println("Finished exploring target function method hierarchy!");
 
+        //don't get how output is getting out of order but here's a hack :/
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+        }
+
         //bad output
         Set<String> failedFunctionSet = explorer.getFailedFunctionSet();
         if (!failedFunctionSet.isEmpty()) {
