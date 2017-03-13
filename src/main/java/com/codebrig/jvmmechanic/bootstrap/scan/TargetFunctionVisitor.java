@@ -18,36 +18,40 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
     private final String qualifiedClassName;
     private final Set<String> targetPackageSet;
     private final Set<String> targetFunctionSet;
+    private final Set<String> failedFunctionSet;
     private final Set<String> visitedFunctionSet;
+    private final Set<String> visitedConstructorSet;
+    private final Set<String> failedConstructorSet;
 
-    public TargetFunctionVisitor(String qualifiedClassName, Set<String> targetPackageSet, Set<String> targetFunctionSet) {
+    public TargetFunctionVisitor(String qualifiedClassName, Set<String> targetPackageSet, Set<String> targetFunctionSet,
+                                 Set<String> failedFunctionSet, Set<String> visitedFunctionSet, Set<String> visitedConstructorSet, Set<String> failedConstructorSet) {
         this.qualifiedClassName = qualifiedClassName;
         this.targetPackageSet = targetPackageSet;
         this.targetFunctionSet = targetFunctionSet;
-        this.visitedFunctionSet = new HashSet<>();
+        this.failedFunctionSet = failedFunctionSet;
+        this.visitedFunctionSet = visitedFunctionSet;
+        this.visitedConstructorSet = visitedConstructorSet;
+        this.failedConstructorSet = failedConstructorSet;
     }
 
     @Override
     public void visit(final MethodDeclaration methodDeclaration, final JavaParserFacade javaParserFacade) {
         super.visit(methodDeclaration, javaParserFacade);
 
-        StringBuilder functionSignature = getFunctionSignature(methodDeclaration);
-        if (targetFunctionSet.contains(functionSignature.toString())
-                && !visitedFunctionSet.contains(functionSignature.toString())) {
-            visitedFunctionSet.add(functionSignature.toString());
-            System.out.println("Exploring method: " + functionSignature.toString());
-            methodDeclaration.accept(new MethodCallResolver(targetPackageSet, visitedFunctionSet, targetFunctionSet), javaParserFacade);
+        String functionSignature = Utils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
+        boolean monitor = false;
+        for (String packageName : targetPackageSet) {
+            if (functionSignature.startsWith(packageName)) {
+                monitor = true;
+                break;
+            }
         }
-    }
-
-    private StringBuilder getFunctionSignature(MethodDeclaration methodDeclaration) {
-        StringBuilder functionSignature = new StringBuilder(qualifiedClassName).append(".");
-        functionSignature.append(methodDeclaration.getName()).append("(");
-        for (Parameter param : methodDeclaration.getParameters()) {
-            functionSignature.append(param.getType().toStringWithoutComments());
+        if (monitor && targetFunctionSet.contains(functionSignature)
+                && !visitedFunctionSet.contains(functionSignature)) {
+            visitedFunctionSet.add(functionSignature);
+            System.out.println("Exploring method: " + functionSignature);
+            methodDeclaration.accept(new MethodCallResolver(targetPackageSet, visitedFunctionSet, targetFunctionSet, failedFunctionSet, visitedConstructorSet, failedConstructorSet), javaParserFacade);
         }
-        functionSignature.append(")");
-        return functionSignature;
     }
 
 }

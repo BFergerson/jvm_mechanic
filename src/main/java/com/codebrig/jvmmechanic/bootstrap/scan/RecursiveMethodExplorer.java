@@ -7,6 +7,7 @@ import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -19,11 +20,19 @@ public class RecursiveMethodExplorer {
     private final Set<String> targetPackageSet;
     private final Set<String> sourceDirectorySet;
     private final Set<String> targetFunctionSet;
+    private final Set<String> failedFunctionSet;
+    private final Set<String> visitedFunctionSet;
+    private final Set<String> visitedConstructorSet;
+    private final Set<String> failedConstructorSet;
 
     public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> sourceDirectorySet, Set<String> targetFunctionSet) {
         this.targetPackageSet = targetPackageSet;
         this.sourceDirectorySet = sourceDirectorySet;
         this.targetFunctionSet = targetFunctionSet;
+        this.visitedFunctionSet = new HashSet<>();
+        this.failedFunctionSet = new HashSet<>();
+        this.visitedConstructorSet = new HashSet<>();
+        this.failedConstructorSet = new HashSet<>();
     }
 
     public void explore(JavaParserFacade javaParserFacade) throws IOException, ParseException {
@@ -46,10 +55,26 @@ public class RecursiveMethodExplorer {
                 File sourceFile = new File(sourceDirectory, filePath.toString());
                 if (sourceFile.exists()) {
                     final CompilationUnit cu = JavaParser.parse(sourceFile);
-                    cu.accept(new TargetFunctionVisitor(qualifiedClassName.toString(), targetPackageSet, targetFunctionSet), javaParserFacade);
+                    cu.accept(new TargetFunctionVisitor(qualifiedClassName.toString(), targetPackageSet, targetFunctionSet, failedFunctionSet, visitedFunctionSet, visitedConstructorSet, failedConstructorSet), javaParserFacade);
                 }
             }
         }
+    }
+
+    public Set<String> getFailedFunctionSet() {
+        return failedFunctionSet;
+    }
+
+    public Set<String> getVisitedFunctionSet() {
+        return visitedFunctionSet;
+    }
+
+    public Set<String> getVisitedConstructorSet() {
+        return visitedConstructorSet;
+    }
+
+    public Set<String> getFailedConstructorSet() {
+        return failedConstructorSet;
     }
 
 }

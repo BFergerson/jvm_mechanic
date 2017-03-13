@@ -8,6 +8,7 @@ import com.codebrig.jvmmechanic.bootstrap.scan.RecursiveMethodExplorer;
 import com.github.javaparser.ParseException;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 import me.tomassetti.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import me.tomassetti.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import me.tomassetti.symbolsolver.resolution.typesolvers.JreTypeSolver;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * todo: this
@@ -34,6 +36,9 @@ public class BootstrapCLI {
 
     @Parameter(names = "-target_function", description = "Functions to create rules for")
     public List<String> targetFunctionList;
+
+    @Parameter(names = "-project_library", description = ".jar(s) of Java libraries to be used for type solving")
+    public List<String> projectLibraryList;
 
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
     public boolean help;
@@ -76,6 +81,18 @@ public class BootstrapCLI {
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new JreTypeSolver());
 
+        //add java libraries (.jar)
+        if (cli.projectLibraryList != null && !cli.projectLibraryList.isEmpty()) {
+            for (String libraryLocation : cli.projectLibraryList) {
+                if (new File(libraryLocation).exists()) {
+                    typeSolver.add(new JarTypeSolver(libraryLocation));
+                    System.out.println("Added Java library: " + libraryLocation);
+                } else {
+                    System.err.println("Could not find Java library: " + libraryLocation);
+                }
+            }
+        }
+
         //setup source directories directly
         if (cli.sourceDirectoryList != null && !cli.sourceDirectoryList.isEmpty()) {
             List<String> tempRemoveList = new ArrayList<>();
@@ -112,11 +129,47 @@ public class BootstrapCLI {
         }
 
         //explore methods recursively
+        System.out.println("\nExploring target function method hierarchy...");
         RecursiveMethodExplorer explorer = new RecursiveMethodExplorer(
                 new HashSet<>(cli.sourcePackageList),
                 new HashSet<>(cli.sourceDirectoryList),
                 new HashSet<>(cli.targetFunctionList));
         explorer.explore(JavaParserFacade.get(typeSolver));
+        System.out.println("Finished exploring target function method hierarchy!");
+
+        //bad output
+        Set<String> failedFunctionSet = explorer.getFailedFunctionSet();
+        if (!failedFunctionSet.isEmpty()) {
+            System.err.println("\nFailed to create injection rules for methods:");
+            for(String failedFunction : failedFunctionSet) {
+                System.err.println(failedFunction);
+            }
+        }
+
+        Set<String> failedConstructorSet = explorer.getFailedConstructorSet();
+        if (!failedConstructorSet.isEmpty()) {
+            System.err.println("\nFailed to create injection rules for constructor(s) of classes:");
+            for(String failedConstructor : failedConstructorSet) {
+                System.err.println(failedConstructor);
+            }
+        }
+
+        //good output
+        Set<String> visitedFunctionSet = explorer.getVisitedFunctionSet();
+        if (!visitedFunctionSet.isEmpty()) {
+            System.out.println("\nMethods successfully found to inject:");
+            for(String visitedFunction : visitedFunctionSet) {
+                System.out.println(visitedFunction);
+            }
+        }
+
+        Set<String> visitedConstructorSet = explorer.getVisitedConstructorSet();
+        if (!visitedConstructorSet.isEmpty()) {
+            System.out.println("\nClass constructor(s) successfully found to inject:");
+            for(String visitedConstructor : visitedConstructorSet) {
+                System.out.println(visitedConstructor);
+            }
+        }
     }
 
     static List<File> findSourceDirectories(File searchDirectory, List<File> queue) {
