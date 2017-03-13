@@ -15,7 +15,6 @@ public abstract class MechanicEvent {
 
     public long eventId;
     public long eventTimestamp;
-    public long eventNanoTime;
     public int workSessionId;
     public short eventMethodId;
     public String eventContext;
@@ -29,7 +28,6 @@ public abstract class MechanicEvent {
     public MechanicEvent(MechanicEventType eventType) {
         this.eventType = eventType;
         this.eventTimestamp = System.currentTimeMillis();
-        this.eventNanoTime = System.nanoTime();
     }
 
     @JsonIgnore
@@ -37,7 +35,6 @@ public abstract class MechanicEvent {
         ByteBuffer buffer = ByteBuffer.allocate(DEFAULT_MECHANIC_EVENT_BUFFER_SIZE);
         buffer.putLong(eventId);
         buffer.putLong(eventTimestamp);
-        buffer.putLong(eventNanoTime);
         buffer.putInt(workSessionId);
         buffer.putShort(eventMethodId);
         buffer.put((byte)(success ? 1 : 0));
@@ -80,7 +77,6 @@ public abstract class MechanicEvent {
     public static MechanicEvent toMechanicEvent(ByteBuffer buffer) {
         long eventId = buffer.getLong();
         long eventTimestamp = buffer.getLong();
-        long eventNanoTime = buffer.getLong();
         int workSessionId = buffer.getInt();
         short eventMethodId = buffer.getShort();
         boolean success = buffer.get() == 1;
@@ -135,7 +131,6 @@ public abstract class MechanicEvent {
 
         event.eventId = eventId;
         event.eventTimestamp = eventTimestamp;
-        event.eventNanoTime = eventNanoTime;
         event.workSessionId = workSessionId;
         event.eventMethodId = eventMethodId;
         event.success = success;
