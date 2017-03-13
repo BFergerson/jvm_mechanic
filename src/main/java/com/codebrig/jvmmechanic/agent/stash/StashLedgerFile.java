@@ -36,9 +36,10 @@ public class StashLedgerFile {
         for (int i = 0; i < journalRecords; i++) {
             long eventId = buffer.getLong();
             long eventTimestamp = buffer.getLong();
-            int eventSize = buffer.getInt();
+            short eventSize = buffer.getShort();
+            short eventMethodId = buffer.getShort();
             byte eventType = buffer.get();
-            journalEntryList.add(new JournalEntry(eventId, eventTimestamp, eventSize, eventType));
+            journalEntryList.add(new JournalEntry(eventId, eventTimestamp, eventSize, eventMethodId, eventType));
         }
         return journalEntryList;
     }

@@ -45,11 +45,11 @@ public class jvm_mechanic extends Helper {
         }
     }
 
-    public void enter(String eventContext) {
-        enter(eventContext, null);
+    public void enter(int eventMethodId, String eventContext) {
+        enter(eventMethodId, eventContext, null);
     }
 
-    public void enter(String eventContext, String eventAttribute) {
+    public void enter(int eventMethodId, String eventContext, String eventAttribute) {
         if (Math.random() > sessionSampleAccuracy) {
             return; //ignore sample
         } else {
@@ -58,6 +58,7 @@ public class jvm_mechanic extends Helper {
         }
 
         EnterEvent event = new EnterEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
@@ -66,13 +67,14 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
     }
 
-    public void exit(String eventContext) {
-        exit(eventContext, null);
+    public void exit(int eventMethodId, String eventContext) {
+        exit(eventMethodId, eventContext, null);
     }
 
-    public void exit(String eventContext, String eventAttribute) {
+    public void exit(int eventMethodId, String eventContext, String eventAttribute) {
         threadLocalStorage.remove();
         ExitEvent event = new ExitEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
@@ -81,13 +83,14 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
     }
 
-    public void error_exit(String eventContext) {
-        error_exit(eventContext, null);
+    public void error_exit(int eventMethodId, String eventContext) {
+        error_exit(eventMethodId, eventContext, null);
     }
 
-    public void error_exit(String eventContext, String eventAttribute) {
+    public void error_exit(int eventMethodId, String eventContext, String eventAttribute) {
         threadLocalStorage.remove();
         ExitEvent event = new ExitEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.success = false;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
@@ -97,17 +100,18 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
     }
 
-    public void begin_work(String eventContext) {
-        begin_work(eventContext, null);
+    public void begin_work(int eventMethodId, String eventContext) {
+        begin_work(eventMethodId, eventContext, null);
     }
 
-    public void begin_work(String eventContext, String eventAttribute) {
+    public void begin_work(int eventMethodId, String eventContext, String eventAttribute) {
         Integer workSessionId = threadLocalStorage.get();
         if (workSessionId == null) {
             return;
         }
 
         BeginWorkEvent event = new BeginWorkEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
@@ -116,17 +120,18 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
     }
 
-    public void error_begin_work(String eventContext) {
-        error_begin_work(eventContext, null);
+    public void error_begin_work(int eventMethodId, String eventContext) {
+        error_begin_work(eventMethodId, eventContext, null);
     }
 
-    public void error_begin_work(String eventContext, String eventAttribute) {
+    public void error_begin_work(int eventMethodId, String eventContext, String eventAttribute) {
         Integer workSessionId = threadLocalStorage.get();
         if (workSessionId == null) {
             return;
         }
 
         BeginWorkEvent event = new BeginWorkEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.success = false;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
@@ -136,17 +141,18 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
     }
 
-    public void end_work(String eventContext) {
-        end_work(eventContext, null);
+    public void end_work(int eventMethodId, String eventContext) {
+        end_work(eventMethodId, eventContext, null);
     }
 
-    public void end_work(String eventContext, String eventAttribute) {
+    public void end_work(int eventMethodId, String eventContext, String eventAttribute) {
         Integer workSessionId = threadLocalStorage.get();
         if (workSessionId == null) {
             return;
         }
 
         EndWorkEvent event = new EndWorkEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
@@ -155,17 +161,18 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
     }
 
-    public void error_end_work(String eventContext) {
-        error_end_work(eventContext, null);
+    public void error_end_work(int eventMethodId, String eventContext) {
+        error_end_work(eventMethodId, eventContext, null);
     }
 
-    public void error_end_work(String eventContext, String eventAttribute) {
+    public void error_end_work(int eventMethodId, String eventContext, String eventAttribute) {
         Integer workSessionId = threadLocalStorage.get();
         if (workSessionId == null) {
             return;
         }
 
         EndWorkEvent event = new EndWorkEvent();
+        event.eventMethodId = (short) eventMethodId;
         event.success = false;
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();

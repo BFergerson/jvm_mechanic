@@ -17,6 +17,10 @@ public class DataEntry {
     public DataEntry(long eventId, byte[] rawData) {
         this.eventId = eventId;
         this.rawData = rawData;
+
+        if (rawData.length > Short.MAX_VALUE) {
+            throw new RuntimeException("Raw data entries may not exceed " + Short.MAX_VALUE + " bytes!");
+        }
     }
 
     public long getEventId() {
@@ -27,8 +31,8 @@ public class DataEntry {
         return rawData;
     }
 
-    public int getDataEntrySize() {
-        return 8 + rawData.length;
+    public short getDataEntrySize() {
+        return (short) (8 + rawData.length);
     }
 
     public ByteBuffer toByteBuffer() {
