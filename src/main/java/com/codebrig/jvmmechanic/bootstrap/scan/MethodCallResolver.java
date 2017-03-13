@@ -16,30 +16,30 @@ import java.util.Set;
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
-public class FunctionMethodCallVisitor extends VoidVisitorAdapter<JavaParserFacade> {
+public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
     private final Set<String> targetPackageSet;
     private final Set<String> visitedFunctionSet;
     private final Set<String> targetFunctionSet;
 
-    public FunctionMethodCallVisitor(Set<String> targetPackageSet, Set<String> visitedFunctionSet, Set<String> targetFunctionSet) {
+    public MethodCallResolver(Set<String> targetPackageSet, Set<String> visitedFunctionSet, Set<String> targetFunctionSet) {
         this.targetPackageSet = targetPackageSet;
         this.visitedFunctionSet = visitedFunctionSet;
         this.targetFunctionSet = targetFunctionSet;
     }
 
     @Override
-    public void visit(final MethodCallExpr n, final JavaParserFacade javaParserFacade) {
-        super.visit(n, javaParserFacade);
+    public void visit(final MethodCallExpr methodCall, final JavaParserFacade javaParserFacade) {
+        super.visit(methodCall, javaParserFacade);
 
-        System.out.println("Resolving method call: " + n.toStringWithoutComments());
+        System.out.println("Resolving method call: " + methodCall.toStringWithoutComments());
         try {
-//            SymbolReference<MethodDeclaration> solve = javaParserFacade.solve(n);
+//            SymbolReference<MethodDeclaration> solve = javaParserFacade.solve(methodCall);
 //            if (!solve.isSolved() || !(solve.getCorrespondingDeclaration() instanceof JavaParserMethodDeclaration)) {
 //                return;
 //            }
 //            JavaParserMethodDeclaration sourceMethodDeclaration = (JavaParserMethodDeclaration) solve.getCorrespondingDeclaration();
-            MethodUsage methodUsage = javaParserFacade.solveMethodAsUsage(n);
+            MethodUsage methodUsage = javaParserFacade.solveMethodAsUsage(methodCall);
             if (methodUsage == null || !(methodUsage.getDeclaration() instanceof JavaParserMethodDeclaration)) {
                 return;
             }
@@ -66,7 +66,7 @@ public class FunctionMethodCallVisitor extends VoidVisitorAdapter<JavaParserFaca
             if (reason == null) {
                 reason = ex.toString();
             }
-            System.err.println("Unable to resolve method call: " + n.toStringWithoutComments());
+            System.err.println("Unable to resolve method call: " + methodCall.toStringWithoutComments());
             System.err.println("Reason: " + reason);
             System.err.println("If you want to monitor this method please add manually with -target_function argument!");
         }
