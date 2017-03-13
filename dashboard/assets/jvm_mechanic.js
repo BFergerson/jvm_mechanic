@@ -34,8 +34,8 @@ window.onload = function () {
               "<td>" + event["eventContext"] + "</td>" +
               "<td>" + removePackageName(event["eventMethod"]) + "</td>" +
               "<td>" + event["eventNanoTime"] + "</td>" + 
-              "<td>" + event["eventThread"] + "</td>" + 
-              "<td>" + moment.unix(event["eventTimestamp"]).format("HH:mm:ss a") + "</td>" +
+              "<td>" + event["eventThread"] + "</td>" +
+              "<td>" + moment(event["eventTimestamp"]).format("hh:mm:ss a") + "</td>" +
               "<td>" + removePackageName(event["eventTriggerMethod"]) + "</td>" +
               "<td>" + event["eventType"].replace("_EVENT", "") + "</td>" +
               "<td>" + event["success"] + "</td>" +
