@@ -3,6 +3,7 @@ package com.codebrig.jvmmechanic.bootstrap;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import com.codebrig.jvmmechanic.bootstrap.rule.MechanicRuleGenerator;
 import com.codebrig.jvmmechanic.bootstrap.scan.ExtendedJavaParserTypeSolver;
 import com.codebrig.jvmmechanic.bootstrap.scan.RecursiveMethodExplorer;
 import com.github.javaparser.ParseException;
@@ -152,12 +153,24 @@ public class BootstrapCLI {
             }
         }
 
+        //don't get how output is getting out of order but here's a hack :/
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+        }
+
         Set<String> failedConstructorSet = explorer.getFailedConstructorSet();
         if (!failedConstructorSet.isEmpty()) {
             System.err.println("\nFailed to create injection rules for constructor(s) of classes:");
             for(String failedConstructor : failedConstructorSet) {
                 System.err.println(failedConstructor);
             }
+        }
+
+        //don't get how output is getting out of order but here's a hack :/
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
         }
 
         //good output
@@ -169,6 +182,12 @@ public class BootstrapCLI {
             }
         }
 
+        //don't get how output is getting out of order but here's a hack :/
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+        }
+
         Set<String> visitedConstructorSet = explorer.getVisitedConstructorSet();
         if (!visitedConstructorSet.isEmpty()) {
             System.out.println("\nClass constructor(s) successfully found to inject:");
@@ -176,6 +195,17 @@ public class BootstrapCLI {
                 System.out.println(visitedConstructor);
             }
         }
+
+        //don't get how output is getting out of order but here's a hack :/
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+        }
+
+        //output rules
+        System.out.println("\njvm_mechanic Generated Injection Rules: ");
+        MechanicRuleGenerator ruleGenerator = new MechanicRuleGenerator(explorer.getVisitedFunctionSet(), explorer.getVisitedConstructorSet());
+        System.out.println(ruleGenerator.getGeneratedRules().toString());
     }
 
     static List<File> findSourceDirectories(File searchDirectory, List<File> queue) {
