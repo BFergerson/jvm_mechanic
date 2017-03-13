@@ -9,6 +9,7 @@ import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * todo: this
@@ -20,6 +21,9 @@ public class jvm_mechanic extends Helper {
     private final double sessionSampleAccuracy;
     private static StashPersistenceStream stashStream;
     private static final Object singletonLock = new Object();
+
+    private static final AtomicInteger workSessionIndex = new AtomicInteger();
+    private static final ThreadLocal<Integer> threadLocalStorage = new ThreadLocal<>();
 
     public jvm_mechanic(Rule rule) throws IOException {
         super(rule);
@@ -49,7 +53,8 @@ public class jvm_mechanic extends Helper {
         if (Math.random() > sessionSampleAccuracy) {
             return; //ignore sample
         } else {
-            //todo: mark something so following events know; thread local maybe
+            System.out.println("jvm_mechanic: Capturing new work stream! Sample accuracy: " + sessionSampleAccuracy);
+            threadLocalStorage.set(workSessionIndex.getAndIncrement());
         }
 
         EnterEvent event = new EnterEvent();
@@ -66,6 +71,7 @@ public class jvm_mechanic extends Helper {
     }
 
     public void exit(String eventContext, String eventAttribute) {
+        threadLocalStorage.remove();
         ExitEvent event = new ExitEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
@@ -80,6 +86,7 @@ public class jvm_mechanic extends Helper {
     }
 
     public void error_exit(String eventContext, String eventAttribute) {
+        threadLocalStorage.remove();
         ExitEvent event = new ExitEvent();
         event.success = false;
         event.eventContext = eventContext;
@@ -95,6 +102,11 @@ public class jvm_mechanic extends Helper {
     }
 
     public void begin_work(String eventContext, String eventAttribute) {
+        Integer workSessionId = threadLocalStorage.get();
+        if (workSessionId == null) {
+            return;
+        }
+
         BeginWorkEvent event = new BeginWorkEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
@@ -109,6 +121,11 @@ public class jvm_mechanic extends Helper {
     }
 
     public void error_begin_work(String eventContext, String eventAttribute) {
+        Integer workSessionId = threadLocalStorage.get();
+        if (workSessionId == null) {
+            return;
+        }
+
         BeginWorkEvent event = new BeginWorkEvent();
         event.success = false;
         event.eventContext = eventContext;
@@ -124,6 +141,11 @@ public class jvm_mechanic extends Helper {
     }
 
     public void end_work(String eventContext, String eventAttribute) {
+        Integer workSessionId = threadLocalStorage.get();
+        if (workSessionId == null) {
+            return;
+        }
+
         EndWorkEvent event = new EndWorkEvent();
         event.eventContext = eventContext;
         event.eventThread = Thread.currentThread().getName();
@@ -138,6 +160,11 @@ public class jvm_mechanic extends Helper {
     }
 
     public void error_end_work(String eventContext, String eventAttribute) {
+        Integer workSessionId = threadLocalStorage.get();
+        if (workSessionId == null) {
+            return;
+        }
+
         EndWorkEvent event = new EndWorkEvent();
         event.success = false;
         event.eventContext = eventContext;
