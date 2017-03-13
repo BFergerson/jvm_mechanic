@@ -4,11 +4,15 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.codebrig.jvmmechanic.bootstrap.scan.RecursiveMethodExplorer;
+import com.github.javaparser.ParseException;
+import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 import me.tomassetti.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import me.tomassetti.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import me.tomassetti.symbolsolver.resolution.typesolvers.JreTypeSolver;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,9 +37,9 @@ public class BootstrapCLI {
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
     public boolean help;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ParseException {
         BootstrapCLI cli = new BootstrapCLI();
-        JCommander commander = null;
+        JCommander commander;
         try {
             commander = new JCommander(cli, args);
             commander.setProgramName("jvm_mechanic - Bootstrap CLI");
@@ -69,19 +73,7 @@ public class BootstrapCLI {
         }
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
-
-        //scan for source directories
-        if (cli.scanDirectoryList != null && !cli.scanDirectoryList.isEmpty()) {
-            for (String scanDirectory : cli.scanDirectoryList) {
-                List<File> queue = new ArrayList<>();
-                findSourceDirectories(new File(scanDirectory), queue);
-                for (File file : queue) {
-                    cli.sourceDirectoryList.add(file.getAbsolutePath());
-                    typeSolver.add(new JavaParserTypeSolver(new File(file.getAbsolutePath())));
-                    System.out.println("Added scanned source code directory: " + file.getAbsolutePath());
-                }
-            }
-        }
+        typeSolver.add(new JreTypeSolver());
 
         //setup source directories directly
         if (cli.sourceDirectoryList != null && !cli.sourceDirectoryList.isEmpty()) {
@@ -102,10 +94,28 @@ public class BootstrapCLI {
             cli.sourceDirectoryList.addAll(tempAddList);
         }
 
-        //follow path stuff
+        //scan for source directories
+        if (cli.scanDirectoryList != null && !cli.scanDirectoryList.isEmpty()) {
+            for (String scanDirectory : cli.scanDirectoryList) {
+                List<File> queue = new ArrayList<>();
+                findSourceDirectories(new File(scanDirectory), queue);
+                if (!queue.isEmpty() && cli.sourceDirectoryList == null) {
+                    cli.sourceDirectoryList = new ArrayList<>();
+                }
+                for (File file : queue) {
+                    cli.sourceDirectoryList.add(file.getAbsolutePath());
+                    typeSolver.add(new JavaParserTypeSolver(new File(file.getAbsolutePath())));
+                    System.out.println("Added scanned source code directory: " + file.getAbsolutePath());
+                }
+            }
+        }
+
+        //explore methods recursively
         RecursiveMethodExplorer explorer = new RecursiveMethodExplorer(
-                new HashSet<>(cli.sourcePackageList), new HashSet<>(cli.sourceDirectoryList));
-        explorer.explore();
+                new HashSet<>(cli.sourcePackageList),
+                new HashSet<>(cli.sourceDirectoryList),
+                new HashSet<>(cli.targetFunctionList));
+        explorer.explore(JavaParserFacade.get(typeSolver));
     }
 
     static List<File> findSourceDirectories(File searchDirectory, List<File> queue) {

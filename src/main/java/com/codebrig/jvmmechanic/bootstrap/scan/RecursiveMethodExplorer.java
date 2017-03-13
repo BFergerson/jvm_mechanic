@@ -10,29 +10,46 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
+ * todo: this
+ *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
 public class RecursiveMethodExplorer {
 
-    private Set<String> sourcePackageList;
-    private Set<String> sourceDirectoryList;
+    private final Set<String> targetPackageSet;
+    private final Set<String> sourceDirectorySet;
+    private final Set<String> targetFunctionSet;
 
-    public RecursiveMethodExplorer(Set<String> sourcePackageList, Set<String> sourceDirectoryList) {
-        this.sourcePackageList = sourcePackageList;
-        this.sourceDirectoryList = sourceDirectoryList;
+    public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> sourceDirectorySet, Set<String> targetFunctionSet) {
+        this.targetPackageSet = targetPackageSet;
+        this.sourceDirectorySet = sourceDirectorySet;
+        this.targetFunctionSet = targetFunctionSet;
     }
 
-    public void explore() {
-        //parseCompilationUnit(new File("C:\\temp\\WSI\\AlchemyWSI\\src\\main\\java\\com\\kobie\\alchemy\\wsi\\service\\impl\\RestfulTransactionServicesImpl.java"));
-    }
+    public void explore(JavaParserFacade javaParserFacade) throws IOException, ParseException {
+        for (String targetFunction : targetFunctionSet) {
+            String[] targetFunctionArr = targetFunction.split("\\.");
 
-    public static void main(final String[] args) throws Exception {
+            StringBuilder qualifiedClassName = new StringBuilder();
+            StringBuilder filePath = new StringBuilder();
+            for (int i = 0; i < targetFunctionArr.length - 1; i++) {
+                filePath.append(targetFunctionArr[i]);
+                qualifiedClassName.append(targetFunctionArr[i]);
+                if ((i + 1) < targetFunctionArr.length - 1) {
+                    filePath.append("\\");
+                    qualifiedClassName.append(".");
+                }
+            }
+            filePath.append(".java");
 
-    }
-
-    public static void parseCompilationUnit(final File sourceFile) throws ParseException, IOException {
-        final CompilationUnit cu = JavaParser.parse(sourceFile);
-        cu.accept(new TargetFunctionVisitor(), JavaParserFacade.get(null));
+            for (String sourceDirectory : sourceDirectorySet) {
+                File sourceFile = new File(sourceDirectory, filePath.toString());
+                if (sourceFile.exists()) {
+                    final CompilationUnit cu = JavaParser.parse(sourceFile);
+                    cu.accept(new TargetFunctionVisitor(qualifiedClassName.toString(), targetPackageSet, targetFunctionSet), javaParserFacade);
+                }
+            }
+        }
     }
 
 }
