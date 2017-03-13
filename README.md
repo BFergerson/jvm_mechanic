@@ -1,4 +1,4 @@
-jvm_mechanic - Lightweight JVM Performance Monitoring
+jvm_mechanic - Lightweight JVM Performance Diagnostics
 ==================================
 [![Build Status](https://travis-ci.org/BFergerson/jvm_mechanic.svg?branch=master)](https://travis-ci.org/BFergerson/jvm_mechanic)
 
