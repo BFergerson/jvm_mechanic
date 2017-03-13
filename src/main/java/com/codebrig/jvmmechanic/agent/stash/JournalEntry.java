@@ -9,16 +9,18 @@ import java.nio.ByteBuffer;
  */
 public class JournalEntry {
 
-    public static final int JOURNAL_ENTRY_SIZE = 21;
+    public static final int JOURNAL_ENTRY_SIZE = 25;
 
     private final long eventId;
+    private final int workSessionId;
     private final long eventTimestamp;
     private final short eventSize;
     private final short eventMethodId;
     private final byte eventType;
 
-    public JournalEntry(long eventId, long eventTimestamp, short eventSize, short eventMethodId, byte eventType) {
+    public JournalEntry(long eventId, int workSessionId, long eventTimestamp, short eventSize, short eventMethodId, byte eventType) {
         this.eventId = eventId;
+        this.workSessionId = workSessionId;
         this.eventTimestamp = eventTimestamp;
         this.eventSize = eventSize;
         this.eventMethodId = eventMethodId;
@@ -27,6 +29,10 @@ public class JournalEntry {
 
     public long getEventId() {
         return eventId;
+    }
+
+    public int getWorkSessionId() {
+        return workSessionId;
     }
 
     public long getEventTimestamp() {
@@ -46,9 +52,10 @@ public class JournalEntry {
     }
 
     public ByteBuffer toByteBuffer() {
-        //buffer allocation: eventId (8) + eventTimestamp (8) + eventSize (2) + eventMethodId (2) + eventType (1) = 21
+        //buffer allocation: eventId(8) + workSessionId(4) + eventTimestamp(8) + eventSize(2) + eventMethodId(2) + eventType(1) = 25
         ByteBuffer buffer = ByteBuffer.allocate(JOURNAL_ENTRY_SIZE);
         buffer.putLong(eventId);
+        buffer.putInt(workSessionId);
         buffer.putLong(eventTimestamp);
         buffer.putShort(eventSize);
         buffer.putShort(eventMethodId);

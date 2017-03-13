@@ -39,7 +39,9 @@ public class StashPersistenceStream {
             public void run() {
                 mechanicEvent.eventId = eventIdIndex.getAndIncrement();
                 DataEntry dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
-                JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId, mechanicEvent.eventType.toEventTypeId());
+                JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.workSessionId,
+                        mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
+                        mechanicEvent.eventType.toEventTypeId());
 
                 try {
                     stashLedgerFile.stashJournalEntry(journalEntry);
