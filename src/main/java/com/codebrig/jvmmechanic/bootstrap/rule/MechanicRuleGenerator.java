@@ -1,6 +1,7 @@
 package com.codebrig.jvmmechanic.bootstrap.rule;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * todo: this
@@ -9,6 +10,7 @@ import java.util.*;
  */
 public class MechanicRuleGenerator {
 
+    private AtomicInteger methodIdIndex = new AtomicInteger();
     private Set<String> workEntryMethodSet;
     private final Set<String> methodSet;
     private final Set<String> constructorClassSet;
@@ -28,6 +30,8 @@ public class MechanicRuleGenerator {
         String[] type = new String[]{"begin_work", "end_work", "error_end_work"};
         List<String> methodList = new ArrayList<>(methodSet);
         for (int i = 0; i < methodList.size(); i++) {
+            int methodId = methodIdIndex.getAndIncrement();
+
             for (String eventType : type) {
                 String method = methodList.get(i);
                 String ruleName = generateRuleName(method, eventType);
@@ -58,17 +62,15 @@ public class MechanicRuleGenerator {
                 ruleBuilder.append("\tDO\n");
 
                 if ("begin_work".equals(eventType)) {
-                    ruleBuilder.append("\t\tbegin_work(\"app\")\n");
+                    ruleBuilder.append("\t\tbegin_work(").append(methodId).append(",\"app\")\n");
                 } else if ("end_work".equals(eventType)) {
-                    ruleBuilder.append("\t\tend_work(\"app\")\n");
+                    ruleBuilder.append("\t\tend_work(").append(methodId).append(",\"app\")\n");
                 } else {
-                    ruleBuilder.append("\t\terror_end_work(\"app\")\n");
+                    ruleBuilder.append("\t\terror_end_work(").append(methodId).append(",\"app\")\n");
                 }
 
                 ruleBuilder.append("ENDRULE\n");
             }
-
-
 
             if ((i + 1) < methodList.size()) {
                 ruleBuilder.append("\n\n");
