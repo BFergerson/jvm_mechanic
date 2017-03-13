@@ -3,15 +3,14 @@ package com.codebrig.jvmmechanic.bootstrap;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import com.codebrig.jvmmechanic.bootstrap.scan.ExtendedJavaParserTypeSolver;
 import com.codebrig.jvmmechanic.bootstrap.scan.RecursiveMethodExplorer;
 import com.github.javaparser.ParseException;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 import me.tomassetti.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import me.tomassetti.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import me.tomassetti.symbolsolver.resolution.typesolvers.JreTypeSolver;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -89,7 +88,7 @@ public class BootstrapCLI {
                     tempAddList.add(sourceDirectory);
                 }
 
-                typeSolver.add(new JavaParserTypeSolver(new File(sourceDirectory)));
+                typeSolver.add(new ExtendedJavaParserTypeSolver(new File(sourceDirectory)));
                 System.out.println("Added direct source code directory: " + sourceDirectory);
             }
             cli.sourceDirectoryList.removeAll(tempRemoveList);
@@ -106,7 +105,7 @@ public class BootstrapCLI {
                 }
                 for (File file : queue) {
                     cli.sourceDirectoryList.add(file.getAbsolutePath());
-                    typeSolver.add(new JavaParserTypeSolver(new File(file.getAbsolutePath())));
+                    typeSolver.add(new ExtendedJavaParserTypeSolver(new File(file.getAbsolutePath())));
                     System.out.println("Added scanned source code directory: " + file.getAbsolutePath());
                 }
             }
@@ -121,20 +120,13 @@ public class BootstrapCLI {
     }
 
     static List<File> findSourceDirectories(File searchDirectory, List<File> queue) {
-        final FileFilter filter = new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.isDirectory();
-            }
-        };
-
         //BFS recursive search for all src/main/java directories
         if (searchDirectory.isDirectory()) {
             File srcMainJavaDir = new File(searchDirectory, "src/main/java");
             if (srcMainJavaDir.exists()) {
                 queue.add(srcMainJavaDir);
             } else {
-                File[] fileArr = searchDirectory.listFiles(filter);
+                File[] fileArr = searchDirectory.listFiles(File::isDirectory);
                 if (fileArr != null) {
                     for (File childFile : fileArr) {
                         findSourceDirectories(childFile, queue);
