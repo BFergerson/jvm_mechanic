@@ -35,8 +35,8 @@ window.onload = function () {
         var sessionDuration = (max - min);
         var streamTableRow = $("<tr" + (successfulSession === false ? " class=\"table-danger\"" : "") + ">" +
               "<td>" + workSessionId + "</td>" +
-              "<td>" + moment(min).format("hh:mm:ss.SSS a") + "</td>" +
-              "<td>" + moment(max).format("hh:mm:ss.SSS a") + "</td>" +
+              "<td>" + moment(min).format("hh:mm:ss.SSS A") + "</td>" +
+              "<td>" + moment(max).format("hh:mm:ss.SSS A") + "</td>" +
               "<td>" + sessionDuration + "ms (" + moment.duration(sessionDuration).asSeconds() + " seconds)</td>" +
             "</tr>");
         $("#streamTable > tbody").append(streamTableRow);
@@ -70,7 +70,7 @@ window.onload = function () {
                           //"<td>" + event["eventContext"] + "</td>" +
                           "<td>" + removePackageName(event["eventMethod"]) + "</td>" +
                           "<td>" + event["eventThread"] + "</td>" +
-                          "<td>" + moment(event["eventTimestamp"]).format("hh:mm:ss.SSS a") + "</td>" +
+                          "<td>" + moment(event["eventTimestamp"]).format("hh:mm:ss.SSS A") + "</td>" +
                           "<td>" + removePackageName(event["eventTriggerMethod"]) + "</td>" +
                           "<td>" + event["eventType"].replace("_EVENT", "") + "</td>" +
                         "</tr>");
