@@ -9,7 +9,7 @@ import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * todo: this
@@ -21,8 +21,6 @@ public class jvm_mechanic extends Helper {
     private final double sessionSampleAccuracy;
     private static StashPersistenceStream stashStream;
     private static final Object singletonLock = new Object();
-
-    private static final AtomicInteger workSessionIndex = new AtomicInteger();
     private static final ThreadLocal<Integer> threadLocalStorage = new ThreadLocal<>();
 
     public jvm_mechanic(Rule rule) throws IOException {
@@ -55,7 +53,7 @@ public class jvm_mechanic extends Helper {
             return; //ignore sample
         } else {
             System.out.println("jvm_mechanic: Capturing new work stream! Sample accuracy: " + sessionSampleAccuracy);
-            threadLocalStorage.set(workSessionId = workSessionIndex.getAndIncrement());
+            threadLocalStorage.set(workSessionId = ThreadLocalRandom.current().nextInt());
         }
 
         EnterEvent event = new EnterEvent();
