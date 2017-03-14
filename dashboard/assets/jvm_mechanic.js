@@ -34,6 +34,8 @@ window.onload = function () {
         var sessionDuration = (max - min);
         var streamTableRow = $("<tr>" +
               "<td>" + workSessionId + "</td>" +
+              "<td>" + moment(min).format("hh:mm:ss.SSS a") + "</td>" +
+              "<td>" + moment(max).format("hh:mm:ss.SSS a") + "</td>" +
               "<td>" + sessionDuration + "ms (" + moment.duration(sessionDuration).asSeconds() + " seconds)</td>" +
             "</tr>");
         $("#streamTable > tbody").append(streamTableRow);
@@ -63,16 +65,13 @@ window.onload = function () {
                       eventdb.insert(event);
                       $("#eventTable > tbody").append(
                         "<tr" + (event["success"] === false ? " class=\"table-danger\"" : "") + ">" +
-                          "<td>" + event["eventId"] + "</td>" +
-                          "<td>" + event["eventContext"] + "</td>" +
+                          //"<td>" + event["eventId"] + "</td>" +
+                          //"<td>" + event["eventContext"] + "</td>" +
                           "<td>" + removePackageName(event["eventMethod"]) + "</td>" +
-                          "<td>" + event["workSessionId"] + "</td>" +
                           "<td>" + event["eventThread"] + "</td>" +
                           "<td>" + moment(event["eventTimestamp"]).format("hh:mm:ss.SSS a") + "</td>" +
                           "<td>" + removePackageName(event["eventTriggerMethod"]) + "</td>" +
                           "<td>" + event["eventType"].replace("_EVENT", "") + "</td>" +
-                          "<td>" + event["success"] + "</td>" +
-                          "<td>" + (event["eventAttribute"] == null ? "n/a" : event["eventAttribute"]) + "</td>" +
                         "</tr>");
                     });
                 });
