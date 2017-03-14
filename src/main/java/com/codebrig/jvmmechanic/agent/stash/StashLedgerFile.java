@@ -20,6 +20,7 @@ public class StashLedgerFile {
     }
 
     public void stashJournalEntry(JournalEntry journalEntry) throws IOException {
+        fileChannel.position(fileChannel.size());
         fileChannel.write(journalEntry.toByteBuffer());
         //fileChannel.force(false);
     }
