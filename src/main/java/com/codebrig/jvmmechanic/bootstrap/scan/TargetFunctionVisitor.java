@@ -32,7 +32,8 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
             }
         }
         if (monitor && methodExplorer.getTargetFunctionSet().contains(functionSignature)
-                && !methodExplorer.getVisitedFunctionSet().contains(functionSignature)) {
+                && !methodExplorer.getVisitedFunctionSet().contains(functionSignature)
+                && !methodExplorer.getExcludeFunctionSet().contains(functionSignature)) {
             methodExplorer.getVisitedFunctionSet().add(functionSignature);
             System.out.println("Exploring method: " + functionSignature);
             methodDeclaration.accept(new MethodCallResolver(methodExplorer), javaParserFacade);

@@ -41,6 +41,9 @@ public class BootstrapCLI {
     @Parameter(names = "-project_library", description = ".jar(s) of Java libraries to be used for type solving")
     public List<String> projectLibraryList;
 
+    @Parameter(names = "-exclude_function", description = "Functions to exclude creating rules for")
+    public List<String> excludeFunctionList;
+
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
     public boolean help;
 
@@ -129,12 +132,17 @@ public class BootstrapCLI {
             }
         }
 
+        if (cli.excludeFunctionList == null) {
+            cli.excludeFunctionList = new ArrayList<>();
+        }
+
         //explore methods recursively
         System.out.println("\nExploring target function method hierarchy...");
         RecursiveMethodExplorer explorer = new RecursiveMethodExplorer(
                 new HashSet<>(cli.sourcePackageList),
                 new HashSet<>(cli.sourceDirectoryList),
-                new HashSet<>(cli.targetFunctionList));
+                new HashSet<>(cli.targetFunctionList),
+                new HashSet<>(cli.excludeFunctionList));
         explorer.explore(JavaParserFacade.get(typeSolver));
         System.out.println("Finished exploring target function method hierarchy!");
 

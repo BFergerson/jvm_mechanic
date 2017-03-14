@@ -20,15 +20,18 @@ public class RecursiveMethodExplorer {
     private final Set<String> targetPackageSet;
     private final Set<String> sourceDirectorySet;
     private final Set<String> targetFunctionSet;
+    private final Set<String> excludeFunctionSet;
     private final Set<String> failedFunctionSet;
     private final Set<String> visitedFunctionSet;
     private final Set<String> visitedConstructorSet;
     private final Set<String> failedConstructorSet;
 
-    public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> sourceDirectorySet, Set<String> targetFunctionSet) {
+    public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> sourceDirectorySet,
+                                   Set<String> targetFunctionSet, Set<String> excludeFunctionSet) {
         this.targetPackageSet = targetPackageSet;
         this.sourceDirectorySet = sourceDirectorySet;
         this.targetFunctionSet = targetFunctionSet;
+        this.excludeFunctionSet = excludeFunctionSet;
         this.visitedFunctionSet = new HashSet<>();
         this.failedFunctionSet = new HashSet<>();
         this.visitedConstructorSet = new HashSet<>();
@@ -71,6 +74,10 @@ public class RecursiveMethodExplorer {
 
     public Set<String> getTargetFunctionSet() {
         return targetFunctionSet;
+    }
+
+    public Set<String> getExcludeFunctionSet() {
+        return excludeFunctionSet;
     }
 
     public Set<String> getFailedFunctionSet() {
