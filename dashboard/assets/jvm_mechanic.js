@@ -29,10 +29,11 @@ window.onload = function () {
 
     var workSessionArr = ledgerdb().distinct("workSessionId");
     workSessionArr.forEach(function(workSessionId) {
+        var successfulSession = true; //todo: check last end work and exit of session
         var max = ledgerdb().filter({workSessionId:workSessionId}).max("eventTimestamp");
         var min = ledgerdb().filter({workSessionId:workSessionId}).min("eventTimestamp");
         var sessionDuration = (max - min);
-        var streamTableRow = $("<tr>" +
+        var streamTableRow = $("<tr" + (successfulSession === false ? " class=\"table-danger\"" : "") + ">" +
               "<td>" + workSessionId + "</td>" +
               "<td>" + moment(min).format("hh:mm:ss.SSS a") + "</td>" +
               "<td>" + moment(max).format("hh:mm:ss.SSS a") + "</td>" +
