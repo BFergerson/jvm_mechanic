@@ -1,6 +1,7 @@
 jvm_mechanic - Lightweight JVM Performance Diagnostics
 ==================================
 [![Build Status](https://travis-ci.org/BFergerson/jvm_mechanic.svg?branch=master)](https://travis-ci.org/BFergerson/jvm_mechanic)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/BFergerson/jvm_mechanic/master/LICENSE)
 
 ##Goal
 Provide detailed real-time statistics & diagrams for thread-based request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
