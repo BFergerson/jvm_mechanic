@@ -34,8 +34,14 @@ public class MechanicDashboard {
 
         @Override
         public Response serve(IHTTPSession session) {
-            if (session.getUri().equals("/ledger") && session.getMethod().equals(Method.GET)) {
-                return handleLedgerRequest(session);
+            System.out.println("Dashboard request: " + session.getUri() + "; Method: " + session.getMethod().toString());
+            if (session.getUri().startsWith("/ledger") && session.getMethod().equals(Method.GET)) {
+                try {
+                    return handleLedgerRequest(session);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+                }
             } else if (session.getUri().startsWith("/data/event/") && session.getMethod().equals(Method.GET)) {
                 return handleDataRequest(session);
             } else {
@@ -43,7 +49,20 @@ public class MechanicDashboard {
             }
         }
 
-        private Response handleLedgerRequest(IHTTPSession session) {
+        private Response handleLedgerRequest(IHTTPSession session) throws IOException {
+            Map<String, List<String>> decodedQueryParameters = decodeParameters(session.getQueryParameterString());
+            int currentLedgerSize = 0;
+            List<String> ledgerSizeParam = decodedQueryParameters.get("current_ledger_size");
+            if (ledgerSizeParam != null && !ledgerSizeParam.isEmpty()) {
+                currentLedgerSize = Integer.valueOf(ledgerSizeParam.get(0));
+            }
+
+            if (currentLedgerSize >= stashLedgerFile.getJournalEntryCount()) {
+                NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", "");
+                res.addHeader("Access-Control-Allow-Origin", "*");
+                return res;
+            }
+
             //read all journal entries
             List<JournalEntry> journalEntryList;
             try {
@@ -73,8 +92,8 @@ public class MechanicDashboard {
             List<String> eventPositionParam = decodedQueryParameters.get("event_position");
             List<String> eventSizeParam = decodedQueryParameters.get("event_size");
 
-            if ((eventPositionParam == null || eventSizeParam.isEmpty())
-                    && (eventPositionParam == null || eventSizeParam.isEmpty())) {
+            if ((eventPositionParam == null || eventPositionParam.isEmpty())
+                    || (eventSizeParam == null || eventSizeParam.isEmpty())) {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
             }
 
