@@ -1,46 +1,24 @@
 window.onload = function () {
-  var host = "http://localhost:9000";
-  var ledgerdb = TAFFY();
-  var eventdb = TAFFY();
-  var configdb = TAFFY();
-  var sessionDB = TAFFY();
-  var eventPositionList = [];
-  var eventSizeList = [];
+    $('#data_work_streams_nav_tab').on('click', function () {
+        $('#streamTable').show();
+        $('#eventTable').hide();
 
-  $('#sidebar-toggle-button').on('click', function () {
-    $('#sidebar').toggleClass('sidebar-toggle');
-    $('#page-content-wrapper').toggleClass('page-content-toggle');
-    renderAllCharts();
-  });
-
-  $('#data_work_streams_nav_tab').on('click', function () {
-      $('#streamTable').show();
-      $('#eventTable').hide();
-
-      var listItems = $("#data_nav_tabs li");
-      listItems.each(function(idx, li) {
-          if (idx != 0) $(li).remove();
-      });
-   });
-
-  $.getJSON(host + "/ledger", function(result){
-    $.each(result, function(i, entry){
-        ledgerdb.merge(entry, "uniqueEventId");
-        sessionDB.merge({workSessionId:entry["workSessionId"], sessionTimestamp:ledgerdb().filter({workSessionId:entry["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
+        var listItems = $("#data_nav_tabs li");
+        listItems.each(function(idx, li) {
+            if (idx != 0) $(li).remove();
+        });
     });
+}
+
+function loadAllWorkSessions() {
+    var host = "http://localhost:9000";
+    var eventdb = TAFFY();
+    var configdb = TAFFY();
+
 
     sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
         var workSessionId = record["workSessionId"];
         console.log("Adding session to data: " + workSessionId);
-
-        var filePosition = 0;
-        ledgerdb().filter({workSessionId:workSessionId}).order("eventId").each(function (record, recordnumber) {
-            if (record["workSessionId"] == workSessionId) {
-                eventSizeList.push(record["eventSize"]);
-                eventPositionList.push(filePosition);
-            }
-            filePosition += record["eventSize"];
-        });
 
         var successfulSession = true; //todo: check last end work and exit of session
         var max = ledgerdb().filter({workSessionId:workSessionId}).max("eventTimestamp");
@@ -55,6 +33,18 @@ window.onload = function () {
         $("#streamTable > tbody").append(streamTableRow);
 
         streamTableRow.click(function(event) {
+            var eventPositionList = [];
+            var eventSizeList = [];
+
+            var filePosition = 0;
+            ledgerdb().filter({workSessionId:workSessionId}).order("eventId").each(function (record, recordnumber) {
+                if (record["workSessionId"] == workSessionId) {
+                    eventSizeList.push(record["eventSize"]);
+                    eventPositionList.push(filePosition);
+                }
+                filePosition += record["eventSize"];
+            });
+
             var element = event.target;
             console.log(element);
 
@@ -64,12 +54,10 @@ window.onload = function () {
             var tabList = $('#page-content-wrapper .nav.nav-tabs');
             tabList.append('<li class="nav-item"><a class="nav-link active" href="#">Work Session #' + workSessionId + '</a></li>');
 
-
-
             $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(),
                 function(result) {
                     $.each(result, function(i, event){
-                        eventdb.insert(event);
+                        eventdb.insert(event); //todo: don't do append per row; do one big update
                         $("#eventTable > tbody").append(
                             "<tr" + (event["success"] === false ? " class=\"table-danger\"" : "") + ">" +
                             //"<td>" + event["eventId"] + "</td>" +
@@ -84,10 +72,36 @@ window.onload = function () {
                 });
         });
     });
-  });
+}
 
-  function removePackageName(fullyQuantifiedMethodName) {
+function loadStuff() {
+    var host = "http://localhost:9000";
+    var eventdb = TAFFY();
+    var configdb = TAFFY();
+
+    var ledgerSize = ledgerdb().count();
+    console.log("cached ledger size: " + ledgerSize);
+
+    $.getJSON(host + "/ledger/?current_ledger_size=" + ledgerSize, function(result){
+        $.each(result, function(i, entry){
+            ledgerdb.merge(entry, "uniqueEventId");
+            sessionDB.merge({workSessionId:entry["workSessionId"], sessionTimestamp:ledgerdb().filter({workSessionId:entry["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
+        });
+
+        console.log("Ledger size: " + ledgerdb().count());
+        storage.setContents('ledger_data', ledgerdb().stringify()).then(function() {
+        });
+        loadAllWorkSessions();
+    });
+
+    console.log("Ledger size: " + ledgerdb().count());
+    storage.setContents('ledger_data', ledgerdb().stringify()).then(function() {
+        loadAllWorkSessions();
+    });
+}
+
+
+function removePackageName(fullyQuantifiedMethodName) {
     var methodNameArr = fullyQuantifiedMethodName.split(".");
     return methodNameArr[methodNameArr.length - 2]  + "." + methodNameArr[methodNameArr.length - 1];
-  }
 }

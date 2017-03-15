@@ -15,6 +15,55 @@
     <link href="assets/style.css" rel="stylesheet">
 
     <!-- scripts -->
+    <script>
+        window.onload = function () {
+            $('#sidebar-toggle-button').on('click', function () {
+                $('#sidebar').toggleClass('sidebar-toggle');
+                $('#page-content-wrapper').toggleClass('page-content-toggle');
+                renderAllCharts();
+            });
+        };
+    </script>
+    <script src="assets/taffy-min.js"></script>
+    <script>
+        var ledgerdb = TAFFY();
+        var sessionDB = TAFFY();
+    </script>
+    <script src="assets/jvm_mechanic.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/q.js/1.4.1/q.min.js"></script>
+    <script src="assets/LargeLocalStorage.min.js"></script>
+    <script>
+        var desiredCapacity = 50 * 1024 * 1024; // 50MB
+        var storage = new LargeLocalStorage({
+            size: desiredCapacity
+        });
+        storage.initialized.then(function() {
+
+            storage.getContents('ledger_data').then(function(content) {
+                if (content) {
+                    ledgerdb = TAFFY(content);
+                    ledgerdb().each(function (record, recordnumber) {
+                        sessionDB.merge({workSessionId:record["workSessionId"], sessionTimestamp:ledgerdb().filter({workSessionId:record["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
+                    });
+                    console.log("got ledger from cache! size: " + ledgerdb().count());
+                    //console.log(ledgerdb().stringify());
+                    loadStuff();
+                }
+            });
+
+            console.log("Size: " + storage.size);
+            console.log("Local storage capacity: " + storage.getCapacity() + " bytes");
+            var $storageNotice = $('.storageNotice');
+            $storageNotice.css('opacity', 0);
+            setTimeout(function() {
+                $storageNotice.css('display', 'none');
+            }, 1100);
+
+            bind();
+        }, function() {
+            console.log('denied');
+        });
+    </script>
     <script src="assets/jquery/jquery-3.1.0.min.js"></script>
     <script src="assets/tether/tether.min.js"></script>
     <script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
@@ -22,7 +71,7 @@
     <script src="assets/Chart.bundle.js"></script>
     <script src="assets/utils.js"></script>
     <script src="assets/moment.js"></script>
-    <script src="assets/taffy-min.js"></script>
+    <script src="assets/jvm_mechanic_charts.js"></script>
 </head>
 
 <body>
@@ -76,7 +125,6 @@
         <div style="width:65%;">
             <canvas id="canvas"></canvas>
         </div>
-        <script src="assets/jvm_mechanic_charts.js"></script>
     </div>
     <!-- /.container-fluid -->
 

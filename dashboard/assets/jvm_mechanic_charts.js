@@ -47,24 +47,17 @@ var config = {
 window.onload = function() {
     var ctx = document.getElementById("canvas").getContext("2d");
     window.myLine = new Chart(ctx, config);
-
-    $('#sidebar-toggle-button').on('click', function () {
-        $('#sidebar').toggleClass('sidebar-toggle');
-        $('#page-content-wrapper').toggleClass('page-content-toggle');
-    });
 };
 
 var colorNames = Object.keys(window.chartColors);
 
 
 var host = "http://localhost:9000";
-var ledgerdb = TAFFY();
 var sessionDB = TAFFY();
 var methodNameMap = {};
 var sessionAccountedFor = {};
 
 $(document).ready(function() {
-    checkForUpdates();
     setInterval(function() {
         checkForUpdates();
     }, 5000);
@@ -140,6 +133,7 @@ function evictOldData() {
         var minutes = duration.minutes();
         if (minutes >= 1) {
             console.log("more than 1 minute");
+            //config.data.labels.shift();
             config.data.datasets.forEach(function(dataset) {
                 dataset.data.shift();
             });

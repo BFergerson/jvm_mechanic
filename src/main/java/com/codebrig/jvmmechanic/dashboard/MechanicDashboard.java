@@ -66,7 +66,7 @@ public class MechanicDashboard {
             //read all journal entries
             List<JournalEntry> journalEntryList;
             try {
-                journalEntryList = stashLedgerFile.readAllJournalEntries();
+                journalEntryList = stashLedgerFile.readAllJournalEntries(currentLedgerSize);
             } catch (IOException ex) {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());

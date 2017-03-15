@@ -15,6 +15,15 @@
 	<link href="assets/style.css" rel="stylesheet">
 
 	<!-- scripts -->
+	<script>
+		window.onload = function () {
+			$('#sidebar-toggle-button').on('click', function () {
+				$('#sidebar').toggleClass('sidebar-toggle');
+				$('#page-content-wrapper').toggleClass('page-content-toggle');
+				renderAllCharts();
+			});
+		};
+	</script>
 	<script src="assets/jquery/jquery-3.1.0.min.js"></script>
 	<script src="assets/tether/tether.min.js"></script>
 	<script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
