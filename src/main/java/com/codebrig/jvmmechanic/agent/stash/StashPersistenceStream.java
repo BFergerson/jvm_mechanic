@@ -15,37 +15,41 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class StashPersistenceStream {
 
-    private static final AtomicLong eventIdIndex = new AtomicLong();
+    private static final ThreadLocal<AtomicLong> threadLocalStorage = new ThreadLocal<>();
     private final ExecutorService executorService;
     private StashLedgerFile stashLedgerFile;
     private StashDataFile stashDataFile;
+    private static final Object syncLock = new Object();
 
-    public StashPersistenceStream(String ledgerFileName, String dataFileName, int writeThreadPoolCount) throws IOException {
+    public StashPersistenceStream(String ledgerFileName, String dataFileName) throws IOException {
         RandomAccessFile ledgerStream = new RandomAccessFile(ledgerFileName, "rw");
         RandomAccessFile dataStream = new RandomAccessFile(dataFileName, "rw");
         stashLedgerFile = new StashLedgerFile(ledgerStream.getChannel());
         stashDataFile = new StashDataFile(dataStream.getChannel());
-        executorService = Executors.newFixedThreadPool(writeThreadPoolCount);
-
-        //set eventIdIndex based on number of records in ledger file
-        if (ledgerStream.length() != 0) {
-            eventIdIndex.set(ledgerStream.length() / JournalEntry.JOURNAL_ENTRY_SIZE);
-        }
+        executorService = Executors.newCachedThreadPool();
     }
 
     public void stashMechanicEvent(final MechanicEvent mechanicEvent) {
+        AtomicLong tmpEventIdIndex = threadLocalStorage.get();
+        if (tmpEventIdIndex == null) {
+            threadLocalStorage.set(tmpEventIdIndex = new AtomicLong());
+        }
+        final AtomicLong eventIdIndex = tmpEventIdIndex;
+
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                mechanicEvent.eventId = eventIdIndex.getAndIncrement();
-                DataEntry dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
-                JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.workSessionId,
-                        mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
-                        mechanicEvent.eventType.toEventTypeId());
-
                 try {
-                    stashLedgerFile.stashJournalEntry(journalEntry);
-                    stashDataFile.stashDataEntry(dataEntry);
+                    synchronized (syncLock) {
+                        mechanicEvent.eventId = eventIdIndex.getAndIncrement();
+                        DataEntry dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
+                        JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.workSessionId,
+                                mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
+                                mechanicEvent.eventType.toEventTypeId());
+
+                        stashLedgerFile.stashJournalEntry(journalEntry);
+                        stashDataFile.stashDataEntry(dataEntry);
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

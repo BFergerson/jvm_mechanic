@@ -26,7 +26,7 @@ public class jvm_mechanic extends Helper {
     public jvm_mechanic(Rule rule) throws IOException {
         super(rule);
 
-        String sessionSampleAccuracyProperty = System.getProperty("jvm_mechanic.event.session_sample_accuracy", "50.00");
+        String sessionSampleAccuracyProperty = System.getProperty("jvm_mechanic.event.session_sample_accuracy", "100.00");
         sessionSampleAccuracy = Double.valueOf(sessionSampleAccuracyProperty) / 100.00;
         initStashStream();
     }
@@ -37,8 +37,7 @@ public class jvm_mechanic extends Helper {
             if (stashStream == null) {
                 String ledgerFileProperty = System.getProperty("jvm_mechanic.stash.ledger.filename", "C:\\temp\\jvm_mechanic.ledger");
                 String dataFileProperty = System.getProperty("jvm_mechanic.stash.data.filename", "C:\\temp\\jvm_mechanic.data");
-                String threadCountProperty = System.getProperty("jvm_mechanic.stash.thread_count", "10");
-                stashStream = new StashPersistenceStream(ledgerFileProperty, dataFileProperty, Integer.parseInt(threadCountProperty));
+                stashStream = new StashPersistenceStream(ledgerFileProperty, dataFileProperty);
             }
         }
     }

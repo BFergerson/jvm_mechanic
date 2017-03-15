@@ -17,6 +17,7 @@ public class JournalEntry {
     private final short eventSize;
     private final short eventMethodId;
     private final byte eventType;
+    private String uniqueEventId;
 
     public JournalEntry(long eventId, int workSessionId, long eventTimestamp, short eventSize, short eventMethodId, byte eventType) {
         this.eventId = eventId;
@@ -25,6 +26,7 @@ public class JournalEntry {
         this.eventSize = eventSize;
         this.eventMethodId = eventMethodId;
         this.eventType = eventType;
+        this.uniqueEventId = workSessionId + "_" + eventId;
     }
 
     public long getEventId() {
@@ -49,6 +51,14 @@ public class JournalEntry {
 
     public byte getEventType() {
         return eventType;
+    }
+
+    public String getUniqueEventId() {
+        return uniqueEventId;
+    }
+
+    public void setUniqueEventId(String uniqueId) {
+        this.uniqueEventId = uniqueId;
     }
 
     public ByteBuffer toByteBuffer() {

@@ -3,6 +3,7 @@ window.onload = function () {
   var ledgerdb = TAFFY();
   var eventdb = TAFFY();
   var configdb = TAFFY();
+  var sessionDB = TAFFY();
   var eventPositionList = [];
   var eventSizeList = [];
 
@@ -24,20 +25,32 @@ window.onload = function () {
 
   $.getJSON(host + "/ledger", function(result){
     $.each(result, function(i, entry){
-        ledgerdb.insert(entry);
+        ledgerdb.merge(entry, "uniqueEventId");
+        sessionDB.merge({workSessionId:entry["workSessionId"], sessionTimestamp:ledgerdb().filter({workSessionId:entry["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
     });
 
-    var workSessionArr = ledgerdb().distinct("workSessionId");
-    workSessionArr.forEach(function(workSessionId) {
+    sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
+        var workSessionId = record["workSessionId"];
+        console.log("Adding session to data: " + workSessionId);
+
+        var filePosition = 0;
+        ledgerdb().filter({workSessionId:workSessionId}).order("eventId").each(function (record, recordnumber) {
+            if (record["workSessionId"] == workSessionId) {
+                eventSizeList.push(record["eventSize"]);
+                eventPositionList.push(filePosition);
+            }
+            filePosition += record["eventSize"];
+        });
+
         var successfulSession = true; //todo: check last end work and exit of session
         var max = ledgerdb().filter({workSessionId:workSessionId}).max("eventTimestamp");
         var min = ledgerdb().filter({workSessionId:workSessionId}).min("eventTimestamp");
         var sessionDuration = (max - min);
         var streamTableRow = $("<tr" + (successfulSession === false ? " class=\"table-danger\"" : "") + ">" +
-              "<td>" + workSessionId + "</td>" +
-              "<td>" + moment(min).format("hh:mm:ss.SSS A") + "</td>" +
-              "<td>" + moment(max).format("hh:mm:ss.SSS A") + "</td>" +
-              "<td>" + sessionDuration + "ms (" + moment.duration(sessionDuration).asSeconds() + " seconds)</td>" +
+            "<td>" + workSessionId + "</td>" +
+            "<td>" + moment(min).format("hh:mm:ss.SSS A") + "</td>" +
+            "<td>" + moment(max).format("hh:mm:ss.SSS A") + "</td>" +
+            "<td>" + sessionDuration + "ms (" + moment.duration(sessionDuration).asSeconds() + " seconds)</td>" +
             "</tr>");
         $("#streamTable > tbody").append(streamTableRow);
 
@@ -51,32 +64,25 @@ window.onload = function () {
             var tabList = $('#page-content-wrapper .nav.nav-tabs');
             tabList.append('<li class="nav-item"><a class="nav-link active" href="#">Work Session #' + workSessionId + '</a></li>');
 
-            var filePosition = 0;
-            ledgerdb().order("eventId asc").each(function (record, recordnumber) {
-                if (record["workSessionId"] == workSessionId) {
-                    eventSizeList.push(record["eventSize"]);
-                    eventPositionList.push(filePosition);
-                }
-                filePosition += record["eventSize"];
-            });
+
 
             $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(),
-                  function(result) {
+                function(result) {
                     $.each(result, function(i, event){
-                      eventdb.insert(event);
-                      $("#eventTable > tbody").append(
-                        "<tr" + (event["success"] === false ? " class=\"table-danger\"" : "") + ">" +
-                          //"<td>" + event["eventId"] + "</td>" +
-                          //"<td>" + event["eventContext"] + "</td>" +
-                          "<td>" + removePackageName(event["eventMethod"]) + "</td>" +
-                          "<td>" + event["eventThread"] + "</td>" +
-                          "<td>" + moment(event["eventTimestamp"]).format("hh:mm:ss.SSS A") + "</td>" +
-                          "<td>" + removePackageName(event["eventTriggerMethod"]) + "</td>" +
-                          "<td>" + event["eventType"].replace("_EVENT", "") + "</td>" +
-                        "</tr>");
+                        eventdb.insert(event);
+                        $("#eventTable > tbody").append(
+                            "<tr" + (event["success"] === false ? " class=\"table-danger\"" : "") + ">" +
+                            //"<td>" + event["eventId"] + "</td>" +
+                            //"<td>" + event["eventContext"] + "</td>" +
+                            "<td>" + removePackageName(event["eventMethod"]) + "</td>" +
+                            "<td>" + event["eventThread"] + "</td>" +
+                            "<td>" + moment(event["eventTimestamp"]).format("hh:mm:ss.SSS A") + "</td>" +
+                            "<td>" + removePackageName(event["eventTriggerMethod"]) + "</td>" +
+                            "<td>" + event["eventType"].replace("_EVENT", "") + "</td>" +
+                            "</tr>");
                     });
                 });
-      });
+        });
     });
   });
 

@@ -29,6 +29,7 @@ public class StashLedgerFile {
         fileChannel.position(0);
 
         int journalRecords = (int) fileChannel.size() / JournalEntry.JOURNAL_ENTRY_SIZE;
+        System.out.println("Journal record count: " + journalRecords);
         ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
         fileChannel.read(buffer);
         buffer.position(0);
@@ -43,6 +44,8 @@ public class StashLedgerFile {
             byte eventType = buffer.get();
             journalEntryList.add(new JournalEntry(eventId, workSessionId, eventTimestamp, eventSize, eventMethodId, eventType));
         }
+
+        System.out.println("Read event size: " + journalEntryList.size());
         return journalEntryList;
     }
 
