@@ -16,6 +16,10 @@
 
     <!-- scripts -->
     <script>
+        function clearCache() {
+            console.log("Cleared cache!");
+            storage.clear();
+        };
         window.onload = function () {
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
@@ -29,7 +33,6 @@
         var ledgerdb = TAFFY();
         var sessionDB = TAFFY();
     </script>
-    <script src="assets/jvm_mechanic.js"></script>
     <script src="assets/q.min.js"></script>
     <script src="assets/LargeLocalStorage.min.js"></script>
     <script>
@@ -40,6 +43,7 @@
         storage.initialized.then(function() {
 
             storage.getContents('ledger_data').then(function(content) {
+                console.log("Looking if cache has data...");
                 if (content) {
                     ledgerdb = TAFFY(content);
                     ledgerdb().each(function (record, recordnumber) {
@@ -47,7 +51,9 @@
                     });
                     console.log("got ledger from cache! size: " + ledgerdb().count());
                     //console.log(ledgerdb().stringify());
-                    loadStuff();
+                    updateCharts();
+                } else {
+                    console.log("Nothing in cache!");
                 }
             });
 
@@ -87,6 +93,7 @@
                     <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
                 </a>
             </div>
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
         </div>
     </div>
 </nav>

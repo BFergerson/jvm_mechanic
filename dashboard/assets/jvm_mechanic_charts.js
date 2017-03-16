@@ -118,8 +118,8 @@ function evictOldData() {
         var duration = moment.duration(moment().diff(test));
         var minutes = duration.minutes();
 
-        if (minutes >= 2) {
-            console.log("more than 2 minutes");
+        if (minutes >= 5) {
+            console.log("more than 5 minutes");
             config.data.labels.shift();
             config.data.datasets.forEach(function(dataset) {
                 dataset.data.shift();
@@ -149,8 +149,8 @@ function updateCharts() {
         var minutes = duration.minutes();
 
         console.log("session: " + workSessionId + "; age: " + minutes + " minutes");
-        if (minutes >= 2) {
-            //console.log("more than 2 minutes; not adding session: " + workSessionId);
+        if (minutes >= 5) {
+            //console.log("more than 5 minutes; not adding session: " + workSessionId);
             return;
         }
 
