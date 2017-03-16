@@ -1,0 +1,354 @@
+#jvm_mechanic - Mechanic Event Rules
+#Version: 1.0
+#Date: 2017/03/16
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram$MyList_removeTail()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram$MyList_removeTail()
+	CLASS SimpleGarbageProgram$MyList
+	METHOD removeTail()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(0,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram$MyList_removeTail()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram$MyList_removeTail()
+	CLASS SimpleGarbageProgram$MyList
+	METHOD removeTail()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(0,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram$MyList_removeTail()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram$MyList_removeTail()
+	CLASS SimpleGarbageProgram$MyList
+	METHOD removeTail()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(0,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram$MyList_getCount()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram$MyList_getCount()
+	CLASS SimpleGarbageProgram$MyList
+	METHOD getCount()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(1,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram$MyList_getCount()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram$MyList_getCount()
+	CLASS SimpleGarbageProgram$MyList
+	METHOD getCount()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(1,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram$MyList_getCount()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram$MyList_getCount()
+	CLASS SimpleGarbageProgram$MyList
+	METHOD getCount()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(1,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram_mySleep(int)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram_mySleep(int)
+	CLASS SimpleGarbageProgram
+	METHOD mySleep(int)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(2,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram_mySleep(int)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram_mySleep(int)
+	CLASS SimpleGarbageProgram
+	METHOD mySleep(int)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(2,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram_mySleep(int)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram_mySleep(int)
+	CLASS SimpleGarbageProgram
+	METHOD mySleep(int)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(2,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram$MyObject_getCount()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram$MyObject_getCount()
+	CLASS SimpleGarbageProgram$MyObject
+	METHOD getCount()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(3,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram$MyObject_getCount()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram$MyObject_getCount()
+	CLASS SimpleGarbageProgram$MyObject
+	METHOD getCount()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(3,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram$MyObject_getCount()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram$MyObject_getCount()
+	CLASS SimpleGarbageProgram$MyObject
+	METHOD getCount()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(3,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram_main(String[])
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram_main(String[])
+	CLASS SimpleGarbageProgram
+	METHOD main(String[])
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(4,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram_main(String[])
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram_main(String[])
+	CLASS SimpleGarbageProgram
+	METHOD main(String[])
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(4,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram_main(String[])
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram_main(String[])
+	CLASS SimpleGarbageProgram
+	METHOD main(String[])
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(4,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram$MyList_add(MyObject)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram$MyList_add(MyObject)
+	CLASS SimpleGarbageProgram$MyList
+	METHOD add(MyObject)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(5,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram$MyList_add(MyObject)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram$MyList_add(MyObject)
+	CLASS SimpleGarbageProgram$MyList
+	METHOD add(MyObject)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(5,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram$MyList_add(MyObject)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram$MyList_add(MyObject)
+	CLASS SimpleGarbageProgram$MyList
+	METHOD add(MyObject)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(5,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram_myTest()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram_myTest()
+	CLASS SimpleGarbageProgram
+	METHOD myTest()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		begin_work(6,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram_myTest()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram_myTest()
+	CLASS SimpleGarbageProgram
+	METHOD myTest()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		end_work(6,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram_myTest()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram_myTest()
+	CLASS SimpleGarbageProgram
+	METHOD myTest()
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_end_work(6,"app")
+ENDRULE
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#begin_work_SimpleGarbageProgram_doWork(Runtime,long)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE begin_work_SimpleGarbageProgram_doWork(Runtime,long)
+	CLASS SimpleGarbageProgram
+	METHOD doWork(Runtime,long)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT ENTRY
+
+	IF
+		TRUE
+	DO
+		enter(7,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#end_work_SimpleGarbageProgram_doWork(Runtime,long)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE end_work_SimpleGarbageProgram_doWork(Runtime,long)
+	CLASS SimpleGarbageProgram
+	METHOD doWork(Runtime,long)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXIT
+
+	IF
+		TRUE
+	DO
+		exit(7,"app")
+ENDRULE
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#error_end_work_SimpleGarbageProgram_doWork(Runtime,long)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+RULE error_end_work_SimpleGarbageProgram_doWork(Runtime,long)
+	CLASS SimpleGarbageProgram
+	METHOD doWork(Runtime,long)
+	HELPER com.codebrig.jvmmechanic.agent.jvm_mechanic
+	AT EXCEPTION EXIT
+
+	IF
+		TRUE
+	DO
+		error_exit(7,"app")
+ENDRULE
