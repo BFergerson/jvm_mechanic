@@ -1,132 +1,47 @@
-function CalculatedMethodDuration(methodId, timestamp) {
-    this.methodId = methodId;
-    this.relativeDuration = 0;
-    this.absoluteDuration = 0;
-    this.timestamp = timestamp;
+window.chartColors = {
+    darkred: 'rgb(200,0,0)',
+    orange: 'rgb(255, 159, 64)',
+    yellow: 'rgb(255, 205, 86)',
+    green: 'rgb(75, 192, 192)',
+    blue: 'rgb(0,0,255)',
+    purple: 'rgb(153, 102, 255)',
+    grey: 'rgb(231,233,237)',
+    darkslategray: 'rgb(47,79,79)',
+    black: 'rgb(0,0,0)',
+    peach: 'rgb(255,218,185)',
+    coral: 'rgb(255,127,80)',
+    skyblue: 'rgb(135,206,235)',
+    magenta: 'rgb(255,0,255)'
+};
+
+function ledgerLoaded() {
+    //relative method duration line chart
+    var ctx = document.getElementById("relative_method_runtime_duration_canvas").getContext("2d");
+    window.relativeMethodRuntimeDurationLine = new Chart(ctx, relativeMethodRuntimeDurationConfig);
+
+    //absolute method duration line chart
+    ctx = document.getElementById("absolute_method_runtime_duration_canvas").getContext("2d");
+    window.absoluteMethodRuntimeDurationLine = new Chart(ctx, absoluteMethodRuntimeDurationConfig);
+
+
+    updateCharts(cutOffMinutesTime);
+
+    //update charts every 5 seconds
+    setInterval(function() {
+        loadLedgerUpdates();
+        updateCharts(cutOffMinutesTime);
+
+        evictOldChartData(relativeMethodRuntimeDurationConfig.data, cutOffMinutesTime);
+        evictOldChartData(absoluteMethodRuntimeDurationConfig.data, cutOffMinutesTime);
+    }, 5000);
 }
 
-var config = {
-    type: 'line',
-    data: {
-        datasets: []
-    },
-    options: {
-        responsive: true,
-        title:{
-            display:true,
-            text:'Method Runtime Duration - Relative'
-        },
-        tooltips: {
-            mode: 'index',
-            intersect: false,
-        },
-        hover: {
-            mode: 'nearest',
-            intersect: true
-        },
-        scales: {
-            xAxes: [{
-                type: 'time'
-            }],
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                },
-                display: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Execution Time (ms)'
-                }
-            }]
-        }
-    }
-};
-
-window.onload = function() {
-    var ctx = document.getElementById("canvas").getContext("2d");
-    window.myLine = new Chart(ctx, config);
-};
-
-var colorNames = Object.keys(window.chartColors);
-
-
-var host = "http://localhost:9000";
-var sessionDB = TAFFY();
-var methodNameMap = {};
 var sessionAccountedFor = {};
 
-$(document).ready(function() {
-    setInterval(function() {
-        checkForUpdates();
-    }, 5000);
-});
-
-function checkForUpdates() {
-    console.log("Checking for updates...");
-    var ledgerSize = ledgerdb().count();
-    $.getJSON(host + "/ledger/?current_ledger_size=" + ledgerSize, function(result){
-        console.log("Getting ledger...");
-        $.each(result, function(i, entry){
-            ledgerdb.merge(entry, "uniqueEventId");
-            sessionDB.merge({workSessionId:entry["workSessionId"], sessionTimestamp:ledgerdb().filter({workSessionId:entry["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
-        });
-
-        console.log("Ledger size: " + ledgerdb().count());
-        if (ledgerdb().count() > ledgerSize) {
-            //get method names
-            var eventPositionList = [];
-            var eventSizeList = [];
-            var filePosition = 0;
-
-            sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
-                var workSessionId = record["workSessionId"];
-                var workSessionDB = ledgerdb().filter({workSessionId:workSessionId});
-
-                workSessionDB.order("eventId").each(function (record, recordnumber) {
-                    if (methodNameMap[record["eventMethodId"]] == null) {
-                        eventSizeList.push(record["eventSize"]);
-                        eventPositionList.push(filePosition);
-                        methodNameMap[record["eventMethodId"]] = true;
-                    }
-                    filePosition += record["eventSize"];
-                });
-            });
-
-            if (eventPositionList.length > 0) {
-                $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(),
-                function(result) {
-                    $.each(result, function(i, event){
-                        methodNameMap[event["eventMethodId"]] = removePackageAndClassName(event["eventMethod"]);
-                    });
-
-                    updateCharts();
-                });
-            } else {
-                updateCharts();
-            }
-        }
-    });
-
-    evictOldData();
-}
-
-function evictOldData() {
-    //evict anything older than cutoffTime
-    if (chartHasData(config.data.datasets)) {
-        var test = config.data.labels[0];
-        var now = moment();
-        var duration = moment.duration(moment().diff(test));
-        var minutes = duration.minutes();
-
-        if (minutes >= 5) {
-            console.log("more than 5 minutes");
-            config.data.labels.shift();
-            config.data.datasets.forEach(function(dataset) {
-                dataset.data.shift();
-            });
-            window.myLine.update();
-        }
-    }
+function isEvictableData(sessionTime, cutOffMinutesTime) {
+    var duration = moment.duration(moment().diff(sessionTime));
+    var minutes = duration.asMinutes();
+    return (minutes >= cutOffMinutesTime);
 }
 
 function chartHasData(datasets) {
@@ -139,27 +54,32 @@ function chartHasData(datasets) {
     return hasData;
 }
 
-function updateCharts() {
+function evictOldChartData(data, cutOffMinutesTime) {
+    if (chartHasData(data.datasets)) {
+        if (isEvictableData(data.labels[0], cutOffMinutesTime)) {
+            console.log("Evicting data more than " + cutOffMinutesTime + " minutes!");
+            data.labels.shift();
+            data.datasets.forEach(function(dataset) {
+                dataset.data.shift();
+            });
+            window.relativeMethodRuntimeDurationLine.update();
+        }
+    }
+}
+
+function updateCharts(cutOffMinutesTime) {
     console.log("Updating charts...");
+
     sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
         var workSessionId = record["workSessionId"];
         var workSessionTime = moment(record["sessionTimestamp"]);
-        var now = moment();
-        var duration = moment.duration(moment().diff(workSessionTime));
-        var minutes = duration.minutes();
 
-        console.log("session: " + workSessionId + "; age: " + minutes + " minutes");
-        if (minutes >= 5) {
-            //console.log("more than 5 minutes; not adding session: " + workSessionId);
-            return;
-        }
-
-        if (sessionAccountedFor[workSessionId] == null) {
+        if (!isEvictableData(workSessionTime, cutOffMinutesTime) && sessionAccountedFor[workSessionId] == null) {
             console.log("Adding session to data: " + workSessionId);
             sessionAccountedFor[workSessionId] = true;
             var effectChainList = [];
             var resultList = [];
-            var workSessionDB = ledgerdb().filter({workSessionId:workSessionId});
+            var workSessionDB = ledgerDB().filter({workSessionId:workSessionId});
 
             workSessionDB.order("eventId").each(function (record, recordnumber) {
                 var methodId = record["eventMethodId"];
@@ -210,21 +130,33 @@ function updateCharts() {
                 //console.log(moment(eventTimestamp));
 
                 if (addedTimestamp == false) {
-                    config.data.labels.push(moment(eventTimestamp));
+                    relativeMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
+                    absoluteMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
                     addedTimestamp = true;
                 }
 
                 var addedData = false;
-                config.data.datasets.forEach(function(dataset) {
+                relativeMethodRuntimeDurationConfig.data.datasets.forEach(function(dataset) {
                     if (dataset.label === methodNameMap[eventMethodId]) {
                         dataset.data.push(relativeDuration);
                         addedData = true;
                     }
                 });
+                absoluteMethodRuntimeDurationConfig.data.datasets.forEach(function(dataset) {
+                    if (dataset.label === methodNameMap[eventMethodId]) {
+                        dataset.data.push(absoluteDuration);
+                        addedData = true;
+                    }
+                });
 
                 if (addedData === false) {
-                    var colorName = colorNames[config.data.datasets.length % colorNames.length];
+                    var colorNames = Object.keys(window.chartColors);
+                    var colorName = colorNames[relativeMethodRuntimeDurationConfig.data.datasets.length % colorNames.length];
                     var newColor = window.chartColors[colorName];
+                    if (relativeMethodRuntimeDurationConfig.data.datasets.length >= colorNames.length) {
+                        newColor = getRandomColor();
+                    }
+
                     var newDataset = {
                         label: methodNameMap[eventMethodId],
                         backgroundColor: newColor,
@@ -234,15 +166,38 @@ function updateCharts() {
                     };
 
                     newDataset.data.push(relativeDuration);
-                    config.data.datasets.push(newDataset);
+                    relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset);
+
+                    newDataset = {
+                        label: methodNameMap[eventMethodId],
+                        backgroundColor: newColor,
+                        borderColor: newColor,
+                        data: [],
+                        fill: false
+                    };
+
+                    newDataset.data.push(absoluteDuration);
+                    absoluteMethodRuntimeDurationConfig.data.datasets.push(newDataset);
                 }
-                window.myLine.update();
+                window.relativeMethodRuntimeDurationLine.update();
+                window.absoluteMethodRuntimeDurationLine.update();
             });
         }
     });
 }
 
-function removePackageAndClassName(fullyQuantifiedMethodName) {
-    var methodNameArr = fullyQuantifiedMethodName.split(".");
-    return methodNameArr[methodNameArr.length - 1];
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function CalculatedMethodDuration(methodId, timestamp) {
+    this.methodId = methodId;
+    this.relativeDuration = 0;
+    this.absoluteDuration = 0;
+    this.timestamp = timestamp;
 }

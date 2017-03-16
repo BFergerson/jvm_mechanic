@@ -2,91 +2,214 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>jvm_mechanic - Overview</title>
 
-	<!-- stylesheets -->
-	<link href="assets/fonts/font-roboto.css" rel="stylesheet">
-	<link href="assets/bootstrap/bootstrap4-alpha3.min.css" rel="stylesheet">
-	<link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-	<link href="assets/style.css" rel="stylesheet">
+    <!-- stylesheets -->
+    <link href="assets/fonts/font-roboto.css" rel="stylesheet">
+    <link href="assets/bootstrap/bootstrap4-alpha3.min.css" rel="stylesheet">
+    <link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="assets/style.css" rel="stylesheet">
 
-	<!-- scripts -->
-	<script>
-		window.onload = function () {
-			$('#sidebar-toggle-button').on('click', function () {
-				$('#sidebar').toggleClass('sidebar-toggle');
-				$('#page-content-wrapper').toggleClass('page-content-toggle');
-				renderAllCharts();
-			});
-		};
-	</script>
-	<script src="assets/jquery/jquery-3.1.0.min.js"></script>
-	<script src="assets/tether/tether.min.js"></script>
-	<script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
-	<script src="assets/canvasjs.min.js"></script>
+    <!-- scripts -->
+    <script>
+        //chart config
+        var cutOffMinutesTime = 500000000;
+        var relativeMethodRuntimeDurationConfig = {
+            type: 'line',
+            data: {
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                title:{
+                    display:true,
+                    text:'Method Runtime Duration - Relative'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                millisecond: 'hh:mm A',
+                                second: 'hh:mm A',
+                                minute: 'hh:mm A',
+                                hour: 'hh:mm A',
+                                day: 'hh:mm A',
+                                week: 'hh:mm A',
+                                month: 'hh:mm A',
+                                quarter: 'hh:mm A',
+                                year: 'hh:mm A'
+                            },
+                            tooltipFormat: 'hh:mm A'
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Execution Time (ms)'
+                        }
+                    }]
+                }
+            }
+        };
+        var absoluteMethodRuntimeDurationConfig = {
+            type: 'line',
+            data: {
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                title:{
+                    display: true,
+                    text: 'Method Runtime Duration - Absolute'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                millisecond: 'hh:mm:ss.SSS A',
+                                second: 'hh:mm:ss.SSS A',
+                                minute: 'hh:mm:ss.SSS A',
+                                hour: 'hh:mm:ss.SSS A',
+                                day: 'hh:mm:ss.SSS A',
+                                week: 'hh:mm:ss.SSS A',
+                                month: 'hh:mm:ss.SSS A',
+                                quarter: 'hh:mm:ss.SSS A',
+                                year: 'hh:mm:ss.SSS A'
+                            },
+                            tooltipFormat: 'hh:mm:ss.SSS A'
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Execution Time (ms)'
+                        }
+                    }]
+                }
+            }
+        };
 
+        //etc
+        function clearCache() {
+            console.log("Cleared cache!");
+            storage.clear();
+        }
+        ;
+        window.onload = function () {
+            $('#sidebar-toggle-button').on('click', function () {
+                $('#sidebar').toggleClass('sidebar-toggle');
+                $('#page-content-wrapper').toggleClass('page-content-toggle');
+            });
+        };
+    </script>
+    <script src="assets/taffy-min.js"></script>
+    <script src="assets/jquery/jquery-3.1.0.min.js"></script>
+    <script src="assets/q.min.js"></script>
+    <script src="assets/LargeLocalStorage.min.js"></script>
+    <script src="assets/moment.js"></script>
+    <script src="assets/jvm_mechanic_charts.js"></script>
+    <script src="assets/jvm_mechanic_ledger.js"></script>
+    <script src="assets/tether/tether.min.js"></script>
+    <script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
+    <script src="assets/canvasjs.min.js"></script>
+    <script src="assets/Chart.bundle.js"></script>
 </head>
 
 <body>
-	<!-- header -->
-	<nav class="navbar navbar-fixed-top" id="header">
-		<div class="container-fluid">
-			<div class="navbar-header">
-				<div id="sidebar-toggle-button">
-					<i class="fa fa-bars" aria-hidden="true"></i>
-				</div>
-				<div class="brand">
-					<a href="index.html">
-                        <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
-					</a>
-				</div>
+<!-- header -->
+<nav class="navbar navbar-fixed-top" id="header">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <div id="sidebar-toggle-button">
+                <i class="fa fa-bars" aria-hidden="true"></i>
+            </div>
+            <div class="brand">
+                <a href="index.html">
+                    <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
+                </a>
+            </div>
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
+        </div>
+    </div>
+</nav>
+<!-- /header -->
 
-			</div>
-		</div>
-	</nav>
-	<!-- /header -->
+<!-- sidebar -->
+<div class="sidebar-toggle" id="sidebar">
+    <ul class="nav nav-sidebar">
+        <li>
+            <a href="index.html">
+                <i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i>
+                <span>Real Time</span>
+            </a>
+        </li>
+        <li role="separator" class="divider"></li>
+        <li>
+            <a href="overview.html" class="active">
+                <i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i>
+                <span>Overview</span>
+            </a>
+        </li>
+        <li role="separator" class="divider"></li>
+        <li>
+            <a href="data.html">
+                <i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i>
+                <span>Data</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<!-- /sidebar -->
 
-	<!-- sidebar -->
-	<div class="sidebar-toggle" id="sidebar">
-		<ul class="nav nav-sidebar">
-			<li>
-				<a href="index.html">
-					<i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i>
-					<span>Real Time</span>
-				</a>
-			</li>
-			<li role="separator" class="divider"></li>
-			<li>
-				<a href="overview.html" class="active">
-					<i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i>
-					<span>Overview</span>
-				</a>
-			</li>
-			<li role="separator" class="divider"></li>
-			<li>
-				<a href="data.html">
-					<i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i>
-					<span>Data</span>
-				</a>
-			</li>
-		</ul>
-	</div>
-	<!-- /sidebar -->
+<!-- page-content-wrapper -->
+<div class="page-content-toggle" id="page-content-wrapper">
+    <!-- .container-fluid -->
+    <div class="container-fluid" style="margin-left: 5px; margin-top: 5px">
+        <div style="width:100%;">
+            <canvas id="relative_method_runtime_duration_canvas"></canvas>
+        </div>
+        <div style="width:100%;">
+            <canvas id="absolute_method_runtime_duration_canvas"></canvas>
+        </div>
+    </div>
+    <br/>
+    <br/>
+    <br/>
+    <!-- /.container-fluid -->
 
-	<!-- page-content-wrapper -->
-	<div class="page-content-toggle" id="page-content-wrapper">
-		<div class="container-fluid">
-
-
-		</div>
-		<!-- /.container-fluid -->
-
-	</div>
-	<!-- /page-content-wrapper -->
+</div>
+<!-- /page-content-wrapper -->
 
 </body>
 

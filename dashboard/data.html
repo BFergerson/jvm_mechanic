@@ -16,64 +16,43 @@
 
     <!-- scripts -->
     <script>
+        function clearCache() {
+            console.log("Cleared cache!");
+            storage.clear();
+        }
         window.onload = function () {
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
-                renderAllCharts();
+            });
+            $('#data_work_streams_nav_tab').on('click', function () {
+                $('#streamTable').show();
+                $('#eventTable').hide();
+                $('.row').show();
+
+                var listItems = $("#data_nav_tabs li");
+                listItems.each(function (idx, li) {
+                    if (idx != 0) $(li).remove();
+                });
             });
         };
     </script>
+
+
+
     <script src="assets/taffy-min.js"></script>
-    <script>
-        var ledgerdb = TAFFY();
-        var sessionDB = TAFFY();
-    </script>
-    <script src="assets/moment.js"></script>
-    <script src="assets/jvm_mechanic.js"></script>
+    <script src="assets/jquery/jquery-3.1.0.min.js"></script>
     <script src="assets/q.min.js"></script>
     <script src="assets/LargeLocalStorage.min.js"></script>
-    <script>
-        var desiredCapacity = 50 * 1024 * 1024; // 50MB
-        var storage = new LargeLocalStorage({
-            size: desiredCapacity
-        });
-        storage.initialized.then(function() {
-
-            storage.getContents('ledger_data').then(function(content) {
-                console.log("Looking if cache has data...");
-                if (content) {
-                    ledgerdb = TAFFY(content);
-                    ledgerdb().each(function (record, recordnumber) {
-                        sessionDB.merge({workSessionId:record["workSessionId"], sessionTimestamp:ledgerdb().filter({workSessionId:record["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
-                    });
-                    console.log("got ledger from cache! size: " + ledgerdb().count());
-                    //console.log(ledgerdb().stringify());
-                }
-                loadStuff();
-            });
-
-            console.log("Size: " + storage.size);
-            console.log("Local storage capacity: " + storage.getCapacity() + " bytes");
-            if (storage.getCapacity() == -1) {
-                console.log("No cache :(");
-                loadStuff();
-            }
-            var $storageNotice = $('.storageNotice');
-            $storageNotice.css('opacity', 0);
-            setTimeout(function() {
-                $storageNotice.css('display', 'none');
-            }, 1100);
-
-            bind();
-        }, function() {
-            console.log('denied');
-        });
-    </script>
-    <script src="assets/jquery/jquery-3.1.0.min.js"></script>
+    <script src="assets/moment.js"></script>
+    <script src="assets/jvm_mechanic_data.js"></script>
+    <script src="assets/jvm_mechanic_ledger.js"></script>
     <script src="assets/tether/tether.min.js"></script>
     <script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
     <script src="assets/canvasjs.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.13/js/dataTables.bootstrap4.min.js"></script>
 </head>
 <body>
 <!-- header -->
@@ -88,7 +67,8 @@
                     <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
                 </a>
             </div>
-
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache
+            </button>
         </div>
     </div>
 </nav>
@@ -128,11 +108,13 @@
             <a id="data_work_streams_nav_tab" class="nav-link active" href="#">Work Streams</a>
         </li>
     </ul>
-    <div class="container-fluid">
+    <br/>
+    <div class="container-fluid" style="width:98%;">
+
         <table id="streamTable" class="table table-hover table-striped">
             <thead class="thead-inverse">
             <tr>
-                <th>#</th>
+                <th data-field="session_id" data-sortable="true">#</th>
                 <th>Session Start</th>
                 <th>Session End</th>
                 <th>Session Duration</th>
