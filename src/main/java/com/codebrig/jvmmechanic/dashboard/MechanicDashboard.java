@@ -23,8 +23,8 @@ import java.util.Map;
  */
 public class MechanicDashboard {
 
-    private static StashLedgerFile stashLedgerFile;
-    private static StashDataFile stashDataFile;
+    static StashLedgerFile stashLedgerFile;
+    static StashDataFile stashDataFile;
 
     public static class DashboardServer extends NanoHTTPD {
 
@@ -170,8 +170,8 @@ public class MechanicDashboard {
 
 
         //todo: catch exception and keep waiting for files to appear
-        RandomAccessFile ledgerStream = new RandomAccessFile(ledgerFileProperty, "r");
-        RandomAccessFile dataStream = new RandomAccessFile(dataFileProperty, "r");
+        RandomAccessFile ledgerStream = new RandomAccessFile(ledgerFileProperty, "rw");
+        RandomAccessFile dataStream = new RandomAccessFile(dataFileProperty, "rw");
         stashLedgerFile = new StashLedgerFile(ledgerStream.getChannel());
         stashDataFile = new StashDataFile(dataStream.getChannel());
 

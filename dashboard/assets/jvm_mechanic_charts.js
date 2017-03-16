@@ -26,14 +26,12 @@ var config = {
         },
         scales: {
             xAxes: [{
-                type: 'time',
-                time: {
-                    displayFormats: {
-                        quarter: 'h:mm:ss a'
-                    }
-                }
+                type: 'time'
             }],
             yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                },
                 display: true,
                 scaleLabel: {
                     display: true,
@@ -75,7 +73,6 @@ function checkForUpdates() {
 
         console.log("Ledger size: " + ledgerdb().count());
         if (ledgerdb().count() > ledgerSize) {
-            console.log("Could have new method names!");
             //get method names
             var eventPositionList = [];
             var eventSizeList = [];
@@ -95,14 +92,7 @@ function checkForUpdates() {
                 });
             });
 
-
-
-            function removePackageAndClassName(fullyQuantifiedMethodName) {
-                var methodNameArr = fullyQuantifiedMethodName.split(".");
-                return methodNameArr[methodNameArr.length - 1];
-              }
-
-              if (eventPositionList.length > 0) {
+            if (eventPositionList.length > 0) {
                 $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(),
                 function(result) {
                     $.each(result, function(i, event){
@@ -111,9 +101,9 @@ function checkForUpdates() {
 
                     updateCharts();
                 });
-              } else {
+            } else {
                 updateCharts();
-              }
+            }
         }
     });
 
@@ -123,23 +113,18 @@ function checkForUpdates() {
 function evictOldData() {
     //evict anything older than cutoffTime
     if (chartHasData(config.data.datasets)) {
-        console.log("Chart has data to evict... potentially");
         var test = config.data.labels[0];
         var now = moment();
-        console.log("then: " + test.format("h:mm:ss a"));
-        console.log("now: " + moment().format("h:mm:ss a"));
-
         var duration = moment.duration(moment().diff(test));
         var minutes = duration.minutes();
-        if (minutes >= 1) {
-            console.log("more than 1 minute");
-            //config.data.labels.shift();
+
+        if (minutes >= 2) {
+            console.log("more than 2 minutes");
+            config.data.labels.shift();
             config.data.datasets.forEach(function(dataset) {
                 dataset.data.shift();
             });
             window.myLine.update();
-        } else {
-            console.log("less than 1 minute");
         }
     }
 }
@@ -160,18 +145,17 @@ function updateCharts() {
         var workSessionId = record["workSessionId"];
         var workSessionTime = moment(record["sessionTimestamp"]);
         var now = moment();
-        console.log("updateCharts-then: " + workSessionTime.format("h:mm:ss a"));
-        console.log("updateCharts-now: " + moment().format("h:mm:ss a"));
         var duration = moment.duration(moment().diff(workSessionTime));
         var minutes = duration.minutes();
-        if (minutes >= 1) {
-            console.log("more than 1 minute; not adding session: " + workSessionId);
+
+        console.log("session: " + workSessionId + "; age: " + minutes + " minutes");
+        if (minutes >= 2) {
+            //console.log("more than 2 minutes; not adding session: " + workSessionId);
             return;
         }
 
-        console.log("Adding session to data: " + workSessionId);
-
         if (sessionAccountedFor[workSessionId] == null) {
+            console.log("Adding session to data: " + workSessionId);
             sessionAccountedFor[workSessionId] = true;
             var effectChainList = [];
             var resultList = [];
@@ -256,4 +240,9 @@ function updateCharts() {
             });
         }
     });
+}
+
+function removePackageAndClassName(fullyQuantifiedMethodName) {
+    var methodNameArr = fullyQuantifiedMethodName.split(".");
+    return methodNameArr[methodNameArr.length - 1];
 }

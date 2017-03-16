@@ -36,17 +36,17 @@ function loadAllWorkSessions() {
             var eventPositionList = [];
             var eventSizeList = [];
 
-            var filePosition = 0;
-            ledgerdb().filter({workSessionId:workSessionId}).order("eventId").each(function (record, recordnumber) {
-                if (record["workSessionId"] == workSessionId) {
-                    eventSizeList.push(record["eventSize"]);
-                    eventPositionList.push(filePosition);
-                }
-                filePosition += record["eventSize"];
+            sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
+                var sessionId = record["workSessionId"];
+                var filePosition = 0;
+                ledgerdb().filter({workSessionId:sessionId}).order("eventId").each(function (record, recordnumber) {
+                    if (record["workSessionId"] == workSessionId) {
+                        eventSizeList.push(record["eventSize"]);
+                        eventPositionList.push(filePosition);
+                    }
+                    filePosition += record["eventSize"];
+                });
             });
-
-            var element = event.target;
-            console.log(element);
 
             $('#streamTable').hide();
             $('#eventTable').show();
@@ -56,6 +56,7 @@ function loadAllWorkSessions() {
 
             $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(),
                 function(result) {
+                    $("#eventTable > tbody").empty();
                     $.each(result, function(i, event){
                         eventdb.insert(event); //todo: don't do append per row; do one big update
                         $("#eventTable > tbody").append(
