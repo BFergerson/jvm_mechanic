@@ -103,10 +103,15 @@ public class BootstrapCLI {
             List<String> tempAddList = new ArrayList<>();
             for (String sourceDirectory : cli.sourceDirectoryList) {
                 File srcMainJavaDir = new File(sourceDirectory, "src/main/java");
+                File srcTestJavaDir = new File(sourceDirectory, "src/test/java");
                 if (srcMainJavaDir.exists()) {
                     tempRemoveList.add(sourceDirectory);
                     sourceDirectory = srcMainJavaDir.getAbsolutePath();
                     tempAddList.add(sourceDirectory);
+                }
+                if (srcTestJavaDir.exists()) {
+                    typeSolver.add(new ExtendedJavaParserTypeSolver(srcTestJavaDir));
+                    System.out.println("Added direct source code directory (testing classes): " + srcTestJavaDir.getAbsolutePath());
                 }
 
                 typeSolver.add(new ExtendedJavaParserTypeSolver(new File(sourceDirectory)));
@@ -220,6 +225,10 @@ public class BootstrapCLI {
         //BFS recursive search for all src/main/java directories
         if (searchDirectory.isDirectory()) {
             File srcMainJavaDir = new File(searchDirectory, "src/main/java");
+            File srcTestJavaDir = new File(searchDirectory, "src/test/java");
+            if (srcTestJavaDir.exists()) {
+                queue.add(srcTestJavaDir);
+            }
             if (srcMainJavaDir.exists()) {
                 queue.add(srcMainJavaDir);
             } else {

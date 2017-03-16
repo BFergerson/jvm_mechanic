@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.bootstrap.scan;
 
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 
@@ -13,6 +15,14 @@ import java.util.List;
 public class Utils {
 
     public static StringBuilder getFunctionSignature(String qualifiedClassName, MethodDeclaration methodDeclaration) {
+        Node parentNode = methodDeclaration.getParentNode();
+        if (parentNode instanceof ClassOrInterfaceDeclaration) {
+            ClassOrInterfaceDeclaration declaration = (ClassOrInterfaceDeclaration) parentNode;
+            String className = getClassName(qualifiedClassName);
+            if (!className.equals(declaration.getName())) {
+                qualifiedClassName += "$" + declaration.getName(); //inner class
+            }
+        }
         StringBuilder functionSignature = new StringBuilder(qualifiedClassName).append(".");
         functionSignature.append(methodDeclaration.getName()).append("(");
         List<Parameter> parameters = methodDeclaration.getParameters();
@@ -26,6 +36,14 @@ public class Utils {
         }
         functionSignature.append(")");
         return functionSignature;
+    }
+
+    public static String getClassName(String qualifiedClassName) {
+        if (qualifiedClassName != null && qualifiedClassName.contains(".")) {
+            String[] arr = qualifiedClassName.split("\\.");
+            return arr[arr.length - 1];
+        }
+        return null;
     }
 
 }
