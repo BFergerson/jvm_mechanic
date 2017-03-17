@@ -13,15 +13,15 @@ var storage = new LargeLocalStorage({
 });
 storage.initialized.then(function() {
     storage.getContents('ledger_data').then(function(content) {
-        console.log("Looking if cache has data...");
+        console.log("Checking cache for: ledger_data");
         if (content) {
             ledgerDB = TAFFY(content);
             ledgerDB().each(function (record, recordnumber) {
                 sessionDB.merge({workSessionId:record["workSessionId"], sessionTimestamp:ledgerDB().filter({workSessionId:record["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
             });
-            console.log("Got ledger from cache! Size: " + ledgerDB().count());
+            console.log("Found ledger_data in cache! Size: " + ledgerDB().count());
         } else {
-            console.log("Nothing in cache!");
+            console.log("Nothing in cache for: ledger_data");
         }
 
         loadLedgerUpdates(true);
@@ -56,22 +56,35 @@ function loadLedgerUpdates(initialLoad) {
         if (!ledgerUpdated && !initialLoad) {
             console.log("No ledger updates found! Size: " + ledgerSize);
         } else if (initialLoad) {
-            loadMethodNames();
+            loadMethodNames(initialLoad);
 
             //save ledger
             storage.setContents('ledger_data', ledgerDB().stringify()).then(function() {
-                console.log("Ledger saved to local storage!");
+                console.log("Saved ledger_data to local storage!");
             });
         } else {
             //save ledger
             storage.setContents('ledger_data', ledgerDB().stringify()).then(function() {
-                console.log("Ledger saved to local storage!");
+                console.log("Saved ledger_data to local storage!");
             });
         }
     });
 }
 
-function loadMethodNames() {
+function loadMethodNames(initialLoad) {
+    storage.getContents('ledger_data.method_names').then(function(content) {
+        console.log("Checking cache for: ledger_data.method_names");
+        if (content) {
+            methodNameMap = JSON.parse(content);
+            console.log("Found ledger_data.method_names in cache! Size: " + Object.keys(methodNameMap).length);
+        } else {
+            console.log("Nothing in cache for: ledger_data.method_names");
+        }
+
+        downloadMethodNames(initialLoad);
+    });
+}
+function downloadMethodNames(initialLoad) {
     var eventPositionList = [];
     var eventSizeList = [];
     var filePosition = 0;
@@ -100,11 +113,21 @@ function loadMethodNames() {
                     console.log("Added method name: " + methodNameMap[event["eventMethodId"]]);
                 });
             }).always(function(result) {
+                //save method names
+                storage.setContents('ledger_data.method_names', JSON.stringify(methodNameMap)).then(function() {
+                    console.log("Saved ledger_data.method_names to local storage!");
+                });
+
                 console.log("Ledger loaded!");
                 ledgerLoaded();
             });
     } else {
         console.log("No new method names...");
+
+        if (initialLoad) {
+            console.log("Ledger loaded!");
+            ledgerLoaded();
+        }
     }
 }
 
