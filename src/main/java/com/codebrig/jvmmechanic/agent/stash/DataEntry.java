@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
+import com.codebrig.jvmmechanic.agent.event.CorruptMechanicalEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
 
 import java.nio.ByteBuffer;
@@ -42,8 +43,7 @@ public class DataEntry {
         try {
             return MechanicEvent.toMechanicEvent(ByteBuffer.wrap(rawData));
         } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+            return new CorruptMechanicalEvent(ex);
         }
     }
 
