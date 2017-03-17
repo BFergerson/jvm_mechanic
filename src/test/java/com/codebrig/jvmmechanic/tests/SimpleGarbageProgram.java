@@ -3,46 +3,38 @@ package com.codebrig.jvmmechanic.tests;
 class SimpleGarbageProgram {
 
     static MyList objList = null;
-    static int wait = 1000; // in milliseconds: 1 second
+    static int wait = 2500; // in milliseconds: 1 second
     static int objSize = 1280; // in KB, default = 1.25 M
     static int initSteps = 320; // # of initial objects
     static int testSteps = 32; // # of added objects
 
-    public static void main(String[] arg) {
+    public static void main(String[] arg) throws Exception {
         if (arg.length > 0) objSize = Integer.parseInt(arg[0]);
         if (arg.length > 1) initSteps = Integer.parseInt(arg[1]);
         if (arg.length > 2) testSteps = Integer.parseInt(arg[2]);
-        System.out.println("Test parameters:");
-        System.out.println("   Object size: " + objSize + "KB");
-        System.out.println("   Initial objects and data size: " + initSteps + ", " + (initSteps * objSize) + "KB");
-        System.out.println("   Added objects and data size: " + testSteps + ", " + (testSteps * objSize) + "KB");
+
         objList = new MyList();
         myTest();
     }
 
-    public static void myTest() {
-        for (int m = 0; m < initSteps; m++) {
-            objList.add(new MyObject());
-        }
-
-        Runtime rt = Runtime.getRuntime();
+    public static void myTest() throws Exception {
         System.out.println("Time  Total  Free  Used  Free  Total  Act.  Dead  Over");
         System.out.println("sec.   Mem.  Mem.  Mem.    %.   Obj.  Obj.  Obj.  Head");
         long dt0 = System.currentTimeMillis() / 1000;
+
         while (true) {
-            doWork(rt, dt0);
+            doWork(dt0);
         }
     }
 
-    static void doWork(Runtime rt, long dt0) {
-        for (int m = 0; m < testSteps; m++) {
-            objList.add(new MyObject());
-        }
-        for (int m = 0; m < testSteps; m++) {
-            objList.removeTail();
-        }
+    static void doWork(long dt0) throws Exception {
+        doGarbageStuff1();
+        doGarbageStuff2();
+        doGarbageStuff3();
+        doGarbageStuff4();
+        doGarbageStuff5();
 
-        mySleep(wait);
+        Runtime rt = Runtime.getRuntime();
         long tm = rt.totalMemory() / 1024;
         long fm = rt.freeMemory() / 1024;
         long ratio = (100 * fm) / tm;
@@ -53,6 +45,52 @@ class SimpleGarbageProgram {
                 + "  " + tm + "  " + fm + "  " + (tm - fm) + "  " + ratio + "%"
                 + "  " + to + "  " + ao + "  " + (to - ao)
                 + "  " + (tm - fm - to));
+        mySleep(wait);
+    }
+
+    static void doGarbageStuff1() {
+        for (int m = 0; m < testSteps; m++) {
+            objList.add(new MyObject(objSize));
+        }
+        for (int m = 0; m < testSteps; m++) {
+            objList.removeTail();
+        }
+    }
+
+    static void doGarbageStuff2() {
+        for (int m = 0; m < testSteps; m++) {
+            objList.add(new MyObject(objSize * 2));
+        }
+        for (int m = 0; m < testSteps; m++) {
+            objList.removeTail();
+        }
+    }
+
+    static void doGarbageStuff3() {
+        for (int m = 0; m < testSteps; m++) {
+            objList.add(new MyObject(objSize * 3));
+        }
+        for (int m = 0; m < testSteps; m++) {
+            objList.removeTail();
+        }
+    }
+
+    static void doGarbageStuff4() {
+        for (int m = 0; m < testSteps; m++) {
+            objList.add(new MyObject(objSize * 4));
+        }
+        for (int m = 0; m < testSteps; m++) {
+            objList.removeTail();
+        }
+    }
+
+    static void doGarbageStuff5() {
+        for (int m = 0; m < testSteps; m++) {
+            objList.add(new MyObject(objSize * 5));
+        }
+        for (int m = 0; m < testSteps; m++) {
+            objList.removeTail();
+        }
     }
 
     static void mySleep(int t) {
@@ -69,7 +107,7 @@ class SimpleGarbageProgram {
         public MyObject next = null;
         public MyObject prev = null;
 
-        public MyObject() {
+        public MyObject(int objSize) {
             count++;
             obj = new long[objSize * 128]; //128*8=1024 bytes
         }
@@ -88,12 +126,7 @@ class SimpleGarbageProgram {
         MyObject head = null;
         MyObject tail = null;
 
-        static long getCount() {
-            return count;
-        }
-
         void add(MyObject o) {
-            // add the new object to the head;
             if (head == null) {
                 head = o;
                 tail = o;
@@ -118,17 +151,8 @@ class SimpleGarbageProgram {
             }
         }
 
-        void removeHead() {
-            if (head != null) {
-                if (head.prev == null) {
-                    tail = null;
-                    head = null;
-                } else {
-                    head = head.prev;
-                    head.next = null;
-                }
-                count--;
-            }
+        static long getCount() {
+            return count;
         }
     }
 
