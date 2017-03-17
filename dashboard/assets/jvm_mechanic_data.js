@@ -84,6 +84,7 @@ function loadAllWorkSessions() {
 }
 
 function removePackageName(fullyQuantifiedMethodName) {
+    if (fullyQuantifiedMethodName == null || !fullyQuantifiedMethodName.includes(".")) return fullyQuantifiedMethodName;
     var methodNameArr = fullyQuantifiedMethodName.split(".");
     return methodNameArr[methodNameArr.length - 2]  + "." + methodNameArr[methodNameArr.length - 1];
 }
