@@ -45,6 +45,9 @@ public class BootstrapCLI {
     @Parameter(names = "-exclude_function", description = "Functions to exclude creating rules for")
     public List<String> excludeFunctionList;
 
+    @Parameter(names = "-enter_function", description = "Functions to use as enter function")
+    public List<String> enterFunctionList;
+
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
     public boolean help;
 
@@ -141,6 +144,9 @@ public class BootstrapCLI {
         if (cli.excludeFunctionList == null) {
             cli.excludeFunctionList = new ArrayList<>();
         }
+        if (cli.enterFunctionList == null) {
+            cli.enterFunctionList = new ArrayList<>();
+        }
 
         //explore methods recursively
         System.out.println("\nExploring target function method hierarchy...");
@@ -162,7 +168,7 @@ public class BootstrapCLI {
         Set<String> failedFunctionSet = explorer.getFailedFunctionSet();
         if (!failedFunctionSet.isEmpty()) {
             System.err.println("\nFailed to create injection rules for methods:");
-            for(String failedFunction : failedFunctionSet) {
+            for (String failedFunction : failedFunctionSet) {
                 System.err.println(failedFunction);
             }
         }
@@ -176,7 +182,7 @@ public class BootstrapCLI {
         Set<String> failedConstructorSet = explorer.getFailedConstructorSet();
         if (!failedConstructorSet.isEmpty()) {
             System.err.println("\nFailed to create injection rules for constructor(s) of classes:");
-            for(String failedConstructor : failedConstructorSet) {
+            for (String failedConstructor : failedConstructorSet) {
                 System.err.println(failedConstructor);
             }
         }
@@ -191,7 +197,7 @@ public class BootstrapCLI {
         Set<String> visitedFunctionSet = explorer.getVisitedFunctionSet();
         if (!visitedFunctionSet.isEmpty()) {
             System.out.println("\nMethods successfully found to inject:");
-            for(String visitedFunction : visitedFunctionSet) {
+            for (String visitedFunction : visitedFunctionSet) {
                 System.out.println(visitedFunction);
             }
         }
@@ -205,7 +211,7 @@ public class BootstrapCLI {
         Set<String> visitedConstructorSet = explorer.getVisitedConstructorSet();
         if (!visitedConstructorSet.isEmpty()) {
             System.out.println("\nClass constructor(s) successfully found to inject:");
-            for(String visitedConstructor : visitedConstructorSet) {
+            for (String visitedConstructor : visitedConstructorSet) {
                 System.out.println(visitedConstructor);
             }
         }
@@ -218,7 +224,10 @@ public class BootstrapCLI {
 
         //output rules
         System.out.println("\njvm_mechanic Generated Injection Rules: ");
-        MechanicRuleGenerator ruleGenerator = new MechanicRuleGenerator(explorer.getVisitedFunctionSet(), explorer.getVisitedConstructorSet());
+        MechanicRuleGenerator ruleGenerator = new MechanicRuleGenerator(
+                explorer.getVisitedFunctionSet(),
+                explorer.getVisitedConstructorSet(),
+                new HashSet<>(cli.enterFunctionList));
         System.out.println(ruleGenerator.getGeneratedRules().toString());
     }
 
