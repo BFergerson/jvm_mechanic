@@ -15,11 +15,12 @@ storage.initialized.then(function() {
     storage.getContents('ledger_data').then(function(content) {
         console.log("Checking cache for: ledger_data");
         if (content) {
+            console.log("Found ledger_data in cache! Loading...");
             ledgerDB = TAFFY(content);
             ledgerDB().each(function (record, recordnumber) {
                 sessionDB.merge({workSessionId:record["workSessionId"], sessionTimestamp:ledgerDB().filter({workSessionId:record["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
             });
-            console.log("Found ledger_data in cache! Size: " + ledgerDB().count());
+            console.log("Loaded cached data from: ledger_data! Size: " + ledgerDB().count());
         } else {
             console.log("Nothing in cache for: ledger_data");
         }
@@ -88,17 +89,18 @@ function downloadMethodNames(initialLoad) {
     var eventPositionList = [];
     var eventSizeList = [];
     var filePosition = 0;
+    var tmpMethodNameMap = {};
 
     console.log("Getting method names...");
-    ledgerDB().order("sessionTimestamp").each(function (record, recordnumber) {
+    sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
         var workSessionId = record["workSessionId"];
         var workSessionDB = ledgerDB().filter({workSessionId:workSessionId});
 
         workSessionDB.order("ledgerId").each(function (record, recordnumber) {
-            if (methodNameMap[record["eventMethodId"]] == null) {
+            if (methodNameMap[record["eventMethodId"]] == null && tmpMethodNameMap[record["eventMethodId"]] == null ) {
                 eventSizeList.push(record["eventSize"]);
                 eventPositionList.push(filePosition);
-                methodNameMap[record["eventMethodId"]] = true;
+                tmpMethodNameMap[record["eventMethodId"]] = true;
             }
             filePosition += record["eventSize"];
         });
