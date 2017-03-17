@@ -11,20 +11,14 @@ import java.nio.ByteBuffer;
  */
 public class DataEntry {
 
-    private final long eventId;
     private final byte[] rawData;
 
-    public DataEntry(long eventId, byte[] rawData) {
-        this.eventId = eventId;
+    public DataEntry(byte[] rawData) {
         this.rawData = rawData;
 
         if (rawData.length > Short.MAX_VALUE) {
-            throw new RuntimeException("Raw data entries may not exceed " + Short.MAX_VALUE + " bytes!");
+            throw new RuntimeException("Raw data entries may not exceed " + Short.MAX_VALUE + " bytes! Raw data size: " + rawData.length);
         }
-    }
-
-    public long getEventId() {
-        return eventId;
     }
 
     public byte[] getRawData() {
@@ -32,13 +26,12 @@ public class DataEntry {
     }
 
     public short getDataEntrySize() {
-        return (short) (8 + rawData.length);
+        return (short) (rawData.length);
     }
 
     public ByteBuffer toByteBuffer() {
-        //buffer allocation: eventId (8) + rawData (*)
-        ByteBuffer buffer = ByteBuffer.allocate(8 + rawData.length);
-        buffer.putLong(eventId);
+        //buffer allocation: rawData.length (*)
+        ByteBuffer buffer = ByteBuffer.allocate(rawData.length);
         buffer.put(rawData);
 
         buffer.position(0);

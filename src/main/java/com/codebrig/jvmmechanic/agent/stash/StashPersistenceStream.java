@@ -49,7 +49,7 @@ public class StashPersistenceStream {
                 try {
                     synchronized (syncLock) {
                         int ledgerId = ledgerFileIndex.getAndIncrement();
-                        DataEntry dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
+                        DataEntry dataEntry = new DataEntry(mechanicEvent.getEventData());
                         JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, ledgerId, mechanicEvent.workSessionId,
                                 mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
                                 mechanicEvent.eventType.toEventTypeId());
@@ -57,7 +57,7 @@ public class StashPersistenceStream {
                         stashLedgerFile.stashJournalEntry(journalEntry);
                         stashDataFile.stashDataEntry(dataEntry);
                     }
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }

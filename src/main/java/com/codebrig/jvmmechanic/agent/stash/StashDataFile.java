@@ -30,10 +30,9 @@ public class StashDataFile {
         fileChannel.read(buffer);
         buffer.position(0);
 
-        long eventId = buffer.getLong();
-        byte[] rawData = new byte[length - 8];
+        byte[] rawData = new byte[length];
         buffer.get(rawData);
-        return new DataEntry(eventId, rawData);
+        return new DataEntry(rawData);
     }
 
     public void close() throws IOException {

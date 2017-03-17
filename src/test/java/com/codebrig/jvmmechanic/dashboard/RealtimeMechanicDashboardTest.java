@@ -42,7 +42,7 @@ public class RealtimeMechanicDashboardTest {
             mechanicEvent.eventMethod = "com.codebrig.jvmmechanic.some_event_class.some_event_function()";
             mechanicEvent.eventTriggerMethod = "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()";
             mechanicEvent.eventId = eventIdIndex.getAndIncrement();
-            DataEntry dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
+            DataEntry dataEntry = new DataEntry(mechanicEvent.getEventData());
             JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventId, mechanicEvent.workSessionId,
                     mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
                     mechanicEvent.eventType.toEventTypeId());
@@ -63,7 +63,7 @@ public class RealtimeMechanicDashboardTest {
             mechanicEvent.eventMethod = "com.codebrig.jvmmechanic.some_event_class.some_event_function()";
             mechanicEvent.eventTriggerMethod = "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()";
             mechanicEvent.eventId = eventIdIndex.getAndIncrement();
-            dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
+            dataEntry = new DataEntry(mechanicEvent.getEventData());
             journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventId, mechanicEvent.workSessionId,
                     mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
                     mechanicEvent.eventType.toEventTypeId());
