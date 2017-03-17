@@ -33,11 +33,13 @@ function loadAllWorkSessions() {
         streamTableRow.click(function(event) {
             var eventPositionList = [];
             var eventSizeList = [];
+            var filePosition = 0;
 
             sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
                 var sessionId = record["workSessionId"];
-                var filePosition = 0;
-                ledgerDB().filter({workSessionId:sessionId}).order("eventId").each(function (record, recordnumber) {
+                var workSessionDB = ledgerDB().filter({workSessionId:sessionId});
+
+                workSessionDB.order("ledgerId").each(function (record, recordnumber) {
                     if (record["workSessionId"] == workSessionId) {
                         eventSizeList.push(record["eventSize"]);
                         eventPositionList.push(filePosition);
