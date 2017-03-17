@@ -39,7 +39,12 @@ public class DataEntry {
     }
 
     public MechanicEvent toMechanicEvent() {
-        return MechanicEvent.toMechanicEvent(ByteBuffer.wrap(rawData));
+        try {
+            return MechanicEvent.toMechanicEvent(ByteBuffer.wrap(rawData));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
 }
