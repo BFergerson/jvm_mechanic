@@ -57,6 +57,11 @@ function loadLedgerUpdates(initialLoad) {
             console.log("No ledger updates found! Size: " + ledgerSize);
         } else if (initialLoad) {
             loadMethodNames();
+
+            //save ledger
+            storage.setContents('ledger_data', ledgerDB().stringify()).then(function() {
+                console.log("Ledger saved to local storage!");
+            });
         } else {
             //save ledger
             storage.setContents('ledger_data', ledgerDB().stringify()).then(function() {
@@ -76,7 +81,7 @@ function loadMethodNames() {
         var workSessionId = record["workSessionId"];
         var workSessionDB = ledgerDB().filter({workSessionId:workSessionId});
 
-        workSessionDB.order("eventId").each(function (record, recordnumber) {
+        workSessionDB.order("ledgerId").each(function (record, recordnumber) {
             if (methodNameMap[record["eventMethodId"]] == null) {
                 eventSizeList.push(record["eventSize"]);
                 eventPositionList.push(filePosition);

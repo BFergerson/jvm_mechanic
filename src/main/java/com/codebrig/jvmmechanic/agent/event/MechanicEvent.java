@@ -13,7 +13,7 @@ public abstract class MechanicEvent {
 
     public static final int DEFAULT_MECHANIC_EVENT_BUFFER_SIZE = 1024;
 
-    public long eventId;
+    public int eventId;
     public long eventTimestamp;
     public int workSessionId;
     public short eventMethodId;
@@ -33,7 +33,7 @@ public abstract class MechanicEvent {
     @JsonIgnore
     public byte[] getEventData() {
         ByteBuffer buffer = ByteBuffer.allocate(DEFAULT_MECHANIC_EVENT_BUFFER_SIZE);
-        buffer.putLong(eventId);
+        buffer.putInt(eventId);
         buffer.putLong(eventTimestamp);
         buffer.putInt(workSessionId);
         buffer.putShort(eventMethodId);
@@ -75,7 +75,7 @@ public abstract class MechanicEvent {
     }
 
     public static MechanicEvent toMechanicEvent(ByteBuffer buffer) {
-        long eventId = buffer.getLong();
+        int eventId = buffer.getInt();
         long eventTimestamp = buffer.getLong();
         int workSessionId = buffer.getInt();
         short eventMethodId = buffer.getShort();

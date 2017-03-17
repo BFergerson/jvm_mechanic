@@ -11,7 +11,8 @@ public class JournalEntry {
 
     public static final int JOURNAL_ENTRY_SIZE = 25;
 
-    private final long eventId;
+    private final int eventId;
+    private final int ledgerId;
     private final int workSessionId;
     private final long eventTimestamp;
     private final short eventSize;
@@ -19,8 +20,9 @@ public class JournalEntry {
     private final byte eventType;
     private String uniqueEventId;
 
-    public JournalEntry(long eventId, int workSessionId, long eventTimestamp, short eventSize, short eventMethodId, byte eventType) {
+    public JournalEntry(int eventId, int ledgerId, int workSessionId, long eventTimestamp, short eventSize, short eventMethodId, byte eventType) {
         this.eventId = eventId;
+        this.ledgerId = ledgerId;
         this.workSessionId = workSessionId;
         this.eventTimestamp = eventTimestamp;
         this.eventSize = eventSize;
@@ -29,8 +31,12 @@ public class JournalEntry {
         this.uniqueEventId = workSessionId + "_" + eventId;
     }
 
-    public long getEventId() {
+    public int getEventId() {
         return eventId;
+    }
+
+    public int getLedgerId() {
+        return ledgerId;
     }
 
     public int getWorkSessionId() {
@@ -62,9 +68,10 @@ public class JournalEntry {
     }
 
     public ByteBuffer toByteBuffer() {
-        //buffer allocation: eventId(8) + workSessionId(4) + eventTimestamp(8) + eventSize(2) + eventMethodId(2) + eventType(1) = 25
+        //buffer allocation: eventId(4) + ledgerId(4) + workSessionId(4) + eventTimestamp(8) + eventSize(2) + eventMethodId(2) + eventType(1) = 25
         ByteBuffer buffer = ByteBuffer.allocate(JOURNAL_ENTRY_SIZE);
-        buffer.putLong(eventId);
+        buffer.putInt(eventId);
+        buffer.putInt(ledgerId);
         buffer.putInt(workSessionId);
         buffer.putLong(eventTimestamp);
         buffer.putShort(eventSize);

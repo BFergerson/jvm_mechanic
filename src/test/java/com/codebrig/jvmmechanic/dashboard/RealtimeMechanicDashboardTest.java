@@ -8,14 +8,14 @@ import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 
 import java.io.IOException;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
 public class RealtimeMechanicDashboardTest {
 
-    private static final AtomicLong eventIdIndex = new AtomicLong();
+    private static final AtomicInteger eventIdIndex = new AtomicInteger();
 
     public static void main(String[] args) throws IOException, InterruptedException {
         new Thread(new Runnable() {
@@ -43,7 +43,7 @@ public class RealtimeMechanicDashboardTest {
             mechanicEvent.eventTriggerMethod = "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()";
             mechanicEvent.eventId = eventIdIndex.getAndIncrement();
             DataEntry dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
-            JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.workSessionId,
+            JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventId, mechanicEvent.workSessionId,
                     mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
                     mechanicEvent.eventType.toEventTypeId());
 
@@ -64,7 +64,7 @@ public class RealtimeMechanicDashboardTest {
             mechanicEvent.eventTriggerMethod = "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()";
             mechanicEvent.eventId = eventIdIndex.getAndIncrement();
             dataEntry = new DataEntry(mechanicEvent.eventId, mechanicEvent.getEventData());
-            journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.workSessionId,
+            journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventId, mechanicEvent.workSessionId,
                     mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
                     mechanicEvent.eventType.toEventTypeId());
 
