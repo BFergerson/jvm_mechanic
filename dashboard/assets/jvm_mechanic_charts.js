@@ -160,13 +160,12 @@ window.chartColors = {
     green: 'rgb(75, 192, 192)',
     blue: 'rgb(0,0,255)',
     purple: 'rgb(153, 102, 255)',
-    grey: 'rgb(231,233,237)',
     darkslategray: 'rgb(47,79,79)',
-    black: 'rgb(0,0,0)',
-    peach: 'rgb(255,218,185)',
     coral: 'rgb(255,127,80)',
+    peach: 'rgb(255,218,185)',
     skyblue: 'rgb(135,206,235)',
-    magenta: 'rgb(255,0,255)'
+    magenta: 'rgb(255,0,255)',
+    black: 'rgb(0,0,0)'
 };
 
 function ledgerLoaded() {
