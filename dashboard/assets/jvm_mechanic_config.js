@@ -17,14 +17,24 @@ function loadConfigSettings() {
         var journalEntrySize = result.journalEntrySize;
         $("#sessionSampleAccuracy").text(result.sessionSampleAccuracy + "%");
         $("#ledgerFileLocation").text(result.ledgerFileLocation);
-        $("#ledgerEntryCount").text((result.ledgerFileSize / result.journalEntrySize) + " (" + result.ledgerFileSize + " bytes)");
+        $("#ledgerEntryCount").text(formatSizeUnits(result.ledgerFileSize) + " (" + (result.ledgerFileSize / result.journalEntrySize) + " events)");
         $("#dataFileLocation").text(result.dataFileLocation);
-        $("#dataEntryCount").text((result.ledgerFileSize / result.journalEntrySize) + " (" + result.dataFileSize + " bytes)");
+        $("#dataEntryCount").text(formatSizeUnits(result.dataFileSize) + " (" + (result.ledgerFileSize / result.journalEntrySize) + " events)");
         $("#ledgerFileSize").text(result.ledgerFileSize);
         $("#dataFileSize").text(result.dataFileSize);
         $("#gcFileLocation").text(result.gcFileLocation);
-        $("#gcFileSize").text(result.gcFileSize + " bytes");
+        $("#gcFileSize").text(formatSizeUnits(result.gcFileSize));
     }).always(function(result) {
         //todo: anything?
     });
+}
+
+function formatSizeUnits(bytes){
+    if      (bytes>=1000000000) {bytes=(bytes/1000000000).toFixed(2)+' GB';}
+    else if (bytes>=1000000)    {bytes=(bytes/1000000).toFixed(2)+' MB';}
+    else if (bytes>=1000)       {bytes=(bytes/1000).toFixed(2)+' KB';}
+    else if (bytes>1)           {bytes=bytes+' bytes';}
+    else if (bytes==1)          {bytes=bytes+' byte';}
+    else                        {bytes='0 byte';}
+    return bytes;
 }
