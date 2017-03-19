@@ -367,7 +367,6 @@ function updateCharts(cutOffMinutesTime) {
                     var newDataset = {
                         label: methodNameMap[eventMethodId],
                         backgroundColor: newColor,
-                        borderColor: newColor,
                         data: [],
                         fill: false
                     };
