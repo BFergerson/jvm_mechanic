@@ -1,3 +1,168 @@
+var relativeMethodRuntimeDurationConfig = {
+    type: 'line',
+    data: {
+        datasets: []
+    },
+    options: {
+        responsive: true,
+        title:{
+            display:true,
+            text:'Method Runtime Duration - Relative'
+        },
+        tooltips: {
+            mode: 'index',
+            intersect: false,
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        },
+        scales: {
+            xAxes: [{
+                type: 'time',
+                time: {
+                    displayFormats: {
+                        millisecond: 'hh:mm:ss.SSS A',
+                        second: 'hh:mm:ss.SSS A',
+                        minute: 'hh:mm:ss.SSS A',
+                        hour: 'hh:mm:ss.SSS A',
+                        day: 'hh:mm:ss.SSS A',
+                        week: 'hh:mm:ss.SSS A',
+                        month: 'hh:mm:ss.SSS A',
+                        quarter: 'hh:mm:ss.SSS A',
+                        year: 'hh:mm:ss.SSS A'
+                    },
+                    tooltipFormat: 'hh:mm:ss.SSS A'
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                },
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Execution Time (ms)'
+                }
+            }]
+        }
+    }
+};
+var absoluteMethodRuntimeDurationConfig = {
+    type: 'line',
+    data: {
+        datasets: []
+    },
+    options: {
+        responsive: true,
+        title:{
+            display: true,
+            text: 'Method Runtime Duration - Absolute'
+        },
+        tooltips: {
+            mode: 'index',
+            intersect: false,
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        },
+        scales: {
+            xAxes: [{
+                type: 'time',
+                time: {
+                    displayFormats: {
+                        millisecond: 'hh:mm:ss.SSS A',
+                        second: 'hh:mm:ss.SSS A',
+                        minute: 'hh:mm:ss.SSS A',
+                        hour: 'hh:mm:ss.SSS A',
+                        day: 'hh:mm:ss.SSS A',
+                        week: 'hh:mm:ss.SSS A',
+                        month: 'hh:mm:ss.SSS A',
+                        quarter: 'hh:mm:ss.SSS A',
+                        year: 'hh:mm:ss.SSS A'
+                    },
+                    tooltipFormat: 'hh:mm:ss.SSS A'
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                },
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Execution Time (ms)'
+                }
+            }]
+        }
+    }
+};
+
+var currentMethodDurationBarChartConfig = {
+    type: 'bar',
+    datasets: [{
+        data: []
+    }],
+    labels: [],
+    options: {
+        title: {
+            display: true,
+            text: 'Last Recorded Work Session'
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                },
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Execution Time (ms)'
+                }
+            }]
+        }
+    }
+};
+
+var averageMethodDurationPolarChartConfig = {
+    type: 'polarArea',
+    datasets: [{
+        data: []
+    }],
+    labels: [],
+    options: {
+        responsive: true,
+        elements: {
+            animation:{
+                animateScale: true
+            },
+            arc: {
+                borderColor: "#000000"
+            }
+        }
+    }
+};
+
+var totalMethodDurationPolarChartConfig = {
+    type: 'polarArea',
+    datasets: [{
+        data: []
+    }],
+    labels: [],
+    options: {
+        responsive: true,
+        elements: {
+            animation:{
+                animateScale: true
+            },
+            arc: {
+                borderColor: "#000000"
+            }
+        }
+    }
+};
+
 window.chartColors = {
     darkred: 'rgb(200,0,0)',
     orange: 'rgb(255, 159, 64)',
@@ -15,6 +180,10 @@ window.chartColors = {
 };
 
 function ledgerLoaded() {
+    //bar chat
+    ctx = document.getElementById("current_relative_method_runtime_duration_canvas").getContext("2d");
+    window.currentMethodDurationBarChart = new Chart(ctx, currentMethodDurationBarChartConfig);
+
     //relative method duration line chart
     var ctx = document.getElementById("relative_method_runtime_duration_canvas").getContext("2d");
     window.relativeMethodRuntimeDurationLine = new Chart(ctx, relativeMethodRuntimeDurationConfig);
@@ -23,6 +192,13 @@ function ledgerLoaded() {
     ctx = document.getElementById("absolute_method_runtime_duration_canvas").getContext("2d");
     window.absoluteMethodRuntimeDurationLine = new Chart(ctx, absoluteMethodRuntimeDurationConfig);
 
+    //todo
+    ctx = document.getElementById("average_relative_method_duration_polar_canvas").getContext("2d");
+    window.averageMethodDurationPolarChart = new Chart(ctx, averageMethodDurationPolarChartConfig);
+
+    //todo
+    ctx = document.getElementById("total_relative_method_duration_polar_canvas").getContext("2d");
+    window.totalMethodDurationPolarChart = new Chart(ctx, totalMethodDurationPolarChartConfig);
 
     updateCharts(cutOffMinutesTime);
 
@@ -58,18 +234,32 @@ function evictOldChartData(data, cutOffMinutesTime) {
     if (chartHasData(data.datasets)) {
         if (isEvictableData(data.labels[0], cutOffMinutesTime)) {
             console.log("Evicting data more than " + cutOffMinutesTime + " minutes!");
+            //sessionAccountedFor.pop(); todo: remove session from here too
             data.labels.shift();
             data.datasets.forEach(function(dataset) {
                 dataset.data.shift();
             });
             window.relativeMethodRuntimeDurationLine.update();
+
+            //avg method duration polar chart
+            //todo: make own method averages[];
+            Object.keys(averageDurationMap).forEach(function(key) {
+                var durationList = averageDurationMap[key];
+                durationList.pop();
+            });
         }
     }
 }
 
+var methodColorMap = {};
+var totalMethodDurationMap = {};
+var averageDurationMap = {};
+
 function updateCharts(cutOffMinutesTime) {
     console.log("Updating charts...");
 
+    var latestWorkSessionId = null;
+    var latestSessionMethodDurationMap = {};
     sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
         var workSessionId = record["workSessionId"];
         var workSessionTime = moment(record["sessionTimestamp"]);
@@ -87,7 +277,7 @@ function updateCharts(cutOffMinutesTime) {
                 var eventType = record["eventType"];
                 if (eventType == 0 || eventType == 2) {
                     //enter
-                    var calcMethodDuration = new CalculatedMethodDuration(methodId, eventTimestamp);
+                    var calcMethodDuration = new WorkSessionMethodDuration(methodId, eventTimestamp);
                     effectChainList.push(calcMethodDuration);
                 } else if (eventType == 1 || eventType == 3) {
                     //exit
@@ -104,6 +294,11 @@ function updateCharts(cutOffMinutesTime) {
                 }
                 //console.log(record["eventMethodId"] + " type: " + eventType);
             });
+            if (effectChainList.length > 0) {
+                console.log("Removing unfinished session: " + workSessionId);
+                sessionAccountedFor[workSessionId] = null;
+                return;
+            }
 
             var combineList = {};
             resultList.forEach(function(calcMethodDuration) {
@@ -120,6 +315,8 @@ function updateCharts(cutOffMinutesTime) {
                 }
             });
 
+            latestWorkSessionId = workSessionId;
+            latestSessionMethodDurationMap = combineList;
             var addedTimestamp = false;
             Object.keys(combineList).forEach(function(key) {
                 var calcMethodDuration = combineList[key];
@@ -127,7 +324,16 @@ function updateCharts(cutOffMinutesTime) {
                 var relativeDuration = calcMethodDuration.relativeDuration;
                 var absoluteDuration = calcMethodDuration.absoluteDuration;
                 var eventTimestamp = calcMethodDuration.timestamp;
-                //console.log(moment(eventTimestamp));
+
+                if (averageDurationMap[eventMethodId] == null) {
+                    averageDurationMap[eventMethodId] = [];
+                }
+                averageDurationMap[eventMethodId].push(relativeDuration);
+
+                if (totalMethodDurationMap[eventMethodId] == null) {
+                    totalMethodDurationMap[eventMethodId] = 0;
+                }
+                totalMethodDurationMap[eventMethodId] += relativeDuration;
 
                 if (addedTimestamp == false) {
                     relativeMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
@@ -157,6 +363,7 @@ function updateCharts(cutOffMinutesTime) {
                         newColor = getRandomColor();
                     }
 
+                    methodColorMap[eventMethodId] = newColor;
                     var newDataset = {
                         label: methodNameMap[eventMethodId],
                         backgroundColor: newColor,
@@ -184,6 +391,82 @@ function updateCharts(cutOffMinutesTime) {
             });
         }
     });
+
+    //update last session bar chart
+    if (latestWorkSessionId) {
+        var newDataset = {
+            backgroundColor: [],
+            hoverBackgroundColor: [],
+            data: []
+        };
+        if (currentMethodDurationBarChartConfig.data.datasets.length != 0) {
+            newDataset = currentMethodDurationBarChartConfig.data.datasets[0];
+            newDataset.data = [];
+            window.currentMethodDurationBarChart.data.labels = [];
+        } else {
+            currentMethodDurationBarChartConfig.data.datasets.push(newDataset);
+        }
+
+        newDataset.label = "Work Session: " + latestWorkSessionId;
+        Object.keys(latestSessionMethodDurationMap).forEach(function(key) {
+            var methodDuration = latestSessionMethodDurationMap[key];
+            //console.log("Method id: " + methodDuration.methodId + "; Latest (relative): " + methodDuration.relativeDuration);
+            window.currentMethodDurationBarChart.data.labels.push(methodNameMap[methodDuration.methodId]);
+            newDataset.backgroundColor.push(methodColorMap[methodDuration.methodId]);
+            newDataset.data.push(methodDuration.relativeDuration);
+        });
+        window.currentMethodDurationBarChart.update();
+    }
+
+    //avg method duration polar chat
+    var newDataset = {
+         backgroundColor: [],
+         hoverBackgroundColor: [],
+         data: []
+    };
+    if (averageMethodDurationPolarChartConfig.data.datasets.length != 0) {
+        newDataset = averageMethodDurationPolarChartConfig.data.datasets[0];
+        newDataset.data = [];
+        window.averageMethodDurationPolarChart.data.labels = [];
+    } else {
+        averageMethodDurationPolarChartConfig.data.datasets.push(newDataset);
+    }
+
+    Object.keys(averageDurationMap).forEach(function(methodId) {
+        var durationList = averageDurationMap[methodId];
+        var durationSum = 0;
+        durationList.forEach(function(item, index) {
+            durationSum += item;
+        });
+        //console.log("Method id: " + methodId + "; Avg: " + avg);
+        window.averageMethodDurationPolarChart.data.labels.push(methodNameMap[methodId]);
+        newDataset.backgroundColor.push(methodColorMap[methodId]);
+        newDataset.data.push(durationSum / durationList.length);
+    });
+    window.averageMethodDurationPolarChart.update();
+
+    //total method duration polar chat
+    var newDataset = {
+         backgroundColor: [],
+         hoverBackgroundColor: [],
+         data: []
+    };
+    if (totalMethodDurationPolarChartConfig.data.datasets.length != 0) {
+        newDataset = totalMethodDurationPolarChartConfig.data.datasets[0];
+        newDataset.data = [];
+        window.totalMethodDurationPolarChart.data.labels = [];
+    } else {
+        totalMethodDurationPolarChartConfig.data.datasets.push(newDataset);
+    }
+
+    Object.keys(totalMethodDurationMap).forEach(function(methodId) {
+        var totalMethodDuration = totalMethodDurationMap[methodId];
+        //console.log("Method id: " + methodId + "; Total: " + totalMethodDuration);
+        window.totalMethodDurationPolarChart.data.labels.push(methodNameMap[methodId]);
+        newDataset.backgroundColor.push(methodColorMap[methodId]);
+        newDataset.data.push(totalMethodDuration);
+    });
+    window.totalMethodDurationPolarChart.update();
 }
 
 function getRandomColor() {
@@ -195,7 +478,7 @@ function getRandomColor() {
     return color;
 }
 
-function CalculatedMethodDuration(methodId, timestamp) {
+function WorkSessionMethodDuration(methodId, timestamp) {
     this.methodId = methodId;
     this.relativeDuration = 0;
     this.absoluteDuration = 0;
