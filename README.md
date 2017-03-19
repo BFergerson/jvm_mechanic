@@ -7,7 +7,7 @@ jvm_mechanic - Lightweight JVM Performance Diagnostics
 Provide detailed real-time statistics & diagrams for thread-based request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
 
 ## Method
-Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are feed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time function flow diagrams (and others) to assist in monitoring application performance degradation.
+Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are fed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time session & method level diagrams to assist in monitoring and diagnosing application performance degradation.
 
 ## Technical Design
 
@@ -44,7 +44,7 @@ Each event contains the following base metrics (as well as metrics relevant to t
  - Method exception rate/count/growth
  - Work session exception rate/count/growth
  - Work session success/fail/exception
- - Active/total work sesions
+ - Active/total work sessions
  - Method duration/frequency predictability
 
 ## Available Insights
@@ -55,14 +55,4 @@ Each event contains the following base metrics (as well as metrics relevant to t
  - Is work stream processing degradation due to application or server code?
  - Which work stream method(s) are most susceptible to performance degradation?
  - To what degree do work stream method(s) experiencing degradation cause others method(s) to degrade?
-
-## Todo
- - Basic events in Byteman
- - Determine all data points to collect
- - Determine method of collection for method invocations related to work stream
- - Process to turn collection of method invocations into rules which will inject the proper events
- - Event processor/log
- - Find fast stream to file library
- - Find function flow diagram library
- - Process to tail data stream and make necessary calculations to create insights/charts
- - Process to turn file/stream into DB table(s)
+ 
