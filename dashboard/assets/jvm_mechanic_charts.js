@@ -161,10 +161,10 @@ window.chartColors = {
     blue: 'rgb(0,0,255)',
     purple: 'rgb(153, 102, 255)',
     darkslategray: 'rgb(47,79,79)',
-    coral: 'rgb(255,127,80)',
-    peach: 'rgb(255,218,185)',
     skyblue: 'rgb(135,206,235)',
     magenta: 'rgb(255,0,255)',
+    coral: 'rgb(255,127,80)',
+    peach: 'rgb(255,218,185)',
     black: 'rgb(0,0,0)'
 };
 
