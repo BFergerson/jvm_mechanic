@@ -48,6 +48,13 @@ public class MechanicDashboard {
                 return handleDataRequest(session);
             } else if (session.getUri().startsWith("/gc") && session.getMethod().equals(Method.GET)) {
                 return handleGCRequest(session);
+            } else if (session.getUri().startsWith("/config") && session.getMethod().equals(Method.GET)) {
+                try {
+                    return handleConfigRequest(session);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+                }
             } else {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
             }
@@ -182,6 +189,40 @@ public class MechanicDashboard {
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 jsonData = mapper.writeValueAsString(logAnalyzer.getGarbageCollectionReport());
+            } catch (JsonProcessingException ex) {
+                ex.printStackTrace();
+                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
+            }
+
+            NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+            res.addHeader("Access-Control-Allow-Origin", "*");
+            return res;
+        }
+
+        private Response handleConfigRequest(IHTTPSession session) throws IOException {
+            String ledgerFileProperty = System.getProperty("jvm_mechanic.stash.ledger.filename", "C:\\temp\\jvm_mechanic.ledger");
+            String dataFileProperty = System.getProperty("jvm_mechanic.stash.data.filename", "C:\\temp\\jvm_mechanic.data");
+            String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
+            String sessionSampleAccuracyProperty = System.getProperty("jvm_mechanic.event.session_sample_accuracy", "100.00");
+            double sessionSampleAccuracy = Double.valueOf(sessionSampleAccuracyProperty);
+
+            MechanicConfig config = new MechanicConfig();
+            config.setLedgerFileLocation(ledgerFileProperty);
+            config.setDataFileLocation(dataFileProperty);
+            config.setGcFileLocation(gcLogFileName);
+            config.setSessionSampleAccuracy(sessionSampleAccuracy);
+            config.setLedgerFileSize(stashLedgerFile.getSize());
+            config.setDataFileSize(stashDataFile.getSize());
+            config.setJournalEntrySize(JournalEntry.JOURNAL_ENTRY_SIZE);
+            if (new File(gcLogFileName).exists()) {
+                config.setGcFileSize(new File(gcLogFileName).length());
+            }
+
+            //output json
+            String jsonData;
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                jsonData = mapper.writeValueAsString(config);
             } catch (JsonProcessingException ex) {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());

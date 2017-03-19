@@ -35,6 +35,10 @@ public class StashDataFile {
         return new DataEntry(rawData);
     }
 
+    public long getSize() throws IOException {
+        return fileChannel.size();
+    }
+
     public void close() throws IOException {
         fileChannel.close();
     }

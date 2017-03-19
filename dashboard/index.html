@@ -40,6 +40,7 @@
     <script src="assets/jvm_mechanic_charts.js"></script>
     <script src="assets/jvm_mechanic_ledger.js"></script>
     <script src="assets/jvm_mechanic_garbage.js"></script>
+    <script src="assets/jvm_mechanic_config.js"></script>
     <script src="assets/tether/tether.min.js"></script>
     <script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
     <script src="assets/canvasjs.min.js"></script>
@@ -122,16 +123,20 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">jvm_mechanic Configuration Information</div>
                         <div class="panel-body">
-                            <b>Session Sample Accuracy:</b> 100% <br/>
+                            <b>Session Sample Accuracy:</b> <label id="sessionSampleAccuracy" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>Ledger file location:</b> C:\temp\jvm_mechanic.ledger <br/>
-                            <b>Leger entry count:</b> 100 (2KB) <br/>
+                            <b>Ledger file location:</b> <label id="ledgerFileLocation"
+                                                                style="margin-bottom: 0">n/a</label><br/>
+                            <b>Leger entry count:</b> <label id="ledgerEntryCount"
+                                                             style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>Data file location:</b> C:\temp\jvm_mechanic.data <br/>
-                            <b>Data entry count:</b> 100 (200KB) <br/>
+                            <b>Data file location:</b> <label id="dataFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Data entry count:</b> <label id="dataEntryCount"
+                                                            style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>GC file location:</b> C:\temp\jvm_gc.log <br/>
-                            <b>GC file size:</b> 44.0MB
+                            <b>GC file location:</b> <label id="gcFileLocation"
+                                                            style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC file size:</b> <label id="gcFileSize" style="margin-bottom: 0">n/a</label><br/>
                             <br/>
                             <br/>
                             <br/>

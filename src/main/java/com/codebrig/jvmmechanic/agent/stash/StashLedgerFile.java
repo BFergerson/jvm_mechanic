@@ -58,6 +58,10 @@ public class StashLedgerFile {
         fileChannel.close();
     }
 
+    public long getSize() throws IOException {
+        return fileChannel.size();
+    }
+
     public int getJournalEntryCount() throws IOException {
         return (int) (fileChannel.size() / JournalEntry.JOURNAL_ENTRY_SIZE);
     }
