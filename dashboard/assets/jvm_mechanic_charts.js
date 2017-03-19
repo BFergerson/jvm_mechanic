@@ -6,10 +6,6 @@ var relativeMethodRuntimeDurationConfig = {
     },
     options: {
         responsive: true,
-        title:{
-            display:true,
-            text:'Method Runtime Duration - Relative'
-        },
         tooltips: {
             mode: 'index',
             intersect: false,
@@ -57,10 +53,6 @@ var absoluteMethodRuntimeDurationConfig = {
     },
     options: {
         responsive: true,
-        title:{
-            display: true,
-            text: 'Method Runtime Duration - Absolute'
-        },
         tooltips: {
             mode: 'index',
             intersect: false,
@@ -108,10 +100,6 @@ var currentMethodDurationBarChartConfig = {
     }],
     labels: [],
     options: {
-        title: {
-            display: true,
-            text: 'Last Recorded Work Session'
-        },
         scales: {
             yAxes: [{
                 ticks: {

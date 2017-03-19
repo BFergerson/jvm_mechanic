@@ -181,13 +181,16 @@
             </div>
             <div class="row">
                 <div class="panel panel-default">
-                    <canvas id="current_relative_method_runtime_duration_canvas" height="40"></canvas>
+                    <div class="panel-heading">Last Recorded Session (Request >> Response)</div>
+                    <div class="panel-body">
+                        <canvas id="current_relative_method_runtime_duration_canvas" height="40"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <!--<div class="panel-heading">Panel Heading</div>-->
+                        <div class="panel-heading">Method Runtime Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="relative_method_runtime_duration_canvas"></canvas>
                         </div>
@@ -195,7 +198,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <!--<div class="panel-heading">Panel Heading</div>-->
+                        <div class="panel-heading">Method Runtime Duration - Absolute</div>
                         <div class="panel-body">
                             <canvas id="absolute_method_runtime_duration_canvas"></canvas>
                         </div>
@@ -205,7 +208,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Average Method Duration (ms) - Relative</div>
+                        <div class="panel-heading">Average Method Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="average_relative_method_duration_polar_canvas" height="200"></canvas>
                         </div>
@@ -213,7 +216,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Total Method Duration (ms) - Relative</div>
+                        <div class="panel-heading">Total Method Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="total_relative_method_duration_polar_canvas" height="200"></canvas>
                         </div>
@@ -221,8 +224,10 @@
                 </div>
             </div>
         </div>
+        <br/>
+        <br/>
+        <br/>
     </div>
-
     <!-- /.container-fluid -->
 
 </div>
