@@ -5,6 +5,7 @@ var host = "http://localhost:9000";
 var ledgerDB = TAFFY();
 var sessionDB = TAFFY();
 var methodNameMap = {};
+var corruptEventMap = {};
 
 //load local storage
 var desiredCapacity = 50 * 1024 * 1024; // 50MB
@@ -111,8 +112,13 @@ function downloadMethodNames(initialLoad) {
         $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(),
             function(result) {
                 $.each(result, function(i, event){
-                    methodNameMap[event["eventMethodId"]] = removePackageAndClassName(event["eventMethod"]);
-                    console.log("Added method name: " + methodNameMap[event["eventMethodId"]]);
+                    if (event["eventType"] == "CORRUPT_EVENT") {
+                        corruptEventMap[event["eventId"]] = event["workSessionId"];
+                        console.log("Skipped adding method name from corrupt event!");
+                    } else {
+                        methodNameMap[event["eventMethodId"]] = removePackageAndClassName(event["eventMethod"]);
+                        console.log("Added method name: " + methodNameMap[event["eventMethodId"]]);
+                    }
                 });
             }).always(function(result) {
                 //save method names
@@ -134,6 +140,7 @@ function downloadMethodNames(initialLoad) {
 }
 
 function removePackageAndClassName(fullyQuantifiedMethodName) {
+    if (fullyQuantifiedMethodName == null || !fullyQuantifiedMethodName.includes(".")) return fullyQuantifiedMethodName;
     var methodNameArr = fullyQuantifiedMethodName.split(".");
     return methodNameArr[methodNameArr.length - 1];
 }
