@@ -39,6 +39,8 @@
     <script src="assets/moment.js"></script>
     <script src="assets/jvm_mechanic_charts.js"></script>
     <script src="assets/jvm_mechanic_ledger.js"></script>
+    <script src="assets/jvm_mechanic_garbage.js"></script>
+    <script src="assets/jvm_mechanic_config.js"></script>
     <script src="assets/tether/tether.min.js"></script>
     <script src="assets/bootstrap/bootstrap4-alpha3.min.js"></script>
     <script src="assets/canvasjs.min.js"></script>
@@ -58,7 +60,8 @@
                     <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
                 </a>
             </div>
-            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache
+            </button>
         </div>
     </div>
 </nav>
@@ -97,14 +100,97 @@
     <div style="margin-top: 10px">
         <div class="container-fluid" style="width: 98%">
             <div class="row">
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">General Monitoring Information</div>
+                        <div class="panel-body">
+                            <b>First Recorded Request:</b> then <br/>
+                            <b>Last Recorded Request:</b> now <br/>
+                            - <br/>
+                            <b>Total Recorded Events:</b> 10,522 <br/>
+                            <b>Event Recording Rate:</b> 2,040 per second <br/>
+                            - <br/>
+                            <b>Total Recorded Sessions:</b> 122 <br/>
+                            <b>Session Recording Rate:</b> 20 per second <br/>
+                            - <br/>
+                            <b>CPU Usage - System:</b> 60.5% <br/>
+                            <b>CPU Usage - Java:</b> 22.4% <br/>
+                            <br/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">jvm_mechanic Configuration</div>
+                        <div class="panel-body">
+                            <b>Session Sample Accuracy:</b> <label id="sessionSampleAccuracy" style="margin-bottom: 0">n/a</label><br/>
+                            - <br/>
+                            <b>Ledger File Location:</b> <label id="ledgerFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Leger File Size:</b> <label id="ledgerEntryCount" style="margin-bottom: 0">n/a</label><br/>
+                            - <br/>
+                            <b>Data File Location:</b> <label id="dataFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Data File Size:</b> <label id="dataEntryCount" style="margin-bottom: 0">n/a</label><br/>
+                            - <br/>
+                            <b>GC File Location:</b> <label id="gcFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC File Size:</b> <label id="gcFileSize" style="margin-bottom: 0">n/a</label><br/>
+                            <br/>
+                            <br/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Garbage Collection - General</div>
+                        <div class="panel-body">
+                            <b>Total GC Events:</b> <label id="totalGCEvents" style="margin-bottom: 0">n/a</label><br/>
+                            <!--Event Types: PARALLEL_SCAVENGE, PARALLEL_OLD_COMPACTING <br/>-->
+                            <b>Max Heap Occupancy:</b> <label id="maxHeapOccupancy" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Max Heap Space:</b> <label id="maxHeapSpace" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Max Perm/Metaspace Occupancy:</b> <label id="maxPermMetaspaceOccupancy" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Max Perm/Metaspace Space:</b> <label id="maxPermMetaspaceSpace" style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC Throughput:</b> <label id="GCThroughput" style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC Max Pause:</b> <label id="GCMaxPause" style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC Total Pause:</b> <label id="GCTotalPause" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Stopped Time Throughput:</b> <label id="stoppedTimeThroughput" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Stopped Time Max Pause:</b> <label id="stoppedTimeMaxPause" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Stopped Time Total:</b> <label id="stoppedTimeTotal" style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC/Stopped Ratio:</b> <label id="GCStoppedRatio" style="margin-bottom: 0">n/a</label><br/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Garbage Collection - Insights</div>
+                        <div class="panel-body">
+                            todo
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
                 <div class="panel panel-default">
-                    <canvas id="current_relative_method_runtime_duration_canvas" height="40"></canvas>
+                    <div class="panel-heading">Last Recorded Session (Request >> Response)</div>
+                    <div class="panel-body">
+                        <canvas id="current_relative_method_runtime_duration_canvas" height="40"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <!--<div class="panel-heading">Panel Heading</div>-->
+                        <div class="panel-heading">Method Runtime Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="relative_method_runtime_duration_canvas"></canvas>
                         </div>
@@ -112,7 +198,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <!--<div class="panel-heading">Panel Heading</div>-->
+                        <div class="panel-heading">Method Runtime Duration - Absolute</div>
                         <div class="panel-body">
                             <canvas id="absolute_method_runtime_duration_canvas"></canvas>
                         </div>
@@ -122,7 +208,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Average Method Duration (ms) - Relative</div>
+                        <div class="panel-heading">Average Method Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="average_relative_method_duration_polar_canvas" height="200"></canvas>
                         </div>
@@ -130,7 +216,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Total Method Duration (ms) - Relative</div>
+                        <div class="panel-heading">Total Method Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="total_relative_method_duration_polar_canvas" height="200"></canvas>
                         </div>
@@ -138,8 +224,10 @@
                 </div>
             </div>
         </div>
+        <br/>
+        <br/>
+        <br/>
     </div>
-
     <!-- /.container-fluid -->
 
 </div>

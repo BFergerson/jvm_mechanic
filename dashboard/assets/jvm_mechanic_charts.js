@@ -191,6 +191,7 @@ function ledgerLoaded() {
     window.totalMethodDurationPolarChart = new Chart(ctx, totalMethodDurationPolarChartConfig);
 
     //update charts every 5 seconds
+    ledgerUpdated();
     setInterval(function() {
         loadLedgerUpdates();
     }, 5000);

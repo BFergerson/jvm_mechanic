@@ -35,6 +35,6 @@ function formatSizeUnits(bytes){
     else if (bytes>=1000)       {bytes=(bytes/1000).toFixed(2)+' KB';}
     else if (bytes>1)           {bytes=bytes+' bytes';}
     else if (bytes==1)          {bytes=bytes+' byte';}
-    else                        {bytes='0 byte';}
+    else                        {bytes='0 bytes';}
     return bytes;
 }
