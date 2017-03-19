@@ -1,7 +1,8 @@
 var relativeMethodRuntimeDurationConfig = {
     type: 'line',
     data: {
-        datasets: []
+        datasets: [],
+        labels: []
     },
     options: {
         responsive: true,
@@ -51,7 +52,8 @@ var relativeMethodRuntimeDurationConfig = {
 var absoluteMethodRuntimeDurationConfig = {
     type: 'line',
     data: {
-        datasets: []
+        datasets: [],
+        labels: []
     },
     options: {
         responsive: true,
@@ -200,19 +202,17 @@ function ledgerLoaded() {
     ctx = document.getElementById("total_relative_method_duration_polar_canvas").getContext("2d");
     window.totalMethodDurationPolarChart = new Chart(ctx, totalMethodDurationPolarChartConfig);
 
-    updateCharts(cutOffMinutesTime);
-
     //update charts every 5 seconds
     setInterval(function() {
         loadLedgerUpdates();
-        updateCharts(cutOffMinutesTime);
-
-        evictOldChartData(relativeMethodRuntimeDurationConfig.data, cutOffMinutesTime);
-        evictOldChartData(absoluteMethodRuntimeDurationConfig.data, cutOffMinutesTime);
     }, 5000);
 }
 
-var sessionAccountedFor = {};
+function ledgerUpdated() {
+    updateCharts(cutOffMinutesTime);
+    evictOldChartData(relativeMethodRuntimeDurationConfig.data, cutOffMinutesTime);
+    evictOldChartData(absoluteMethodRuntimeDurationConfig.data, cutOffMinutesTime);
+}
 
 function isEvictableData(sessionTime, cutOffMinutesTime) {
     var duration = moment.duration(moment().diff(sessionTime));
@@ -251,6 +251,7 @@ function evictOldChartData(data, cutOffMinutesTime) {
     }
 }
 
+var sessionAccountedFor = {};
 var methodColorMap = {};
 var totalMethodDurationMap = {};
 var averageDurationMap = {};
@@ -367,6 +368,7 @@ function updateCharts(cutOffMinutesTime) {
                     var newDataset = {
                         label: methodNameMap[eventMethodId],
                         backgroundColor: newColor,
+                        borderColor: newColor,
                         data: [],
                         fill: false
                     };

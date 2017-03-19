@@ -70,7 +70,15 @@ function loadLedgerUpdates(initialLoad) {
                 console.log("Saved ledger_data to local storage!");
             });
         }
+
+        if (!initialLoad && ledgerUpdated) {
+            ledgerUpdated0();
+        }
     });
+}
+
+function ledgerUpdated0() {
+    ledgerUpdated();
 }
 
 function loadMethodNames(initialLoad) {

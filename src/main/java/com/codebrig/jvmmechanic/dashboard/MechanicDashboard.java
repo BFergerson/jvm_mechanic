@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.util.ServerRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 /**
  * todo: this
+ * todo: legal stuff for libraries I'm using
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
@@ -44,6 +46,8 @@ public class MechanicDashboard {
                 }
             } else if (session.getUri().startsWith("/data/event/") && session.getMethod().equals(Method.GET)) {
                 return handleDataRequest(session);
+            } else if (session.getUri().startsWith("/gc") && session.getMethod().equals(Method.GET)) {
+                return handleGCRequest(session);
             } else {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
             }
@@ -153,6 +157,31 @@ public class MechanicDashboard {
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 jsonData = mapper.writeValueAsString(mechanicEventList);
+            } catch (JsonProcessingException ex) {
+                ex.printStackTrace();
+                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
+            }
+
+            NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+            res.addHeader("Access-Control-Allow-Origin", "*");
+            return res;
+        }
+
+        private Response handleGCRequest(IHTTPSession session) {
+            String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
+            if (!new File(gcLogFileName).exists()) {
+                NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", "");
+                res.addHeader("Access-Control-Allow-Origin", "*");
+                return res;
+            }
+
+            GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
+
+            //output json
+            String jsonData;
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                jsonData = mapper.writeValueAsString(logAnalyzer.getGarbageCollectionReport());
             } catch (JsonProcessingException ex) {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());

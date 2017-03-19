@@ -16,6 +16,8 @@ dependencies {
     compile group: 'me.tomassetti', name: 'java-symbol-solver-core', version: '0.2'
     compile group: 'com.beust', name: 'jcommander', version: '1.7'
     compile group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'
+    compile group: 'hsqldb', name: 'hsqldb', version: '1.8.0.7'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.1'
 }
 
 task uberJar(type: Jar, dependsOn:[':compileJava']) {
