@@ -246,7 +246,7 @@ var averageDurationMap = {};
 
 function updateCharts(startTime, endTime) {
     console.log("Updating charts...");
-    var map = getSessionTimelineMap(startTime, endTime, function(sessionIdList) {
+    getSessionTimelineMap(startTime, endTime, function(sessionIdList) {
         sessionIdList.forEach(function (item, index) {
             getRecordedSessionMap(item, function(recordedSession) {
                 addSessionToCharts(item, recordedSession);
