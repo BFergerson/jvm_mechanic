@@ -198,10 +198,10 @@ function ledgerLoaded() {
 
         //update general monitoring info
         if (earliestSessionTimestamp) {
-            $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
+            $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A (M/D)"));
         }
         if (lastSessionTimestamp) {
-            $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
+            $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A (M/D)"));
         }
 
         //events
