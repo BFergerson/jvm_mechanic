@@ -32,7 +32,7 @@ function loadConfigSettings() {
                 monitorMethodCount++;
             });
         }
-        $("#monitorMethodCount").text(monitorMethodCount + " methods");
+        $("#monitorMethodCount").text(monitorMethodCount);
     }).always(function(result) {
         //todo: anything?
     });
