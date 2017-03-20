@@ -62,8 +62,27 @@
                     <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
                 </a>
             </div>
-            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache
-            </button>
+            <div class="dropdown" style="display: inline-block">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <script>
+                        if (!monitorMode || monitorMode == 'live') {
+                            document.write('Live Monitoring');
+                        } else {
+                            document.write('Playback');
+                        }
+                    </script>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <script>
+                        if (!monitorMode || monitorMode == 'live') {
+                            document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
+                        } else {
+                            document.write('<a class="dropdown-item" href="?mode=live">Live Monitoring</a>');
+                        }
+                    </script>
+                </div>
+            </div>
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
         </div>
     </div>
 </nav>
@@ -73,24 +92,33 @@
 <div class="sidebar-toggle" id="sidebar">
     <ul class="nav nav-sidebar">
         <li>
-            <a href="index.html">
-                <i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i>
-                <span>Real Time</span>
-            </a>
+            <script>
+                if (!monitorMode || monitorMode == 'live') {
+                    document.write('<a href="index.html?mode=live"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Real Time</span></a>');
+                } else {
+                    document.write('<a href="index.html?mode=playback"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Playback</span></a>');
+                }
+            </script>
         </li>
         <li role="separator" class="divider"></li>
         <li>
-            <a href="overview.html" class="active">
-                <i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i>
-                <span>Overview</span>
-            </a>
+            <script>
+                if (!monitorMode || monitorMode == 'live') {
+                    document.write('<a href="overview.html?mode=live" class="active"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
+                } else {
+                    document.write('<a href="overview.html?mode=playback" class="active"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
+                }
+            </script>
         </li>
         <li role="separator" class="divider"></li>
         <li>
-            <a href="data.html">
-                <i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i>
-                <span>Data</span>
-            </a>
+            <script>
+                if (!monitorMode || monitorMode == 'live') {
+                    document.write('<a href="data.html?mode=live"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
+                } else {
+                    document.write('<a href="data.html?mode=playback"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
+                }
+            </script>
         </li>
     </ul>
 </div>

@@ -3,7 +3,7 @@ var host = "http://localhost:9000";
 var ledgerPosition = 0;
 var monitorMode = getParameter('mode');
 if (!monitorMode) {
-    monitorMode = "Live";
+    monitorMode = "live";
 }
 
 //init dbs
@@ -29,7 +29,7 @@ function loadLedgerUpdates() {
 }
 
 function loadLedgerUpdates(initialLoad) {
-    if (ledgerPosition == 0 && monitorMode == 'Live') {
+    if (ledgerPosition == 0 && monitorMode == 'live') {
         //get current position, start there; live mode
         $.getJSON(host + "/config", function(result) {
             console.log("Getting current ledger position to begin there for live mode!");

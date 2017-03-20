@@ -43,6 +43,7 @@
     <script src="assets/q.min.js"></script>
     <script src="assets/LargeLocalStorage.min.js"></script>
     <script src="assets/moment.js"></script>
+    <script src="assets/jvm_mechanic_session.js"></script>
     <script src="assets/jvm_mechanic_data.js"></script>
     <script src="assets/jvm_mechanic_ledger.js"></script>
     <script src="assets/tether/tether.min.js"></script>
@@ -65,8 +66,27 @@
                     <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
                 </a>
             </div>
-            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache
-            </button>
+            <div class="dropdown" style="display: inline-block">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <script>
+                        if (!monitorMode || monitorMode == 'live') {
+                            document.write('Live Monitoring');
+                        } else {
+                            document.write('Playback');
+                        }
+                    </script>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <script>
+                        if (!monitorMode || monitorMode == 'live') {
+                            document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
+                        } else {
+                            document.write('<a class="dropdown-item" href="?mode=live">Live Monitoring</a>');
+                        }
+                    </script>
+                </div>
+            </div>
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
         </div>
     </div>
 </nav>
@@ -76,24 +96,33 @@
 <div class="sidebar-toggle" id="sidebar">
     <ul class="nav nav-sidebar">
         <li>
-            <a href="index.html">
-                <i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i>
-                <span>Real Time</span>
-            </a>
+            <script>
+                if (!monitorMode || monitorMode == 'live') {
+                    document.write('<a href="index.html?mode=live"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Real Time</span></a>');
+                } else {
+                    document.write('<a href="index.html?mode=playback"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Playback</span></a>');
+                }
+            </script>
         </li>
         <li role="separator" class="divider"></li>
         <li>
-            <a href="overview.html">
-                <i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i>
-                <span>Overview</span>
-            </a>
+            <script>
+                if (!monitorMode || monitorMode == 'live') {
+                    document.write('<a href="overview.html?mode=live"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
+                } else {
+                    document.write('<a href="overview.html?mode=playback"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
+                }
+            </script>
         </li>
         <li role="separator" class="divider"></li>
         <li>
-            <a href="data.html" class="active">
-                <i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i>
-                <span>Data</span>
-            </a>
+            <script>
+                if (!monitorMode || monitorMode == 'live') {
+                    document.write('<a href="data.html?mode=live" class="active"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
+                } else {
+                    document.write('<a href="data.html?mode=playback" class="active"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
+                }
+            </script>
         </li>
     </ul>
 </div>
@@ -101,44 +130,54 @@
 
 <!-- page-content-wrapper -->
 <div class="page-content-toggle" id="page-content-wrapper">
-    <ul id="data_nav_tabs" class="nav nav-tabs">
-        <li class="nav-item">
-            <a id="data_work_streams_nav_tab" class="nav-link active" href="#">Work Streams</a>
-        </li>
-    </ul>
-    <br/>
-    <div class="container-fluid" style="width:98%;">
-
-        <table id="streamTable" class="table table-hover table-striped">
-            <thead class="thead-inverse">
-            <tr>
-                <th data-field="session_id" data-sortable="true">#</th>
-                <th>Session Start</th>
-                <th>Session End</th>
-                <th>Session Duration</th>
-            </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <table id="eventTable" class="table table-hover table-striped" style="display:none">
-            <thead class="thead-inverse">
-            <tr>
-                <th>Method</th>
-                <th>Thread</th>
-                <th>Timestamp</th>
-                <th>Trigger Method</th>
-                <th>Type</th>
-            </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <div id="jvm_mechanic_session_data">
+        <ul id="data_nav_tabs" class="nav nav-tabs">
+            <li class="nav-item">
+                <a id="data_work_streams_nav_tab" class="nav-link active" href="#">Work Streams</a>
+            </li>
+        </ul>
+        <br/>
+        <div class="container-fluid" style="width:98%;">
+            <table id="streamTable" class="table table-hover table-striped">
+                <thead class="thead-inverse">
+                <tr>
+                    <th data-field="session_id" data-sortable="true">#</th>
+                    <th>Session Start</th>
+                    <th>Session End</th>
+                    <th>Session Duration</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <table id="eventTable" class="table table-hover table-striped" style="display:none">
+                <thead class="thead-inverse">
+                <tr>
+                    <th>Method</th>
+                    <th>Thread</th>
+                    <th>Timestamp</th>
+                    <th>Trigger Method</th>
+                    <th>Type</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <!-- /.container-fluid -->
+    </div>
+    <div id="data_error_message" class="container-fluid" style="width:98%; display: none;">
+        <label style="margin: 25px"><b><font color="red">Data view is not currently supported in live monitoring mode!</font></b></label>
     </div>
     <!-- /.container-fluid -->
-
 </div>
 <!-- /page-content-wrapper -->
+<script>
+    if (monitorMode == 'live') {
+        $('#jvm_mechanic_session_data').hide();
+        $('#data_error_message').show();
+    }
+</script>
 
 </body>
 
