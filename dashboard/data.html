@@ -130,54 +130,42 @@
 
 <!-- page-content-wrapper -->
 <div class="page-content-toggle" id="page-content-wrapper">
-    <div id="jvm_mechanic_session_data">
-        <ul id="data_nav_tabs" class="nav nav-tabs">
-            <li class="nav-item">
-                <a id="data_work_streams_nav_tab" class="nav-link active" href="#">Work Streams</a>
-            </li>
-        </ul>
-        <br/>
-        <div class="container-fluid" style="width:98%;">
-            <table id="streamTable" class="table table-hover table-striped">
-                <thead class="thead-inverse">
-                <tr>
-                    <th data-field="session_id" data-sortable="true">#</th>
-                    <th>Session Start</th>
-                    <th>Session End</th>
-                    <th>Session Duration</th>
-                </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <table id="eventTable" class="table table-hover table-striped" style="display:none">
-                <thead class="thead-inverse">
-                <tr>
-                    <th>Method</th>
-                    <th>Thread</th>
-                    <th>Timestamp</th>
-                    <th>Trigger Method</th>
-                    <th>Type</th>
-                </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
-        <!-- /.container-fluid -->
-    </div>
-    <div id="data_error_message" class="container-fluid" style="width:98%; display: none;">
-        <label style="margin: 25px"><b><font color="red">Data view is not currently supported in live monitoring mode!</font></b></label>
+    <ul id="data_nav_tabs" class="nav nav-tabs">
+        <li class="nav-item">
+            <a id="data_work_streams_nav_tab" class="nav-link active" href="#">Work Streams</a>
+        </li>
+    </ul>
+    <br/>
+    <div class="container-fluid" style="width:98%;">
+        <table id="streamTable" class="table table-hover table-striped">
+            <thead class="thead-inverse">
+            <tr>
+                <th data-field="session_id" data-sortable="true">#</th>
+                <th>Session Start</th>
+                <th>Session End</th>
+                <th>Session Duration</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <table id="eventTable" class="table table-hover table-striped" style="display:none">
+            <thead class="thead-inverse">
+            <tr>
+                <th>Method</th>
+                <th>Thread</th>
+                <th>Timestamp</th>
+                <th>Trigger Method</th>
+                <th>Type</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
     <!-- /.container-fluid -->
 </div>
 <!-- /page-content-wrapper -->
-<script>
-    if (monitorMode == 'live') {
-        $('#jvm_mechanic_session_data').hide();
-        $('#data_error_message').show();
-    }
-</script>
 
 </body>
 
