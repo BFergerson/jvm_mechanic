@@ -20,34 +20,17 @@ function addSessionToTable(sessionId, recordedSession) {
     $("#streamTable > tbody").append(streamTableRow);
 
     streamTableRow.click(function(event) {
-        var eventPositionList = [];
-        var eventSizeList = [];
-        var filePosition = 0;
-
-        sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
-            var sessionId = record["workSessionId"];
-            var workSessionDB = ledgerDB().filter({workSessionId:sessionId});
-
-            workSessionDB.order("ledgerId").each(function (record, recordnumber) {
-                if (record["workSessionId"] == workSessionId) {
-                    eventSizeList.push(record["eventSize"]);
-                    eventPositionList.push(filePosition);
-                }
-                filePosition += record["eventSize"];
-            });
-        });
-
         $('#streamTable').hide();
         $('#eventTable').show();
         $('.row').hide();
 
         var tabList = $('#page-content-wrapper .nav.nav-tabs');
         tabList.append('<li class="nav-item"><a class="nav-link active" href="#">Work Session #' + workSessionId + '</a></li>');
-
-        $.getJSON(host + "/data/event/?event_position=" + eventPositionList.toString() + "&event_size=" + eventSizeList.toString(), function(result) {
-            $("#eventTable > tbody").empty();
+        
+        $("#eventTable > tbody").empty();
+        $.getJSON(host + "/data/session/?session_id=" + workSessionId, function(result) {
             $.each(result, function(i, event){
-                eventdb.insert(event); //todo: don't do append per row; do one big update
+                //todo: don't do append per row; do one big update
                 $("#eventTable > tbody").append(
                     "<tr" + (event["success"] === false ? " class=\"table-danger\"" : "") + ">" +
                     //"<td>" + event["eventId"] + "</td>" +
