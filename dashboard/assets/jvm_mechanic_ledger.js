@@ -48,7 +48,8 @@ function loadLedgerUpdates(initialLoad) {
     $.getJSON(host + "/ledger/?current_ledger_size=" + ledgerSize, function(result) {
         ledgerUpdated = true;
         console.log("Got ledger updates! Size: " + result.length);
-        $.each(result, function(i, entry){
+        $.each(result, function(i, entry) {
+            addRecordedEvent(entry);
             ledgerDB.merge(entry, "uniqueEventId");
             sessionDB.merge({workSessionId:entry["workSessionId"], sessionTimestamp:ledgerDB().filter({workSessionId:entry["workSessionId"]}).min("eventTimestamp")}, "workSessionId");
         });
@@ -94,6 +95,7 @@ function loadMethodNames(initialLoad) {
         downloadMethodNames(initialLoad);
     });
 }
+
 function downloadMethodNames(initialLoad) {
     var eventPositionList = [];
     var eventSizeList = [];

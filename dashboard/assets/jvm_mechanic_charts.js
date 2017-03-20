@@ -197,7 +197,7 @@ function ledgerLoaded() {
 }
 
 function ledgerUpdated() {
-    updateCharts(cutOffMinutesTime);
+    updateCharts(moment().subtract(cutOffMinutesTime, 'minutes'), moment().add(cutOffMinutesTime, 'minutes'));
     evictOldChartData(relativeMethodRuntimeDurationConfig.data, cutOffMinutesTime);
     evictOldChartData(absoluteMethodRuntimeDurationConfig.data, cutOffMinutesTime);
 }
@@ -244,141 +244,140 @@ var methodColorMap = {};
 var totalMethodDurationMap = {};
 var averageDurationMap = {};
 
-function updateCharts(cutOffMinutesTime) {
+function updateCharts(startTime, endTime) {
     console.log("Updating charts...");
-
-    var latestWorkSessionId = null;
-    var latestSessionMethodDurationMap = {};
-    sessionDB().order("sessionTimestamp").each(function (record, recordnumber) {
-        var workSessionId = record["workSessionId"];
-        var workSessionTime = moment(record["sessionTimestamp"]);
-
-        if (!isEvictableData(workSessionTime, cutOffMinutesTime) && sessionAccountedFor[workSessionId] == null) {
-            console.log("Adding session to data: " + workSessionId);
-            sessionAccountedFor[workSessionId] = true;
-            var effectChainList = [];
-            var resultList = [];
-            var workSessionDB = ledgerDB().filter({workSessionId:workSessionId});
-
-            workSessionDB.order("eventId").each(function (record, recordnumber) {
-                var methodId = record["eventMethodId"];
-                var eventTimestamp = record["eventTimestamp"];
-                var eventType = record["eventType"];
-                if (eventType == 0 || eventType == 2) {
-                    //enter
-                    var calcMethodDuration = new WorkSessionMethodDuration(methodId, eventTimestamp);
-                    effectChainList.push(calcMethodDuration);
-                } else if (eventType == 1 || eventType == 3) {
-                    //exit
-                    var calcMethodDuration = effectChainList.pop();
-                    var methodDuration = eventTimestamp - calcMethodDuration.timestamp;
-                    calcMethodDuration.relativeDuration += methodDuration;
-                    calcMethodDuration.absoluteDuration += methodDuration;
-                    resultList.push(calcMethodDuration);
-
-                    if (effectChainList.length > 0) {
-                        var parentCalcMethodDuration = effectChainList[effectChainList.length-1];
-                        parentCalcMethodDuration.relativeDuration -= methodDuration;
-                    }
-                }
-                //console.log(record["eventMethodId"] + " type: " + eventType);
+    var map = getSessionTimelineMap(startTime, endTime, function(sessionIdList) {
+        sessionIdList.forEach(function (item, index) {
+            getRecordedSessionMap(item, function(recordedSession) {
+                addSessionToCharts(item, recordedSession);
             });
+        });
+    });
+}
+
+function addSessionToCharts(workSessionId, recordedSession) {
+    if (sessionAccountedFor[workSessionId]) {
+        return;
+    }
+    console.log("Adding session to chart data: " + workSessionId);
+    sessionAccountedFor[workSessionId] = true;
+    var effectChainList = [];
+    var resultList = [];
+
+    var workSessionDB = TAFFY(JSON.stringify(recordedSession));
+    workSessionDB().order("eventId").each(function (record, recordnumber) {
+        var methodId = record["eventMethodId"];
+        var eventTimestamp = record["eventTimestamp"];
+        var eventType = record["eventType"];
+        if (eventType == 0 || eventType == 2) {
+            //enter/begin
+            var calcMethodDuration = new WorkSessionMethodDuration(methodId, eventTimestamp);
+            effectChainList.push(calcMethodDuration);
+            calcMethodDuration.invocationCount = 1;
+        } else if (eventType == 1 || eventType == 3) {
+            //exit/end
+            var calcMethodDuration = effectChainList.pop();
+            var methodDuration = eventTimestamp - calcMethodDuration.timestamp;
+            calcMethodDuration.relativeDuration += methodDuration;
+            calcMethodDuration.absoluteDuration += methodDuration;
+            calcMethodDuration.invocationCount += 1;
+            resultList.push(calcMethodDuration);
+
             if (effectChainList.length > 0) {
-                console.log("Removing unfinished session: " + workSessionId);
-                sessionAccountedFor[workSessionId] = null;
-                return;
+                var parentCalcMethodDuration = effectChainList[effectChainList.length-1];
+                parentCalcMethodDuration.relativeDuration -= methodDuration;
+            }
+        }
+    });
+
+    var combineList = {};
+    resultList.forEach(function(calcMethodDuration) {
+        var combineMethodDuration = combineList[calcMethodDuration.methodId];
+        if (combineMethodDuration == null) {
+            combineList[calcMethodDuration.methodId] = calcMethodDuration;
+        } else {
+            combineMethodDuration.relativeDuration += calcMethodDuration.relativeDuration;
+            combineMethodDuration.absoluteDuration += calcMethodDuration.absoluteDuration;
+
+            if (calcMethodDuration.timestamp < combineMethodDuration.timestamp) {
+                combineMethodDuration.timestamp = calcMethodDuration.timestamp;
+            }
+        }
+    });
+
+    latestWorkSessionId = workSessionId;
+    latestSessionMethodDurationMap = combineList;
+    var addedTimestamp = false;
+    Object.keys(combineList).forEach(function(key) {
+        var calcMethodDuration = combineList[key];
+        var eventMethodId = calcMethodDuration.methodId;
+        var relativeDuration = calcMethodDuration.relativeDuration;
+        var absoluteDuration = calcMethodDuration.absoluteDuration;
+        var eventTimestamp = calcMethodDuration.timestamp;
+
+        if (averageDurationMap[eventMethodId] == null) {
+            averageDurationMap[eventMethodId] = [];
+        }
+        averageDurationMap[eventMethodId].push(relativeDuration);
+
+        if (totalMethodDurationMap[eventMethodId] == null) {
+            totalMethodDurationMap[eventMethodId] = 0;
+        }
+        totalMethodDurationMap[eventMethodId] += relativeDuration;
+
+        if (addedTimestamp == false) {
+            relativeMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
+            absoluteMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
+            addedTimestamp = true;
+        }
+
+        var addedData = false;
+        relativeMethodRuntimeDurationConfig.data.datasets.forEach(function(dataset) {
+            if (dataset.label === methodNameMap[eventMethodId]) {
+                dataset.data.push(relativeDuration);
+                addedData = true;
+            }
+        });
+        absoluteMethodRuntimeDurationConfig.data.datasets.forEach(function(dataset) {
+            if (dataset.label === methodNameMap[eventMethodId]) {
+                dataset.data.push(absoluteDuration);
+                addedData = true;
+            }
+        });
+
+        if (addedData === false) {
+            var colorNames = Object.keys(window.chartColors);
+            var colorName = colorNames[relativeMethodRuntimeDurationConfig.data.datasets.length % colorNames.length];
+            var newColor = window.chartColors[colorName];
+            if (relativeMethodRuntimeDurationConfig.data.datasets.length >= colorNames.length) {
+                newColor = getRandomColor();
             }
 
-            var combineList = {};
-            resultList.forEach(function(calcMethodDuration) {
-                var combineMethodDuration = combineList[calcMethodDuration.methodId];
-                if (combineMethodDuration == null) {
-                    combineList[calcMethodDuration.methodId] = calcMethodDuration;
-                } else {
-                    combineMethodDuration.relativeDuration += calcMethodDuration.relativeDuration;
-                    combineMethodDuration.absoluteDuration += calcMethodDuration.absoluteDuration;
+            methodColorMap[eventMethodId] = newColor;
+            var newDataset = {
+                label: methodNameMap[eventMethodId],
+                backgroundColor: newColor,
+                borderColor: newColor,
+                data: [],
+                fill: false
+            };
 
-                    if (calcMethodDuration.timestamp < combineMethodDuration.timestamp) {
-                        combineMethodDuration.timestamp = calcMethodDuration.timestamp;
-                    }
-                }
-            });
+            newDataset.data.push(relativeDuration);
+            relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset);
 
-            latestWorkSessionId = workSessionId;
-            latestSessionMethodDurationMap = combineList;
-            var addedTimestamp = false;
-            Object.keys(combineList).forEach(function(key) {
-                var calcMethodDuration = combineList[key];
-                var eventMethodId = calcMethodDuration.methodId;
-                var relativeDuration = calcMethodDuration.relativeDuration;
-                var absoluteDuration = calcMethodDuration.absoluteDuration;
-                var eventTimestamp = calcMethodDuration.timestamp;
+            newDataset = {
+                label: methodNameMap[eventMethodId],
+                backgroundColor: newColor,
+                borderColor: newColor,
+                data: [],
+                fill: false
+            };
 
-                if (averageDurationMap[eventMethodId] == null) {
-                    averageDurationMap[eventMethodId] = [];
-                }
-                averageDurationMap[eventMethodId].push(relativeDuration);
-
-                if (totalMethodDurationMap[eventMethodId] == null) {
-                    totalMethodDurationMap[eventMethodId] = 0;
-                }
-                totalMethodDurationMap[eventMethodId] += relativeDuration;
-
-                if (addedTimestamp == false) {
-                    relativeMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
-                    absoluteMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp));
-                    addedTimestamp = true;
-                }
-
-                var addedData = false;
-                relativeMethodRuntimeDurationConfig.data.datasets.forEach(function(dataset) {
-                    if (dataset.label === methodNameMap[eventMethodId]) {
-                        dataset.data.push(relativeDuration);
-                        addedData = true;
-                    }
-                });
-                absoluteMethodRuntimeDurationConfig.data.datasets.forEach(function(dataset) {
-                    if (dataset.label === methodNameMap[eventMethodId]) {
-                        dataset.data.push(absoluteDuration);
-                        addedData = true;
-                    }
-                });
-
-                if (addedData === false) {
-                    var colorNames = Object.keys(window.chartColors);
-                    var colorName = colorNames[relativeMethodRuntimeDurationConfig.data.datasets.length % colorNames.length];
-                    var newColor = window.chartColors[colorName];
-                    if (relativeMethodRuntimeDurationConfig.data.datasets.length >= colorNames.length) {
-                        newColor = getRandomColor();
-                    }
-
-                    methodColorMap[eventMethodId] = newColor;
-                    var newDataset = {
-                        label: methodNameMap[eventMethodId],
-                        backgroundColor: newColor,
-                        borderColor: newColor,
-                        data: [],
-                        fill: false
-                    };
-
-                    newDataset.data.push(relativeDuration);
-                    relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset);
-
-                    newDataset = {
-                        label: methodNameMap[eventMethodId],
-                        backgroundColor: newColor,
-                        borderColor: newColor,
-                        data: [],
-                        fill: false
-                    };
-
-                    newDataset.data.push(absoluteDuration);
-                    absoluteMethodRuntimeDurationConfig.data.datasets.push(newDataset);
-                }
-                window.relativeMethodRuntimeDurationLine.update();
-                window.absoluteMethodRuntimeDurationLine.update();
-            });
+            newDataset.data.push(absoluteDuration);
+            absoluteMethodRuntimeDurationConfig.data.datasets.push(newDataset);
         }
+        window.relativeMethodRuntimeDurationLine.update();
+        window.absoluteMethodRuntimeDurationLine.update();
     });
 
     //update last session bar chart
@@ -472,4 +471,5 @@ function WorkSessionMethodDuration(methodId, timestamp) {
     this.relativeDuration = 0;
     this.absoluteDuration = 0;
     this.timestamp = timestamp;
+    this.invocationCount = 0;
 }
