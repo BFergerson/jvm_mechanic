@@ -154,18 +154,20 @@ var totalMethodDurationPolarChartConfig = {
 };
 
 window.chartColors = {
-    darkred: 'rgb(200,0,0)',
-    orange: 'rgb(255, 159, 64)',
-    yellow: 'rgb(255, 205, 86)',
-    green: 'rgb(75, 192, 192)',
-    blue: 'rgb(0,0,255)',
+    seagreen: 'rgb(34, 95, 111)',
+    tan: 'rgb(207, 196, 163)',
+    kindablack: 'rgb(50, 46, 48)',
+    darkseagreen: 'rgb(140, 181, 181)',
+    rosybrown: 'rgb(166, 119, 91)',
+    lightsteelblue: 'rgb(215, 215, 217)',
+    greyish: 'rgb(135, 132, 132)',
+    coral: 'rgb(255,127,80)',
     purple: 'rgb(153, 102, 255)',
     darkslategray: 'rgb(47,79,79)',
     skyblue: 'rgb(135,206,235)',
+    sienna: 'rgb(164, 108, 76)',
     magenta: 'rgb(255,0,255)',
-    coral: 'rgb(255,127,80)',
-    peach: 'rgb(255,218,185)',
-    black: 'rgb(0,0,0)'
+    peach: 'rgb(255,218,185)'
 };
 
 function ledgerLoaded() {
