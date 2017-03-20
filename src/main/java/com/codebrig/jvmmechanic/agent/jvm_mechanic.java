@@ -4,11 +4,17 @@ import com.codebrig.jvmmechanic.agent.event.BeginWorkEvent;
 import com.codebrig.jvmmechanic.agent.event.EndWorkEvent;
 import com.codebrig.jvmmechanic.agent.event.EnterEvent;
 import com.codebrig.jvmmechanic.agent.event.ExitEvent;
+import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 import com.codebrig.jvmmechanic.agent.stash.StashPersistenceStream;
 import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -22,6 +28,9 @@ public class jvm_mechanic extends Helper {
     private static StashPersistenceStream stashStream;
     private static final Object singletonLock = new Object();
     private static final ThreadLocal<Integer> threadLocalStorage = new ThreadLocal<>();
+    public static final Map<Short, String> REGISTERED_METHOD_ID_MAP = new HashMap<>();
+    private static final Properties prop = new Properties();
+    private static OutputStream output = null;
 
     public jvm_mechanic(Rule rule) throws IOException {
         super(rule);
@@ -38,6 +47,22 @@ public class jvm_mechanic extends Helper {
                 String ledgerFileProperty = System.getProperty("jvm_mechanic.stash.ledger.filename", "C:\\temp\\jvm_mechanic.ledger");
                 String dataFileProperty = System.getProperty("jvm_mechanic.stash.data.filename", "C:\\temp\\jvm_mechanic.data");
                 stashStream = new StashPersistenceStream(ledgerFileProperty, dataFileProperty);
+
+                //make config file
+                String configFileProperty = System.getProperty("jvm_mechanic.config.filename", "C:\\temp\\jvm_mechanic.config");
+                String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
+                try {
+                    output = new FileOutputStream(configFileProperty);
+                    prop.setProperty("jvm_mechanic.stash.ledger.filename", ledgerFileProperty);
+                    prop.setProperty("jvm_mechanic.stash.data.filename", dataFileProperty);
+                    prop.setProperty("jvm_mechanic.config.filename", configFileProperty);
+                    prop.setProperty("jvm_mechanic.config.journal_entry_size", Integer.toString(JournalEntry.JOURNAL_ENTRY_SIZE));
+                    prop.setProperty("jvm_mechanic.gc.filename", gcLogFileName);
+                    prop.setProperty("jvm_mechanic.event.session_sample_accuracy", Double.toString(sessionSampleAccuracy * 100.00d));
+                    prop.store(output, null);
+                } catch (IOException io) {
+                    io.printStackTrace();
+                }
             }
         }
     }
@@ -63,6 +88,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 
@@ -85,6 +120,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 
@@ -108,6 +153,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 
@@ -129,6 +184,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 
@@ -151,6 +216,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 
@@ -172,6 +247,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 
@@ -194,6 +279,16 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
+
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
+            prop.put("method_id_" + eventMethodId, event.eventMethod);
+            try {
+                prop.store(output, null);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
         stashStream.stashMechanicEvent(event);
     }
 

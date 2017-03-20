@@ -24,6 +24,15 @@ function loadConfigSettings() {
         $("#dataFileSize").text(result.dataFileSize);
         $("#gcFileLocation").text(result.gcFileLocation);
         $("#gcFileSize").text(formatSizeUnits(result.gcFileSize));
+
+        var monitorMethodCount = 0;
+        if (result.methodNameMap) {
+            Object.keys(result.methodNameMap).forEach(function(methodId) {
+                methodNameMap[methodId] = result.methodNameMap[methodId];
+                monitorMethodCount++;
+            });
+        }
+        $("#monitorMethodCount").text(monitorMethodCount + " methods");
     }).always(function(result) {
         //todo: anything?
     });

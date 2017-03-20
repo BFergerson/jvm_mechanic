@@ -1,5 +1,8 @@
 package com.codebrig.jvmmechanic.dashboard;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * todo: this
  *
@@ -14,7 +17,12 @@ public class MechanicConfig {
     private long ledgerFileSize;
     private long dataFileSize;
     private long gcFileSize;
-    public int journalEntrySize;
+    private int journalEntrySize;
+    private Map<Short, String> methodNameMap = new HashMap<>();
+
+    public void addMethodName(short methodId, String methodName) {
+        methodNameMap.put(methodId, methodName);
+    }
 
     public String getLedgerFileLocation() {
         return ledgerFileLocation;
@@ -78,6 +86,10 @@ public class MechanicConfig {
 
     public void setJournalEntrySize(int journalEntrySize) {
         this.journalEntrySize = journalEntrySize;
+    }
+
+    public Map<Short, String> getMethodNameMap() {
+        return methodNameMap;
     }
 
 }

@@ -32,6 +32,7 @@
             });
         };
     </script>
+    <script src="assets/utils.js"></script>
     <script src="assets/taffy-min.js"></script>
     <script src="assets/jquery/jquery-3.1.0.min.js"></script>
     <script src="assets/q.min.js"></script>
@@ -61,8 +62,7 @@
                     <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
                 </a>
             </div>
-            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache
-            </button>
+            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
         </div>
     </div>
 </nav>
@@ -101,6 +101,19 @@
     <div style="margin-top: 10px">
         <div class="container-fluid" style="width: 98%">
             <div class="row">
+                <div class="col-sm-1">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Live Monitoring
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="?mode=playback">Playback</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
                 <div class="col-sm-3">
                     <div class="panel panel-default">
                         <div class="panel-heading">General Monitoring Information</div>
@@ -134,7 +147,8 @@
                             - <br/>
                             <b>GC File Location:</b> <label id="gcFileLocation" style="margin-bottom: 0">n/a</label><br/>
                             <b>GC File Size:</b> <label id="gcFileSize" style="margin-bottom: 0">n/a</label><br/>
-                            <br/>
+                            - <br/>
+                            <b>Monitoring methods: </b> <label id="monitorMethodCount" style="margin-bottom: 0">n/a</label>
                             <br/>
                         </div>
                     </div>

@@ -10,12 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.util.ServerRunner;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
  * todo: this
@@ -200,22 +196,46 @@ public class MechanicDashboard {
         }
 
         private Response handleConfigRequest(IHTTPSession session) throws IOException {
-            String ledgerFileProperty = System.getProperty("jvm_mechanic.stash.ledger.filename", "C:\\temp\\jvm_mechanic.ledger");
-            String dataFileProperty = System.getProperty("jvm_mechanic.stash.data.filename", "C:\\temp\\jvm_mechanic.data");
-            String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
-            String sessionSampleAccuracyProperty = System.getProperty("jvm_mechanic.event.session_sample_accuracy", "100.00");
-            double sessionSampleAccuracy = Double.valueOf(sessionSampleAccuracyProperty);
-
             MechanicConfig config = new MechanicConfig();
-            config.setLedgerFileLocation(ledgerFileProperty);
-            config.setDataFileLocation(dataFileProperty);
-            config.setGcFileLocation(gcLogFileName);
-            config.setSessionSampleAccuracy(sessionSampleAccuracy);
+            String configFileProperty = System.getProperty("jvm_mechanic.config.filename", "C:\\temp\\jvm_mechanic.config");
+            Properties prop = new Properties();
+            InputStream input = null;
+            try {
+                input = new FileInputStream(configFileProperty);
+                prop.load(input);
+
+                Enumeration e = prop.propertyNames();
+                while (e.hasMoreElements()) {
+                    String key = (String) e.nextElement();
+                    if (key != null && key.startsWith("method_id_")) {
+                        int methodId = Integer.parseInt(key.replace("method_id_", ""));
+                        String methodName = prop.getProperty(key);
+                        config.addMethodName((short) methodId, methodName);
+                    }
+                }
+            } catch(IOException ex) {
+                NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
+                res.addHeader("Access-Control-Allow-Origin", "*");
+                return res;
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            config.setLedgerFileLocation(prop.getProperty("jvm_mechanic.stash.ledger.filename"));
+            config.setDataFileLocation(prop.getProperty("jvm_mechanic.stash.data.filename"));
+            config.setGcFileLocation(prop.getProperty("jvm_mechanic.gc.filename"));
+            config.setSessionSampleAccuracy(Double.valueOf(prop.getProperty("jvm_mechanic.event.session_sample_accuracy")));
             config.setLedgerFileSize(stashLedgerFile.getSize());
             config.setDataFileSize(stashDataFile.getSize());
-            config.setJournalEntrySize(JournalEntry.JOURNAL_ENTRY_SIZE);
-            if (new File(gcLogFileName).exists()) {
-                config.setGcFileSize(new File(gcLogFileName).length());
+            config.setJournalEntrySize(Integer.valueOf(prop.getProperty("jvm_mechanic.config.journal_entry_size")));
+            if (new File(prop.getProperty("jvm_mechanic.gc.filename")).exists()) {
+                config.setGcFileSize(new File(prop.getProperty("jvm_mechanic.gc.filename")).length());
             }
 
             //output json
