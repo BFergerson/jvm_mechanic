@@ -54,6 +54,7 @@ function sendLedgerRequest(initialLoad) {
         ledgerUpdated = true;
         console.log("Got ledger updates! Size: " + result.length);
         $.each(result, function(i, entry) {
+            ledgerPosition++;
             addRecordedEvent(entry);
 
             if (entry.eventMethodId) {

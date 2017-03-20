@@ -193,6 +193,27 @@ function ledgerLoaded() {
     ledgerUpdated();
     setInterval(function() {
         loadLedgerUpdates();
+
+        //update general monitoring info
+        $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
+        if (lastSessionTimestamp) {
+            $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
+        }
+
+        //events
+        var eventsAccountedForCount = 0;
+        Object.keys(sessionAccountedForEventCount).forEach(function(key) {
+            var eventCount = sessionAccountedForEventCount[key];
+            eventsAccountedForCount += eventCount;
+        });
+        $("#eventsAccountedFor").text(eventsAccountedForCount);
+
+        //sessions
+        var sessionAccountedForCount = 0;
+        Object.keys(sessionAccountedFor).forEach(function(key) {
+            sessionAccountedForCount++;
+        });
+        $("#sessionsAccountedFor").text(sessionAccountedForCount);
     }, 5000);
 }
 
@@ -222,9 +243,13 @@ function evictOldChartData(data, cutOffMinutesTime) {
     if (chartHasData(data.datasets)) {
         if (isEvictableData(data.labels[0], cutOffMinutesTime)) {
             console.log("Evicting data more than " + cutOffMinutesTime + " minutes!");
-            //sessionAccountedFor.pop(); todo: remove session from here too
+
             data.labels.shift();
             data.datasets.forEach(function(dataset) {
+                if (dataset.sessionId) {
+                    delete sessionAccountedFor[dataset.sessionId];
+                    delete sessionAccountedForEventCount[dataset.sessionId];
+                }
                 dataset.data.shift();
             });
             window.relativeMethodRuntimeDurationLine.update();
@@ -240,9 +265,11 @@ function evictOldChartData(data, cutOffMinutesTime) {
 }
 
 var sessionAccountedFor = {};
+var sessionAccountedForEventCount = {};
 var methodColorMap = {};
 var totalMethodDurationMap = {};
 var averageDurationMap = {};
+var lastSessionTimestamp = null;
 
 function updateCharts(startTime, endTime) {
     console.log("Updating charts...");
@@ -263,11 +290,18 @@ function addSessionToCharts(workSessionId, recordedSession) {
     sessionAccountedFor[workSessionId] = true;
     var effectChainList = [];
     var resultList = [];
+    var sessionStartTimestamp = null;
+    var sessionEventCount = 0;
 
     var workSessionDB = TAFFY(JSON.stringify(recordedSession));
     workSessionDB().order("eventId").each(function (record, recordnumber) {
+        sessionEventCount++;
         var methodId = record["eventMethodId"];
         var eventTimestamp = record["eventTimestamp"];
+        if (!sessionStartTimestamp) {
+            sessionStartTimestamp = eventTimestamp;
+        }
+
         var eventType = record["eventType"];
         if (eventType == 0 || eventType == 2) {
             //enter/begin
@@ -289,6 +323,7 @@ function addSessionToCharts(workSessionId, recordedSession) {
             }
         }
     });
+    sessionAccountedForEventCount[workSessionId] = sessionEventCount;
 
     var combineList = {};
     resultList.forEach(function(calcMethodDuration) {
@@ -305,6 +340,7 @@ function addSessionToCharts(workSessionId, recordedSession) {
         }
     });
 
+    lastSessionTimestamp = sessionStartTimestamp;
     latestWorkSessionId = workSessionId;
     latestSessionMethodDurationMap = combineList;
     var addedTimestamp = false;
@@ -359,7 +395,8 @@ function addSessionToCharts(workSessionId, recordedSession) {
                 backgroundColor: newColor,
                 borderColor: newColor,
                 data: [],
-                fill: false
+                fill: false,
+                sessionId: workSessionId
             };
 
             newDataset.data.push(relativeDuration);
@@ -370,7 +407,8 @@ function addSessionToCharts(workSessionId, recordedSession) {
                 backgroundColor: newColor,
                 borderColor: newColor,
                 data: [],
-                fill: false
+                fill: false,
+                sessionId: workSessionId
             };
 
             newDataset.data.push(absoluteDuration);
@@ -408,9 +446,9 @@ function addSessionToCharts(workSessionId, recordedSession) {
 
     //avg method duration polar chat
     var newDataset = {
-         backgroundColor: [],
-         hoverBackgroundColor: [],
-         data: []
+        backgroundColor: [],
+        hoverBackgroundColor: [],
+        data: []
     };
     if (averageMethodDurationPolarChartConfig.data.datasets.length != 0) {
         newDataset = averageMethodDurationPolarChartConfig.data.datasets[0];

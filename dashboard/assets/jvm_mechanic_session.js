@@ -31,6 +31,7 @@ function addRecordedSession(sessionEventList) {
             }
         }).done();
     }
+
     delete activeSessionMap[sessionId];
     savedRecordedSession(sessionId, sessionEventList);
     saveRecordedSessionToTimelineMap(sessionId, earliestEvent, sessionEventList);

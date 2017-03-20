@@ -63,6 +63,14 @@
                 </a>
             </div>
             <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
+            <div class="dropdown" style="display: inline-block">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Live Monitoring
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="?mode=playback">Playback</a>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -101,34 +109,21 @@
     <div style="margin-top: 10px">
         <div class="container-fluid" style="width: 98%">
             <div class="row">
-                <div class="col-sm-1">
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Live Monitoring
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="?mode=playback">Playback</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <br/>
-            <div class="row">
                 <div class="col-sm-3">
                     <div class="panel panel-default">
                         <div class="panel-heading">General Monitoring Information</div>
                         <div class="panel-body">
-                            <b>First Recorded Request:</b> then <br/>
-                            <b>Last Recorded Request:</b> now <br/>
+                            <b>First Recorded Request:</b> <label id="earliestSessionTimestamp" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Last Recorded Request:</b> <label id="latestSessionTimestamp" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>Total Recorded Events:</b> 10,522 <br/>
-                            <b>Event Recording Rate:</b> 2,040 per second <br/>
+                            <b>Total Recorded Events:</b> <label id="eventsAccountedFor" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Event Recording Rate:</b> n/a <br/>
                             - <br/>
-                            <b>Total Recorded Sessions:</b> 122 <br/>
-                            <b>Session Recording Rate:</b> 20 per second <br/>
+                            <b>Total Recorded Sessions:</b> <label id="sessionsAccountedFor" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Session Recording Rate:</b> n/a <br/>
                             - <br/>
-                            <b>CPU Usage - System:</b> 60.5% <br/>
-                            <b>CPU Usage - Java:</b> 22.4% <br/>
+                            <b>CPU Usage - System:</b> n/a <br/>
+                            <b>CPU Usage - Java:</b> n/a <br/>
                             <br/>
                         </div>
                     </div>
