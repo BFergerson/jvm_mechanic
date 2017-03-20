@@ -195,7 +195,9 @@ function ledgerLoaded() {
         loadLedgerUpdates();
 
         //update general monitoring info
-        $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
+        if (earliestSessionTimestamp) {
+            $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
+        }
         if (lastSessionTimestamp) {
             $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A (M/D/Y)"));
         }
@@ -252,7 +254,6 @@ function evictOldChartData(data, cutOffMinutesTime) {
                 }
                 dataset.data.shift();
             });
-            window.relativeMethodRuntimeDurationLine.update();
 
             //avg method duration polar chart
             //todo: make own method averages[];
@@ -340,7 +341,10 @@ function addSessionToCharts(workSessionId, recordedSession) {
         }
     });
 
-    lastSessionTimestamp = sessionStartTimestamp;
+    if (!lastSessionTimestamp || moment(sessionStartTimestamp).isAfter(moment(lastSessionTimestamp))) {
+        lastSessionTimestamp = sessionStartTimestamp;
+    }
+
     latestWorkSessionId = workSessionId;
     latestSessionMethodDurationMap = combineList;
     var addedTimestamp = false;
@@ -414,8 +418,6 @@ function addSessionToCharts(workSessionId, recordedSession) {
             newDataset.data.push(absoluteDuration);
             absoluteMethodRuntimeDurationConfig.data.datasets.push(newDataset);
         }
-        window.relativeMethodRuntimeDurationLine.update();
-        window.absoluteMethodRuntimeDurationLine.update();
     });
 
     //update last session bar chart
@@ -437,11 +439,10 @@ function addSessionToCharts(workSessionId, recordedSession) {
         Object.keys(latestSessionMethodDurationMap).forEach(function(key) {
             var methodDuration = latestSessionMethodDurationMap[key];
             //console.log("Method id: " + methodDuration.methodId + "; Latest (relative): " + methodDuration.relativeDuration);
-            window.currentMethodDurationBarChart.data.labels.push(methodNameMap[methodDuration.methodId]);
+            window.currentMethodDurationBarChart.data.labels.push(removePackageAndClassName(methodNameMap[methodDuration.methodId]));
             newDataset.backgroundColor.push(methodColorMap[methodDuration.methodId]);
             newDataset.data.push(methodDuration.relativeDuration);
         });
-        window.currentMethodDurationBarChart.update();
     }
 
     //avg method duration polar chat
@@ -469,7 +470,6 @@ function addSessionToCharts(workSessionId, recordedSession) {
         newDataset.backgroundColor.push(methodColorMap[methodId]);
         newDataset.data.push(durationSum / durationList.length);
     });
-    window.averageMethodDurationPolarChart.update();
 
     //total method duration polar chat
     var newDataset = {
@@ -492,7 +492,12 @@ function addSessionToCharts(workSessionId, recordedSession) {
         newDataset.backgroundColor.push(methodColorMap[methodId]);
         newDataset.data.push(totalMethodDuration);
     });
+
+    window.currentMethodDurationBarChart.update();
+    window.averageMethodDurationPolarChart.update();
     window.totalMethodDurationPolarChart.update();
+    window.relativeMethodRuntimeDurationLine.update();
+    window.absoluteMethodRuntimeDurationLine.update();
 }
 
 function getRandomColor() {

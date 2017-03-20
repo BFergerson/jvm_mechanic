@@ -15,13 +15,16 @@ var desiredCapacity = 50 * 1024 * 1024; // 50MB
 var storage = new LargeLocalStorage({
     size: desiredCapacity
 });
-storage.initialized.then(function() {
-    console.log("Local storage size: " + storage.size);
-    console.log("Local storage capacity: " + storage.getCapacity() + " bytes");
-    loadLedgerUpdates(true);
-}, function() {
-    console.log('denied');
-    //todo: fail in some spectacular way
+
+$(document).ready(function() {
+    storage.initialized.then(function() {
+        console.log("Local storage size: " + storage.size);
+        console.log("Local storage capacity: " + storage.getCapacity() + " bytes");
+        loadLedgerUpdates(true);
+    }, function() {
+        console.log('denied');
+        //todo: fail in some spectacular way
+    });
 });
 
 function loadLedgerUpdates() {

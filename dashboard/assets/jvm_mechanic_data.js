@@ -74,13 +74,14 @@ function loadAllWorkSessions() {
         //todo: this better
         setTimeout(function() {
             console.log("Set data table");
-            $('#streamTable').DataTable();
+            var table;
+            if ($.fn.dataTable.isDataTable( '#streamTable' ) ) {
+                table = $('#streamTable').DataTable();
+            } else {
+                table = $('#streamTable').DataTable({
+                    "order": [[ 1, "asc" ]]
+                });
+            }
         }, 5000);
     });
-}
-
-function removePackageName(fullyQuantifiedMethodName) {
-    if (fullyQuantifiedMethodName == null || !fullyQuantifiedMethodName.includes(".")) return fullyQuantifiedMethodName;
-    var methodNameArr = fullyQuantifiedMethodName.split(".");
-    return methodNameArr[methodNameArr.length - 2]  + "." + methodNameArr[methodNameArr.length - 1];
 }
