@@ -132,8 +132,12 @@ function getSessionTimelineMap(startTime, endTime, callback) {
     }
 
     function doWork() {
-        if (!startTime || startTime.isBefore(moment(earliestSessionTimestamp))) {
-            startTime = moment(earliestSessionTimestamp);
+        if (!startTime || !earliestSessionTimestamp || startTime.isBefore(moment(earliestSessionTimestamp))) {
+            if (earliestSessionTimestamp) {
+                startTime = moment(earliestSessionTimestamp);
+            } else {
+                startTime = moment();
+            }
         }
         if (!endTime || endTime.isAfter(moment())) {
             endTime = moment().add('1', 'minute').startOf('minute');
