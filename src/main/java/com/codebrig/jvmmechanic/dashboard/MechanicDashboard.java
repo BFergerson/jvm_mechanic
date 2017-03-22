@@ -184,6 +184,7 @@ public class MechanicDashboard {
             }
             sessionRequestCountMap.get(sessionId).getAndIncrement();
 
+            //todo: update sessionEventMap with anything new and don't allow it to store with 0 events
             if (!sessionEventMap.containsKey(sessionId)) {
                 TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
                 Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();

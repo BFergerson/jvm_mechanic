@@ -1,5 +1,8 @@
 package com.codebrig.jvmmechanic.dashboard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * todo: this
  *
@@ -19,6 +22,7 @@ public class GarbageCollectionReport {
     private double stoppedTimeMaxPause;
     private double stoppedTimeTotal;
     private double GCStoppedRatio;
+    private List<GarbageCollectionPause> garbageCollectionPauseList = new ArrayList<>();
 
     public int getTotalGCEvents() {
         return totalGCEvents;
@@ -114,6 +118,14 @@ public class GarbageCollectionReport {
 
     public void setGCStoppedRatio(double GCStoppedRatio) {
         this.GCStoppedRatio = GCStoppedRatio;
+    }
+
+    public List<GarbageCollectionPause> getGarbageCollectionPauseList() {
+        return garbageCollectionPauseList;
+    }
+
+    public void addGarbageCollectionPause(GarbageCollectionPause garbageCollectionPause) {
+        garbageCollectionPauseList.add(garbageCollectionPause);
     }
 
 }
