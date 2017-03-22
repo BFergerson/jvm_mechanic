@@ -191,6 +191,8 @@ function ledgerLoaded() {
     ctx = document.getElementById("total_relative_method_duration_polar_canvas").getContext("2d");
     window.totalMethodDurationPolarChart = new Chart(ctx, totalMethodDurationPolarChartConfig);
 
+    //todo: add invocation count bar chart
+
     if (monitorMode == 'live') {
         //update charts every 5 seconds
         ledgerUpdated();
@@ -258,6 +260,7 @@ function evictOldChartDataPlayback(data, startTime, endTime) {
     //todo: don't kill everything? your choice
     data.datasets = [];
     data.labels = [];
+    sessionAccountedForCalcMap = {};
     sessionAccountedFor = {};
     sessionAccountedForEventCount = {};
     totalMethodDurationMap = {};
@@ -281,6 +284,7 @@ function evictOldChartData(data, cutOffMinutesTime) {
                     console.log("Evicting: " + dataset.sessionId);
                     delete sessionAccountedFor[dataset.sessionId];
                     delete sessionAccountedForEventCount[dataset.sessionId];
+                    delete sessionAccountedForCalcMap[dataset.sessionId];
                 }
                 dataset.data.shift();
             });
@@ -295,6 +299,7 @@ function evictOldChartData(data, cutOffMinutesTime) {
     }
 }
 
+var sessionAccountedForCalcMap = {};
 var sessionAccountedFor = {};
 var sessionAccountedForEventCount = {};
 var methodColorMap = {};
@@ -324,11 +329,118 @@ function updateCharts(startTime, endTime) {
                 return a[0].eventTimestamp - b[0].eventTimestamp;
             });
             result.forEach(function(recordedSession) {
-                var sessionId = recordedSession[0].workSessionId;
-                addSessionToCharts(sessionId, recordedSession);
+                if (recordedSession) {
+                    var sessionId = recordedSession[0].workSessionId;
+                    addSessionToCharts(sessionId, recordedSession);
+                } else {
+                    console.log("Skipped empty session!");
+                }
             });
 
             updateGeneralMonitoringInformation();
+            makeGarbageCharts(startTime, endTime, sessionIdList);
+        });
+    });
+}
+
+var garbageCanvasMap = {};
+var garbageCanvasPositionMap = {};
+function makeGarbageCharts(startTime, endTime, sessionList) {
+    getGarbagePauseTimelineMap(startTime, endTime, function(garbagePauseList) {
+        var methodRunningMap = {};
+        sessionList.forEach(function(sessionId) {
+            if (!sessionAccountedForCalcMap[sessionId]) return;
+
+            Object.keys(sessionAccountedForCalcMap[sessionId]).forEach(function(key) {
+                var calcMethodDuration = sessionAccountedForCalcMap[sessionId][key];
+                garbagePauseList.forEach(function(garbagePause) {
+                    calcMethodDuration.actualMethodRuntimeList.forEach(function(methodRunningList) {
+                        var start = methodRunningList[0];
+                        var end = methodRunningList[1];
+
+                        if (garbagePause.pauseTimestamp >= start && garbagePause.pauseTimestamp <= end) {
+                            var pauseDuration = end - garbagePause.pauseTimestamp;
+                            if (pauseDuration > garbagePause.pauseDuration) {
+                                pauseDuration = garbagePause.pauseDuration;
+                            }
+
+                            if (!methodRunningMap[calcMethodDuration.methodId]) {
+                                methodRunningMap[calcMethodDuration.methodId] = 0;
+                            }
+                            methodRunningMap[calcMethodDuration.methodId] += pauseDuration;
+                        }
+                    });
+                });
+            });
+        });
+
+        var garbageCount = 0;
+        Object.keys(garbageCanvasMap).forEach(function(key) {
+            garbageCount++;
+        });
+        var id = garbageCount;
+
+        var updatedMethodMap = {};
+        Object.keys(methodRunningMap).forEach(function(methodId) {
+            var totalLive = totalMethodDurationMap[methodId];
+            var totalPauseTime = methodRunningMap[methodId];
+            var totalRuntime = totalLive - totalPauseTime;
+
+            var chart = null;
+            if (garbageCanvasMap[methodId]) {
+                //update old
+                chart = garbageCanvasMap[methodId];
+                chart.data.datasets[0].data = [totalRuntime, totalPauseTime];
+            } else {
+                //add new
+                var ctx = document.getElementById("test_canvas_" + id).getContext("2d");
+                chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [],
+                        labels: []
+                    }
+                });
+                chart.data.labels.push("Run");
+                chart.data.labels.push("Pause");
+
+                $("#test_heading_" + id).text(methodNameMap[methodId]);
+                garbageCanvasMap[methodId] = chart;
+                garbageCanvasPositionMap[methodId] = id++;
+
+                var newDataset = {
+                    data: [totalRuntime, totalPauseTime],
+                    backgroundColor: [
+                        methodColorMap[methodId],
+                        "#8B0000"
+                    ],
+                    hoverBackgroundColor: [
+                        methodColorMap[methodId],
+                        "#8B0000"
+                    ]
+                };
+                chart.data.datasets.push(newDataset);
+            }
+
+            chart.update();
+            updatedMethodMap[methodId] = true;
+
+            //update labels
+            $("#total_run_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalRuntime) + " (" + roundNumber((totalRuntime / totalLive) * 100.00, 2) + "%)");
+            $("#total_pause_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalPauseTime) + " (" + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + "%)");
+            $("#total_live_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalLive));
+        });
+
+        //clear anything not updated
+        Object.keys(garbageCanvasMap).forEach(function(key) {
+            if (updatedMethodMap[key]) {
+                $("#garbage_panel_" + garbageCanvasPositionMap[key]).show();
+            } else {
+                //var chart = garbageCanvasMap[key];
+                //chart.data.datasets.pop();
+                //chart.update();
+                //$("#garbage_panel_" + garbageCanvasPositionMap[key]).hide();
+            }
         });
     });
 }
@@ -392,6 +504,7 @@ function updateGeneralMonitoringInformation() {
     }
 }
 
+//todo: redo this whole method (specially method duration calc part)
 function addSessionToCharts(workSessionId, recordedSession) {
     if (sessionAccountedFor[workSessionId]) {
         return;
@@ -402,6 +515,8 @@ function addSessionToCharts(workSessionId, recordedSession) {
     var sessionStartTimestamp = null;
     var sessionEventCount = 0;
 
+    var methodStartedTimestamp = null;
+    var methodEndedTimestamp  = null;
     var workSessionDB = TAFFY(JSON.stringify(recordedSession));
     workSessionDB().order("eventId").each(function (record, recordnumber) {
         sessionEventCount++;
@@ -425,10 +540,46 @@ function addSessionToCharts(workSessionId, recordedSession) {
         if (eventType == 0 || eventType == 2) {
             //enter/begin
             var calcMethodDuration = new WorkSessionMethodDuration(methodId, eventTimestamp);
+
+            //another method started; add to actualMethodRuntimeList
+            var prevCalcMethod = calcMethodDuration;
+            if (effectChainList.length > 0) {
+                prevCalcMethod = effectChainList[effectChainList.length - 1];
+            }
+
+            if (methodEndedTimestamp && methodEndedTimestamp != eventTimestamp) {
+                //inbetween method end and method start, goes to parent method
+                prevCalcMethod.actualMethodRuntimeList.push([methodEndedTimestamp, eventTimestamp]);
+            }
+            methodStartedTimestamp = eventTimestamp;
+            methodEndedTimestamp = null;
+
             effectChainList.push(calcMethodDuration);
-            calcMethodDuration.invocationCount = 1;
+            calcMethodDuration.invocationCount = 0;
         } else if (eventType == 1 || eventType == 3) {
             //exit/end
+            if (methodEndedTimestamp) {
+                //another method started; add to actualMethodRuntimeList
+                var prevCalcMethod = calcMethodDuration;
+                if (effectChainList.length > 0) {
+                    prevCalcMethod = effectChainList[effectChainList.length - 1];
+                }
+
+                if (eventTimestamp != methodEndedTimestamp) {
+                    prevCalcMethod.actualMethodRuntimeList.push([eventTimestamp, methodEndedTimestamp]);
+                }
+                methodEndedTimestamp = eventTimestamp;
+            } else {
+                var prevCalcMethod = calcMethodDuration;
+                if (effectChainList.length > 0) {
+                    prevCalcMethod = effectChainList[effectChainList.length - 1];
+                }
+                if (methodStartedTimestamp != eventTimestamp) {
+                    prevCalcMethod.actualMethodRuntimeList.push([methodStartedTimestamp, eventTimestamp]);
+                }
+                methodEndedTimestamp = eventTimestamp;
+            }
+
             var calcMethodDuration = effectChainList.pop();
             var methodDuration = eventTimestamp - calcMethodDuration.timestamp;
             calcMethodDuration.relativeDuration += methodDuration;
@@ -458,6 +609,7 @@ function addSessionToCharts(workSessionId, recordedSession) {
             }
         }
     });
+    sessionAccountedForCalcMap[workSessionId] = combineList;
 
     if (!lastSessionTimestamp || moment(sessionStartTimestamp).isAfter(moment(lastSessionTimestamp))) {
         lastSessionTimestamp = sessionStartTimestamp;
@@ -634,4 +786,5 @@ function WorkSessionMethodDuration(methodId, timestamp) {
     this.absoluteDuration = 0;
     this.timestamp = timestamp;
     this.invocationCount = 0;
+    this.actualMethodRuntimeList = [];
 }

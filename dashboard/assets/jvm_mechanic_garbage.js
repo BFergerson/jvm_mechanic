@@ -1,12 +1,6 @@
 //config
 var host = "http://localhost:9000";
 
-loadGarbageUpdates();
-//update garbage stats every 30 seconds
-setInterval(function() {
-    loadGarbageUpdates();
-}, 30000);
-
 function loadGarbageUpdates() {
     console.log("Downloading latest garbage collection stats...");
 
@@ -24,25 +18,111 @@ function loadGarbageUpdates() {
         $("#stoppedTimeMaxPause").text(moment.duration(result.stoppedTimeMaxPause).asSeconds() + " seconds");
         $("#stoppedTimeTotal").text(moment.duration(result.stoppedTimeTotal).asSeconds() + " seconds");
         $("#GCStoppedRatio").text(result.gcstoppedRatio + "%");
+
+        //store garbage events
+        result.garbageCollectionPauseList.forEach(function(event) {
+            saveGarbagePauseToTimelineMap(event);
+        });
     }).always(function(result) {
         //todo: anything?
     });
 }
 
-function humanFileSize(bytes) {
-    var si = false;
-    bytes *= 1024;
-    var thresh = si ? 1000 : 1024;
-    if(Math.abs(bytes) < thresh) {
-        return bytes + ' B';
+var activeGarbageTimelineMap = {};
+function saveGarbagePauseToTimelineMap(garbagePauseEvent) {
+    var timelineInterval = moment(garbagePauseEvent.pauseTimestamp).startOf('minute').valueOf();
+    var garbagePauseList = activeGarbageTimelineMap[timelineInterval];
+    if (!garbagePauseList) {
+        garbagePauseList = [];
+        activeGarbageTimelineMap[timelineInterval] = garbagePauseList;
     }
-    var units = si
-        ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
-        : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
-    var u = -1;
-    do {
-        bytes /= thresh;
-        ++u;
-    } while(Math.abs(bytes) >= thresh && u < units.length - 1);
-    return bytes.toFixed(2)+' '+units[u];
+
+    storage.getContents('garbage_data.timeline.' + timelineInterval.valueOf()).then(function(content) {
+        var storedGarbagePauseList = [];
+        if (content) {
+            storedGarbagePauseList = JSON.parse(content);
+        }
+        if (storedGarbagePauseList.length > garbagePauseList.length) {
+            garbagePauseList = storedGarbagePauseList;
+        }
+        garbagePauseList.push(garbagePauseEvent);
+        garbagePauseList = uniquePause(garbagePauseList);
+
+        if (garbagePauseList.length > storedGarbagePauseList.length) {
+            storage.setContents('garbage_data.timeline.' + timelineInterval, JSON.stringify(garbagePauseList)).then(function() {
+                console.log("Added garbage pauses to timeline interval: " + timelineInterval + "; Garbage pauses at timeline interval: " + garbagePauseList.length);
+            });
+        }
+    }).done();
+}
+
+function getGarbagePauseTimelineMap(startTime, endTime, callback) {
+    if (startTime && !startTime._isAMomentObject) {
+        startTime = moment(startTime, 'x');
+    }
+    if (endTime && !endTime._isAMomentObject) {
+        endTime = moment(endTime, 'x');
+    }
+
+    if (monitorMode == 'playback' && startTime && endTime) {
+        // console.log("Fetching sessions during time for playback! Start time: " + startTime.format('hh:mm:ss.SSS A') + "; End time: " + endTime.format('hh:mm:ss.SSS A'));
+        // $.getJSON(host + "/data/session/time/?start_time=" + startTime.valueOf() + "&end_time=" + endTime.valueOf(), function(result) {
+        //     $.each(result.sessionIdList, function(i, event) {
+        //         getRecordedSessionMap(event, null);
+        //     });
+        //     callback(result.sessionIdList);
+        // });
+        // return;
+    }
+
+    if (!earliestSessionTimestamp) {
+        storage.getContents('session_data.timeline.earliest_session').then(function(content) {
+            if (content) {
+                earliestSessionTimestamp = content;
+            }
+
+            doWork();
+        }).done();
+    } else {
+        doWork();
+    }
+
+    function doWork() {
+        if (!startTime || !earliestSessionTimestamp || startTime.isBefore(moment(earliestSessionTimestamp))) {
+            if (earliestSessionTimestamp) {
+                startTime = moment(earliestSessionTimestamp);
+            } else {
+                startTime = moment();
+            }
+        }
+        if (!endTime || endTime.isAfter(moment())) {
+            endTime = moment().add('1', 'minute').startOf('minute');
+        }
+
+        startTime = moment(startTime);
+        endTime = moment(endTime);
+        while (startTime.isBefore(endTime)) {
+            startTime.startOf('minute');
+            endTime.startOf('minute');
+            var timelineInterval = startTime;
+            storage.getContents('garbage_data.timeline.' + timelineInterval.valueOf()).then(function(content) {
+                if (content) {
+                    callback(JSON.parse(content));
+                }
+            });
+
+            startTime.add(1, 'minute');
+        }
+    }
+}
+
+function uniquePause(arr) {
+    var u = {}, a = [];
+    for(var i = 0, l = arr.length; i < l; ++i){
+        if (!u[arr[i].pauseTimestamp + '.' + arr[i].pauseDuration]) {
+            a.push(arr[i]);
+            u[arr[i].pauseTimestamp + '.' + arr[i].pauseDuration] = 1;
+        }
+    }
+    return a;
 }

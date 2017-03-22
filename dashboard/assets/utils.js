@@ -41,3 +41,52 @@ function removePackageAndClassName(fullyQuantifiedMethodName) {
     var methodNameArr = fullyQuantifiedMethodName.split(".");
     return methodNameArr[methodNameArr.length - 1];
 }
+
+function getPrettyTime(millisecondCount) {
+    var duration = moment.duration(millisecondCount);
+    var hours = duration.asHours();
+    var minutes = duration.asMinutes();
+    var seconds = duration.asSeconds();
+    var milliseconds = duration.asMilliseconds();
+
+    if (hours > 1) {
+        return hours + " hours";
+    } else if (minutes > 1) {
+        return minutes + " minutes";
+    } else if (seconds > 1) {
+        return seconds + "s";
+    } else {
+        return milliseconds + "ms";
+    }
+}
+
+function roundNumber(num, scale) {
+    if(!("" + num).includes("e")) {
+        return +(Math.round(num + "e+" + scale)  + "e-" + scale);
+    } else {
+        var arr = ("" + num).split("e");
+        var sig = ""
+        if(+arr[1] + scale > 0) {
+            sig = "+";
+        }
+        return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
+    }
+}
+
+function humanFileSize(bytes) {
+    var si = false;
+    bytes *= 1024;
+    var thresh = si ? 1000 : 1024;
+    if(Math.abs(bytes) < thresh) {
+        return bytes + ' B';
+    }
+    var units = si
+        ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
+        : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+    var u = -1;
+    do {
+        bytes /= thresh;
+        ++u;
+    } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+    return bytes.toFixed(2)+' '+units[u];
+}

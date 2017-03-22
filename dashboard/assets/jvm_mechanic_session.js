@@ -18,6 +18,8 @@ function getRecordedSessionMap(sessionId, callback) {
 
                 if (callback) callback(result);
                 d.resolve(result);
+           }).fail(function(error){
+               d.resolve();
            });
        }
     }).done();
