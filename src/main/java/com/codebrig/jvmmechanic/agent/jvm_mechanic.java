@@ -49,10 +49,12 @@ public class jvm_mechanic extends Helper {
                 stashStream = new StashPersistenceStream(ledgerFileProperty, dataFileProperty);
 
                 //make config file
+                String playbackProperty = System.getProperty("jvm_mechanic.config.playback_enabled", "false");
                 String configFileProperty = System.getProperty("jvm_mechanic.config.filename", "C:\\temp\\jvm_mechanic.config");
                 String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
                 try {
                     output = new FileOutputStream(configFileProperty);
+                    prop.setProperty("jvm_mechanic.config.playback_enabled", playbackProperty);
                     prop.setProperty("jvm_mechanic.stash.ledger.filename", ledgerFileProperty);
                     prop.setProperty("jvm_mechanic.stash.data.filename", dataFileProperty);
                     prop.setProperty("jvm_mechanic.config.filename", configFileProperty);

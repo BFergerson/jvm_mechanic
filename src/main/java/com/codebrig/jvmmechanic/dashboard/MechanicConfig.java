@@ -18,6 +18,8 @@ public class MechanicConfig {
     private long dataFileSize;
     private long gcFileSize;
     private int journalEntrySize;
+    private boolean playbackModeEnabled;
+
     private Map<Short, String> methodNameMap = new HashMap<>();
 
     public void addMethodName(short methodId, String methodName) {
@@ -90,6 +92,14 @@ public class MechanicConfig {
 
     public Map<Short, String> getMethodNameMap() {
         return methodNameMap;
+    }
+
+    public boolean isPlaybackModeEnabled() {
+        return playbackModeEnabled;
+    }
+
+    public void setPlaybackModeEnabled(boolean playbackModeEnabled) {
+        this.playbackModeEnabled = playbackModeEnabled;
     }
 
 }

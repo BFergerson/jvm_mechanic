@@ -16,6 +16,20 @@ function loadConfigSettings() {
 
         var journalEntrySize = result.journalEntrySize;
         $("#sessionSampleAccuracy").text(result.sessionSampleAccuracy + "%");
+        $("#playbackModeEnabled").text(result.playbackModeEnabled);
+
+        if (result.playbackModeEnabled == false) {
+            $("#playbackModeEnabled").css('color', 'red');
+
+            if (monitorMode == 'playback') {
+                //you shouldn't be here!
+                window.location.replace("index.html?mode=live");
+            }
+        } else {
+            $("#playbackModeEnabled").css('color', 'green');
+            $("#dropdownMenuButton").removeClass('disabled');
+        }
+
         $("#ledgerFileLocation").text(result.ledgerFileLocation);
         $("#ledgerEntryCount").text(formatSizeUnits(result.ledgerFileSize) + " (" + (result.ledgerFileSize / result.journalEntrySize) + " events)");
         $("#dataFileLocation").text(result.dataFileLocation);

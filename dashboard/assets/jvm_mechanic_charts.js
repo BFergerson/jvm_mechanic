@@ -191,34 +191,41 @@ function ledgerLoaded() {
     ctx = document.getElementById("total_relative_method_duration_polar_canvas").getContext("2d");
     window.totalMethodDurationPolarChart = new Chart(ctx, totalMethodDurationPolarChartConfig);
 
-    //update charts every 5 seconds
-    ledgerUpdated();
-    setInterval(function() {
-        loadLedgerUpdates();
+    if (monitorMode == 'live') {
+        //update charts every 5 seconds
+        ledgerUpdated();
+        setInterval(function() {
+            loadLedgerUpdates();
 
-        //update general monitoring info
-        if (earliestSessionTimestamp) {
-            $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A (M/D)"));
-        }
-        if (lastSessionTimestamp) {
-            $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A (M/D)"));
-        }
+            //update general monitoring info
+            if (earliestSessionTimestamp) {
+                $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A"));
+            }
+            if (lastSessionTimestamp) {
+                $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A"));
+            }
+            if (earliestSessionTimestamp && lastSessionTimestamp && monitorMode == 'playback') {
+                updatePlaybackRange(earliestSessionTimestamp, lastSessionTimestamp);
+            }
 
-        //events
-        var eventsAccountedForCount = 0;
-        Object.keys(sessionAccountedForEventCount).forEach(function(key) {
-            var eventCount = sessionAccountedForEventCount[key];
-            eventsAccountedForCount += eventCount;
-        });
-        $("#eventsAccountedFor").text(eventsAccountedForCount);
+            //events
+            var eventsAccountedForCount = 0;
+            Object.keys(sessionAccountedForEventCount).forEach(function(key) {
+                var eventCount = sessionAccountedForEventCount[key];
+                eventsAccountedForCount += eventCount;
+            });
+            $("#eventsAccountedFor").text(eventsAccountedForCount);
 
-        //sessions
-        var sessionAccountedForCount = 0;
-        Object.keys(sessionAccountedFor).forEach(function(key) {
-            sessionAccountedForCount++;
-        });
-        $("#sessionsAccountedFor").text(sessionAccountedForCount);
-    }, 5000);
+            //sessions
+            var sessionAccountedForCount = 0;
+            Object.keys(sessionAccountedFor).forEach(function(key) {
+                sessionAccountedForCount++;
+            });
+            $("#sessionsAccountedFor").text(sessionAccountedForCount);
+        }, 3000);
+    } else {
+        updateCharts(null, null); //get it started
+    }
 }
 
 function ledgerUpdated() {
@@ -227,10 +234,14 @@ function ledgerUpdated() {
     evictOldChartData(absoluteMethodRuntimeDurationConfig.data, cutOffMinutesTime);
 }
 
-function isEvictableData(sessionTime, cutOffMinutesTime) {
+function isEvictableDataRealTime(sessionTime, cutOffMinutesTime) {
     var duration = moment.duration(moment().diff(sessionTime));
     var minutes = duration.asMinutes();
     return (minutes >= cutOffMinutesTime);
+}
+
+function isEvictableData(sessionTime, startTime, endTime) {
+    return !sessionTime.isBetween(moment(startTime, 'x'), moment(endTime, 'x'));
 }
 
 function chartHasData(datasets) {
@@ -243,14 +254,31 @@ function chartHasData(datasets) {
     return hasData;
 }
 
+function evictOldChartDataPlayback(data, startTime, endTime) {
+    //todo: don't kill everything? your choice
+    data.datasets = [];
+    data.labels = [];
+    sessionAccountedFor = {};
+    sessionAccountedForEventCount = {};
+    totalMethodDurationMap = {};
+    averageDurationMap = {};
+
+    window.currentMethodDurationBarChart.update();
+    window.averageMethodDurationPolarChart.update();
+    window.totalMethodDurationPolarChart.update();
+    window.relativeMethodRuntimeDurationLine.update();
+    window.absoluteMethodRuntimeDurationLine.update();
+}
+
 function evictOldChartData(data, cutOffMinutesTime) {
     if (chartHasData(data.datasets)) {
-        if (isEvictableData(data.labels[0], cutOffMinutesTime)) {
+        if (isEvictableDataRealTime(data.labels[0], cutOffMinutesTime)) {
             console.log("Evicting data more than " + cutOffMinutesTime + " minutes!");
 
             data.labels.shift();
             data.datasets.forEach(function(dataset) {
                 if (dataset.sessionId) {
+                    console.log("Evicting: " + dataset.sessionId);
                     delete sessionAccountedFor[dataset.sessionId];
                     delete sessionAccountedForEventCount[dataset.sessionId];
                 }
@@ -275,21 +303,99 @@ var averageDurationMap = {};
 var lastSessionTimestamp = null;
 
 function updateCharts(startTime, endTime) {
+    if (monitorMode == 'playback') {
+        if (startTime && endTime) {
+            earliestSessionTimestamp = startTime.valueOf();
+            lastSessionTimestamp = endTime.valueOf();
+        }
+        evictOldChartDataPlayback(relativeMethodRuntimeDurationConfig.data, startTime, endTime);
+        evictOldChartDataPlayback(absoluteMethodRuntimeDurationConfig.data, startTime, endTime);
+    }
+
     console.log("Updating charts...");
     getSessionTimelineMap(startTime, endTime, function(sessionIdList) {
-        sessionIdList.forEach(function (item, index) {
-            getRecordedSessionMap(item, function(recordedSession) {
-                addSessionToCharts(item, recordedSession);
+        function eventually(value) {
+            return Q.fcall(getRecordedSessionMap, value);
+        }
+
+        Q.all(sessionIdList.map(eventually))
+        .done(function (result) {
+            result.sort(function(a, b){
+                return a[0].eventTimestamp - b[0].eventTimestamp;
             });
+            result.forEach(function(recordedSession) {
+                var sessionId = recordedSession[0].workSessionId;
+                addSessionToCharts(sessionId, recordedSession);
+            });
+
+            updateGeneralMonitoringInformation();
         });
     });
+}
+
+function updateGeneralMonitoringInformation() {
+    if (earliestSessionTimestamp) {
+        $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A"));
+    }
+    if (lastSessionTimestamp) {
+        $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A"));
+    }
+    if (earliestSessionTimestamp && lastSessionTimestamp && monitorMode == 'playback') {
+        updatePlaybackRange(earliestSessionTimestamp, lastSessionTimestamp);
+    }
+
+    //events
+    var eventsAccountedForCount = 0;
+    Object.keys(sessionAccountedForEventCount).forEach(function(key) {
+        var eventCount = sessionAccountedForEventCount[key];
+        eventsAccountedForCount += eventCount;
+    });
+    $("#eventsAccountedFor").text(eventsAccountedForCount);
+
+    //sessions
+    var sessionAccountedForCount = 0;
+    Object.keys(sessionAccountedFor).forEach(function(key) {
+        sessionAccountedForCount++;
+    });
+    $("#sessionsAccountedFor").text(sessionAccountedForCount);
+
+    //calc
+    if (earliestSessionTimestamp && lastSessionTimestamp && eventsAccountedForCount > 0) {
+        var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(earliestSessionTimestamp));
+        var hours = duration.asHours();
+        var minutes = duration.asMinutes();
+        var seconds = duration.asSeconds();
+        var milliseconds = duration.asMilliseconds();
+
+        //events
+        if (hours > 2 && ((eventsAccountedForCount / hours) > 100)) {
+            $("#eventRecordingRate").text((eventsAccountedForCount / hours) + " per hour");
+        } else if (minutes > 30 && ((eventsAccountedForCount / minutes) > 100)) {
+            $("#eventRecordingRate").text(Math.ceil(eventsAccountedForCount / minutes) + " per minute");
+        } else if (seconds > 0) {
+            $("#eventRecordingRate").text(Math.ceil(eventsAccountedForCount / seconds) + " per second");
+        }
+
+        //sessions
+        if (hours > 2 && ((sessionAccountedForCount / hours) > 100)) {
+            $("#sessionRecordingRate").text((sessionAccountedForCount / hours) + " per hour");
+        } else if (minutes > 30 && ((sessionAccountedForCount / minutes) > 100)) {
+            $("#sessionRecordingRate").text(Math.ceil(sessionAccountedForCount / minutes) + " per minute");
+        } else if (seconds > 0) {
+            var perSecond = Math.ceil(sessionAccountedForCount / seconds);
+            if (perSecond == 1) {
+                $("#sessionRecordingRate").text(Math.ceil(sessionAccountedForCount / minutes) + " per minute");
+            } else {
+                $("#sessionRecordingRate").text(Math.ceil(sessionAccountedForCount / seconds) + " per second");
+            }
+        }
+    }
 }
 
 function addSessionToCharts(workSessionId, recordedSession) {
     if (sessionAccountedFor[workSessionId]) {
         return;
     }
-    console.log("Adding session to chart data: " + workSessionId);
     sessionAccountedFor[workSessionId] = true;
     var effectChainList = [];
     var resultList = [];
@@ -306,6 +412,16 @@ function addSessionToCharts(workSessionId, recordedSession) {
         }
 
         var eventType = record["eventType"];
+        if (eventType == 'ENTER_EVENT') {
+            eventType = 0;
+        } else if (eventType == 'EXIT_EVENT') {
+            eventType = 1;
+        } else if (eventType == 'BEGIN_WORK_EVENT') {
+            eventType = 2;
+        } else if (eventType == 'END_WORK_EVENT') {
+            eventType = 3;
+        }
+
         if (eventType == 0 || eventType == 2) {
             //enter/begin
             var calcMethodDuration = new WorkSessionMethodDuration(methodId, eventTimestamp);
@@ -347,6 +463,7 @@ function addSessionToCharts(workSessionId, recordedSession) {
         lastSessionTimestamp = sessionStartTimestamp;
     }
 
+    console.log("Adding session to chart data: " + workSessionId + "; Time: " + moment(sessionStartTimestamp, 'x').format("hh:mm:ss.SSS A"));
     latestWorkSessionId = workSessionId;
     latestSessionMethodDurationMap = combineList;
     var addedTimestamp = false;

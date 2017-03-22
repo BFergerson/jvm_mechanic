@@ -13,8 +13,10 @@
     <link href="assets/bootstrap/bootstrap4-alpha3.min.css" rel="stylesheet">
     <link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <link href="assets/style.css" rel="stylesheet">
+    <link href="assets/nouislider.min.css" rel="stylesheet">
 
     <!-- scripts -->
+    <script src="assets/utils.js"></script>
     <script>
         //chart config
         var cutOffMinutesTime = 5;
@@ -31,14 +33,28 @@
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
             });
         };
+
+        //monitor mode
+        var monitorMode = getParameter('mode');
+        if (!monitorMode) {
+            monitorMode = "live";
+        }
+        if (monitorMode == 'playback') {
+            document.title = 'jvm_mechanic - Playback';
+            window.onload = function() {
+                $('#timeline_controls').show();
+            }
+        }
     </script>
-    <script src="assets/utils.js"></script>
+    <script src="assets/wNumb.js"></script>
+    <script src="assets/nouislider.min.js"></script>
     <script src="assets/taffy-min.js"></script>
     <script src="assets/jquery/jquery-3.1.0.min.js"></script>
     <script src="assets/q.min.js"></script>
     <script src="assets/LargeLocalStorage.min.js"></script>
     <script src="assets/moment.js"></script>
     <script src="assets/jvm_mechanic_session.js"></script>
+    <script src="assets/jvm_mechanic_playback.js"></script>
     <script src="assets/jvm_mechanic_charts.js"></script>
     <script src="assets/jvm_mechanic_ledger.js"></script>
     <script src="assets/jvm_mechanic_garbage.js"></script>
@@ -63,10 +79,10 @@
                 </a>
             </div>
             <div class="dropdown" style="display: inline-block">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn btn-secondary dropdown-toggle disabled" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <script>
                         if (!monitorMode || monitorMode == 'live') {
-                            document.write('Live Monitoring');
+                            document.write('Real Time');
                         } else {
                             document.write('Playback');
                         }
@@ -77,7 +93,7 @@
                         if (!monitorMode || monitorMode == 'live') {
                             document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
                         } else {
-                            document.write('<a class="dropdown-item" href="?mode=live">Live Monitoring</a>');
+                            document.write('<a class="dropdown-item" href="?mode=live">Real Time</a>');
                         }
                     </script>
                 </div>
@@ -104,17 +120,7 @@
         <li>
             <script>
                 if (!monitorMode || monitorMode == 'live') {
-                    document.write('<a href="overview.html?mode=live"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
-                } else {
-                    document.write('<a href="overview.html?mode=playback"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
-                }
-            </script>
-        </li>
-        <li role="separator" class="divider"></li>
-        <li>
-            <script>
-                if (!monitorMode || monitorMode == 'live') {
-                    document.write('<a href="data.html?mode=live"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
+                    document.write('<a style="color: grey" class="btn-is-disabled" href="data.html?mode=live"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
                 } else {
                     document.write('<a href="data.html?mode=playback"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
                 }
@@ -129,6 +135,17 @@
     <!-- .container-fluid -->
     <div style="margin-top: 10px">
         <div class="container-fluid" style="width: 98%">
+            <div id="timeline_controls" style="display: none">
+                <label><b>Timeline Controls:</b></label>
+                <br/>
+                <br/>
+                <br/>
+                <div class="row">
+                    <div id="slider-date" style="width: 95%; margin:0 auto;"></div>
+                </div>
+                <br/>
+                <br/>
+            </div>
             <div class="row">
                 <div class="col-sm-3">
                     <div class="panel panel-default">
@@ -139,10 +156,10 @@
                             <b>Recording Methods: </b> <label id="monitorMethodCount" style="margin-bottom: 0">n/a</label> <br/>
                             - <br/>
                             <b>Total Recorded Events:</b> <label id="eventsAccountedFor" style="margin-bottom: 0">n/a</label><br/>
-                            <b>Event Recording Rate:</b> n/a <br/>
+                            <b>Event Recording Rate:</b> <label id="eventRecordingRate" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
                             <b>Total Recorded Sessions:</b> <label id="sessionsAccountedFor" style="margin-bottom: 0">n/a</label><br/>
-                            <b>Session Recording Rate:</b> n/a <br/>
+                            <b>Session Recording Rate:</b> <label id="sessionRecordingRate" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
                             <b>CPU Usage - System:</b> n/a <br/>
                             <b>CPU Usage - Java:</b> n/a
@@ -154,6 +171,7 @@
                         <div class="panel-heading">jvm_mechanic Configuration</div>
                         <div class="panel-body">
                             <b>Session Sample Accuracy:</b> <label id="sessionSampleAccuracy" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Playback Mode Enabled:</b> <label id="playbackModeEnabled" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
                             <b>Ledger File Location:</b> <label id="ledgerFileLocation" style="margin-bottom: 0">n/a</label><br/>
                             <b>Leger File Size:</b> <label id="ledgerEntryCount" style="margin-bottom: 0">n/a</label><br/>
@@ -163,7 +181,6 @@
                             - <br/>
                             <b>GC File Location:</b> <label id="gcFileLocation" style="margin-bottom: 0">n/a</label><br/>
                             <b>GC File Size:</b> <label id="gcFileSize" style="margin-bottom: 0">n/a</label><br/>
-                            <br/>
                             <br/>
                         </div>
                     </div>

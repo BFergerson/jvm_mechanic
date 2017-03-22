@@ -1,9 +1,27 @@
 function getRecordedSessionMap(sessionId, callback) {
+    var d = Q.defer();
     storage.getContents('session_data.recorded.session.' + sessionId).then(function(content) {
         if (content) {
-            callback(JSON.parse(content));
+            d.resolve(JSON.parse(content));
         }
+        if (content && callback) {
+            callback(JSON.parse(content));
+        } else if (!content && monitorMode == 'playback') {
+           //fetch session
+           console.log("Fetching session for playback: " + sessionId);
+
+           $.getJSON(host + "/data/session/?session_id=" + sessionId, function(result) {
+                if (isSessionComplete(result)) {
+                    //session complete, record session
+                    addRecordedSession(result);
+                }
+
+                if (callback) callback(result);
+                d.resolve(result);
+           });
+       }
     }).done();
+    return d.promise;
 }
 
 var earliestSessionTimestamp = null;
@@ -37,10 +55,17 @@ function addRecordedSession(sessionEventList) {
     saveRecordedSessionToTimelineMap(sessionId, earliestEvent, sessionEventList);
 }
 
+var storedSessionMap = {};
 function savedRecordedSession(sessionId, sessionEventList) {
-    storage.setContents('session_data.recorded.session.' + sessionId, JSON.stringify(sessionEventList)).then(function() {
-         console.log("Saved recorded session: " + sessionId);
-     });
+    if (storedSessionMap[sessionId] || monitorMode == 'playback') return;
+    storage.getContents('session_data.recorded.session.' + sessionId).then(function(content) {
+        if (!content) {
+            storage.setContents('session_data.recorded.session.' + sessionId, JSON.stringify(sessionEventList)).then(function() {
+                console.log("Saved recorded session: " + sessionId);
+                storedSessionMap[sessionId] = true;
+            });
+        }
+    }).done();
 }
 
 var activeSessionMap = {};
@@ -69,6 +94,16 @@ function isSessionComplete(sessionEventList) {
         var methodId = record["eventMethodId"];
         var eventTimestamp = record["eventTimestamp"];
         var eventType = record["eventType"];
+        if (eventType == 'ENTER_EVENT') {
+            eventType = 0;
+        } else if (eventType == 'EXIT_EVENT') {
+            eventType = 1;
+        } else if (eventType == 'BEGIN_WORK_EVENT') {
+            eventType = 2;
+        } else if (eventType == 'END_WORK_EVENT') {
+            eventType = 3;
+        }
+
         if (eventType == 0 || eventType == 2) {
             //enter/begin
             methodIdChainList.push(methodId);
@@ -111,14 +146,46 @@ function saveRecordedSessionToTimelineMap(sessionId, earliestEvent) {
             sessionIdList = storedSessionIdList;
          }
          sessionIdList.push(sessionId);
+         sessionIdList = unique(sessionIdList);
 
-         storage.setContents('session_data.timeline.' + timelineInterval, JSON.stringify(sessionIdList)).then(function() {
-             console.log("Added session to timeline interval: " + timelineInterval + "; Sessions at timeline interval: " + sessionIdList.length);
-         });
+         if (sessionIdList.length > storedSessionIdList.length) {
+            storage.setContents('session_data.timeline.' + timelineInterval, JSON.stringify(sessionIdList)).then(function() {
+                 console.log("Added session to timeline interval: " + timelineInterval + "; Sessions at timeline interval: " + sessionIdList.length);
+             });
+         }
      }).done();
 }
 
+function unique(arr) {
+    var u = {}, a = [];
+    for(var i = 0, l = arr.length; i < l; ++i){
+        if(!u.hasOwnProperty(arr[i])) {
+            a.push(arr[i]);
+            u[arr[i]] = 1;
+        }
+    }
+    return a;
+}
+
 function getSessionTimelineMap(startTime, endTime, callback) {
+    if (startTime && !startTime._isAMomentObject) {
+        startTime = moment(startTime, 'x');
+    }
+    if (endTime && !endTime._isAMomentObject) {
+        endTime = moment(endTime, 'x');
+    }
+
+    if (monitorMode == 'playback' && startTime && endTime) {
+        console.log("Fetching sessions during time for playback! Start time: " + startTime.format('hh:mm:ss.SSS A') + "; End time: " + endTime.format('hh:mm:ss.SSS A'));
+        $.getJSON(host + "/data/session/time/?start_time=" + startTime.valueOf() + "&end_time=" + endTime.valueOf(), function(result) {
+            $.each(result.sessionIdList, function(i, event) {
+                getRecordedSessionMap(event, null);
+            });
+            callback(result.sessionIdList);
+        });
+        return;
+    }
+
     if (!earliestSessionTimestamp) {
         storage.getContents('session_data.timeline.earliest_session').then(function(content) {
             if (content) {
@@ -142,6 +209,9 @@ function getSessionTimelineMap(startTime, endTime, callback) {
         if (!endTime || endTime.isAfter(moment())) {
             endTime = moment().add('1', 'minute').startOf('minute');
         }
+
+        startTime = moment(startTime);
+        endTime = moment(endTime);
         while (startTime.isBefore(endTime)) {
             startTime.startOf('minute');
             endTime.startOf('minute');

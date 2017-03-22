@@ -30,10 +30,17 @@ public class StashLedgerFile {
     }
 
     public List<JournalEntry> readAllJournalEntries(int startEntry) throws IOException {
+        return readAllJournalEntries(startEntry, -1);
+    }
+
+    public List<JournalEntry> readAllJournalEntries(int startEntry, int limit) throws IOException {
         fileChannel.position(startEntry * JournalEntry.JOURNAL_ENTRY_SIZE);
 
         int journalRecords = (int) (fileChannel.size() / JournalEntry.JOURNAL_ENTRY_SIZE) - startEntry;
-        System.out.println("Retrieve record count: " + journalRecords);
+        if (limit != -1 && journalRecords > limit) {
+            journalRecords = limit;
+        }
+
         ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
         fileChannel.read(buffer);
         buffer.position(0);

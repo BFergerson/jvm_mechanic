@@ -15,6 +15,7 @@
     <link href="assets/style.css" rel="stylesheet">
 
     <!-- scripts -->
+    <script src="assets/utils.js"></script>
     <script>
         function clearCache() {
             console.log("Cleared cache!");
@@ -36,8 +37,13 @@
                 });
             });
         };
+
+        //monitor mode
+        var monitorMode = getParameter('mode');
+        if (!monitorMode) {
+            monitorMode = "live";
+        }
     </script>
-    <script src="assets/utils.js"></script>
     <script src="assets/taffy-min.js"></script>
     <script src="assets/jquery/jquery-3.1.0.min.js"></script>
     <script src="assets/q.min.js"></script>
@@ -52,6 +58,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.13/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+         if (monitorMode != 'playback') {
+            window.location.replace("index.html");
+        }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -101,16 +112,6 @@
                     document.write('<a href="index.html?mode=live"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Real Time</span></a>');
                 } else {
                     document.write('<a href="index.html?mode=playback"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Playback</span></a>');
-                }
-            </script>
-        </li>
-        <li role="separator" class="divider"></li>
-        <li>
-            <script>
-                if (!monitorMode || monitorMode == 'live') {
-                    document.write('<a href="overview.html?mode=live"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
-                } else {
-                    document.write('<a href="overview.html?mode=playback"><i class="fa fa-newspaper-o fa-lg fa-fw" aria-hidden="true"></i><span>Overview</span></a>');
                 }
             </script>
         </li>

@@ -1,10 +1,6 @@
 //config
 var host = "http://localhost:9000";
 var ledgerPosition = 0;
-var monitorMode = getParameter('mode');
-if (!monitorMode) {
-    monitorMode = "live";
-}
 
 //init dbs
 var seenMethodIdMap = {};
