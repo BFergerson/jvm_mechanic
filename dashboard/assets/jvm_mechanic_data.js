@@ -23,6 +23,7 @@ function addSessionToTable(sessionId, recordedSession) {
         $('#streamTable').hide();
         $('#eventTable').show();
         $('.row').hide();
+        $('#dontHideThisRowHack').show();
 
         var tabList = $('#page-content-wrapper .nav.nav-tabs');
         tabList.append('<li class="nav-item"><a class="nav-link active" href="#">Work Session #' + workSessionId + '</a></li>');

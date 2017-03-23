@@ -26,11 +26,15 @@
             console.log("Cleared cache!");
             storage.clear();
         }
-        ;
+
         window.onload = function () {
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
+
+                if (monitorMode == 'playback') {
+                    $('#timeline_controls').show();
+                }
             });
         };
 
@@ -41,9 +45,6 @@
         }
         if (monitorMode == 'playback') {
             document.title = 'jvm_mechanic - Playback';
-            window.onload = function() {
-                $('#timeline_controls').show();
-            }
         }
     </script>
     <script src="assets/wNumb.js"></script>
@@ -67,45 +68,57 @@
 
 <body>
 <!-- header -->
-<nav class="navbar navbar-fixed-top" id="header">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <div id="sidebar-toggle-button">
-                <i class="fa fa-bars" aria-hidden="true"></i>
-            </div>
-            <div class="brand">
-                <a href="index.html">
-                    <span class="hidden-xs-down m-r-3">jvm_mechanic</span>
-                </a>
-            </div>
-            <div class="dropdown" style="display: inline-block">
-                <button class="btn btn-secondary dropdown-toggle disabled" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <script>
-                        if (!monitorMode || monitorMode == 'live') {
-                            document.write('Real Time');
-                        } else {
-                            document.write('Playback');
-                        }
-                    </script>
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <script>
-                        if (!monitorMode || monitorMode == 'live') {
-                            document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
-                        } else {
-                            document.write('<a class="dropdown-item" href="?mode=live">Real Time</a>');
-                        }
-                    </script>
+<nav class="navbar navbar-fixed-top" id="header" style="height: 103px">
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="container">
+                <div class="navbar-header" style="padding-top: 40px">
+                    <div id="sidebar-toggle-button">
+                        <i class="fa fa-bars" aria-hidden="true"></i>
+                    </div>
+                    <div class="brand">
+                        <script>
+                            if (!monitorMode || monitorMode == 'live') {
+                                document.write('<a href="index.html?mode=live"><span class="hidden-xs-down m-r-3">jvm_mechanic</span></a>');
+                            } else if (monitorMode == 'playback') {
+                                document.write('<a href="index.html?mode=playback"><span class="hidden-xs-down m-r-3">jvm_mechanic</span></a>');
+                            }
+                        </script>
+                    </div>
+                    <div class="dropdown" style="display: inline-block">
+                        <button class="btn btn-secondary dropdown-toggle disabled" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <script>
+                                if (!monitorMode || monitorMode == 'live') {
+                                    document.write('Real Time');
+                                } else {
+                                    document.write('Playback');
+                                }
+                            </script>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <script>
+                                if (!monitorMode || monitorMode == 'live') {
+                                    document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
+                                } else {
+                                    document.write('<a class="dropdown-item" href="?mode=live">Real Time</a>');
+                                }
+                            </script>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
+        </div>
+        <div class="col-sm-9">
+            <div class="container-fluid" style="padding-top: 59px">
+                <div id="slider-date" style="width: 95%; margin:0 auto;"></div>
+            </div>
         </div>
     </div>
 </nav>
 <!-- /header -->
 
 <!-- sidebar -->
-<div class="sidebar-toggle" id="sidebar">
+<div class="sidebar-toggle" id="sidebar" style="padding-top: 40px">
     <ul class="nav nav-sidebar">
         <li>
             <script>
@@ -131,21 +144,10 @@
 <!-- /sidebar -->
 
 <!-- page-content-wrapper -->
-<div class="page-content-toggle" id="page-content-wrapper">
+<div class="page-content-toggle" id="page-content-wrapper" style="padding-top: 60px">
     <!-- .container-fluid -->
     <div style="margin-top: 10px">
         <div class="container-fluid" style="width: 98%">
-            <div id="timeline_controls" style="display: none">
-                <label><b>Timeline Controls:</b></label>
-                <br/>
-                <br/>
-                <br/>
-                <div class="row">
-                    <div id="slider-date" style="width: 95%; margin:0 auto;"></div>
-                </div>
-                <br/>
-                <br/>
-            </div>
             <div class="row">
                 <div class="col-sm-3">
                     <div class="panel panel-default">
@@ -211,7 +213,7 @@
                         <div class="panel-body">
                             todo
                             <br/>
-                            <br/>
+                            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
                             <br/>
                             <br/>
                             <br/>
