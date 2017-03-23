@@ -318,7 +318,6 @@ function updateCharts(startTime, endTime) {
 }
 
 var garbageCanvasMap = {};
-var garbageCanvasPositionMap = {};
 function makeGarbageCharts(startTime, endTime, sessionList) {
     var invocationCountMap = {};
     getGarbagePauseTimelineMap(startTime, endTime, function(garbagePauseList) {
@@ -353,14 +352,19 @@ function makeGarbageCharts(startTime, endTime, sessionList) {
             });
         });
 
-        var garbageCount = 0;
-        Object.keys(garbageCanvasMap).forEach(function(key) {
-            garbageCount++;
+        //todo: better way of ordering a map
+        var sortList = [];
+        Object.keys(totalMethodDurationMap).forEach(function(methodId) {
+            sortList.push([methodId, totalMethodDurationMap[methodId]]);
         });
-        var id = garbageCount;
+        sortList.sort(function(a, b){
+            return b[1] - a[1];
+        });
 
+        var id = 0;
         var updatedMethodMap = {};
-        Object.keys(methodRunningMap).forEach(function(methodId) {
+        sortList.forEach(function(methodArr) {
+            var methodId = methodArr[0];
             var totalLive = totalMethodDurationMap[methodId];
             var totalPauseTime = methodRunningMap[methodId];
             var totalRuntime = totalLive - totalPauseTime;
@@ -385,7 +389,6 @@ function makeGarbageCharts(startTime, endTime, sessionList) {
 
                 $("#test_heading_" + id).text(methodNameMap[methodId]);
                 garbageCanvasMap[methodId] = chart;
-                garbageCanvasPositionMap[methodId] = id++;
 
                 var newDataset = {
                     data: [totalRuntime, totalPauseTime],
@@ -405,22 +408,12 @@ function makeGarbageCharts(startTime, endTime, sessionList) {
             updatedMethodMap[methodId] = true;
 
             //update labels
-            $("#total_run_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalRuntime) + " (" + roundNumber((totalRuntime / totalLive) * 100.00, 2) + "%)");
-            $("#total_pause_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalPauseTime) + " (" + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + "%)");
-            $("#total_live_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalLive));
-            $("#invocation_count_" + garbageCanvasPositionMap[methodId]).text(invocationCountMap[methodId]);
-        });
-
-        //clear anything not updated
-        Object.keys(garbageCanvasMap).forEach(function(key) {
-            if (updatedMethodMap[key]) {
-                $("#garbage_panel_" + garbageCanvasPositionMap[key]).show();
-            } else {
-                //var chart = garbageCanvasMap[key];
-                //chart.data.datasets.pop();
-                //chart.update();
-                //$("#garbage_panel_" + garbageCanvasPositionMap[key]).hide();
-            }
+            $("#total_run_" + id).text(getPrettyTime(totalRuntime) + " (" + roundNumber((totalRuntime / totalLive) * 100.00, 2) + "%)");
+            $("#total_pause_" + id).text(getPrettyTime(totalPauseTime) + " (" + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + "%)");
+            $("#total_live_" + id).text(getPrettyTime(totalLive));
+            $("#invocation_count_" + id).text(invocationCountMap[methodId]);
+            $("#garbage_panel_" + id).show();
+            id++;
         });
     });
 }
