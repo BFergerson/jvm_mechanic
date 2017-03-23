@@ -30,6 +30,15 @@ function getParameter (parameterName) {
   return window.requestParameters[parameterName.toLowerCase()]
 }
 
+function getClassMethodParamList (classAndMethodName) {
+  if (!classAndMethodName || !classAndMethodName.includes('.')) return classAndMethodName
+  var methodNameArr = classAndMethodName.split('.')
+  var className = methodNameArr[0]
+  var methodName = methodNameArr[1].substring(0, methodNameArr[1].indexOf("("))
+  var params = methodNameArr[1].substring(methodNameArr[1].indexOf("(") + 1, methodNameArr[1].indexOf(")"))
+  return [className, methodName, params]
+}
+
 function removePackageName (fullyQuantifiedMethodName) {
   if (!fullyQuantifiedMethodName || !fullyQuantifiedMethodName.includes('.')) return fullyQuantifiedMethodName
   var methodNameArr = fullyQuantifiedMethodName.split('.')
@@ -40,6 +49,15 @@ function removePackageAndClassName (fullyQuantifiedMethodName) {
   if (!fullyQuantifiedMethodName || !fullyQuantifiedMethodName.includes('.')) return fullyQuantifiedMethodName
   var methodNameArr = fullyQuantifiedMethodName.split('.')
   return methodNameArr[methodNameArr.length - 1]
+}
+
+function getRandomColor () {
+  var letters = '0123456789ABCDEF'.split('')
+  var color = '#'
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)]
+  }
+  return color
 }
 
 function getPrettyTime (millisecondCount) {

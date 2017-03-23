@@ -387,7 +387,9 @@ function makeGarbageCharts (startTime, endTime, sessionList) {
         chart.data.labels.push('Run')
         chart.data.labels.push('Pause')
 
-        $('#test_heading_' + id).text(methodNameMap[methodId])
+        var methodNameList = getClassMethodParamList(methodNameMap[methodId])
+        var headerText = "<b>Class: </b>" + methodNameList[0] + "<br/><b>Method: </b>" + methodNameList[1] + "<br/><b>Params: </b>" + methodNameList[2]
+        $('#test_heading_' + id).html(headerText)
         garbageCanvasMap[methodId] = chart
 
         var newDataset = {
@@ -750,15 +752,6 @@ function addSessionToCharts (workSessionId, recordedSession) {
   window.totalMethodDurationPolarChart.update()
   window.relativeMethodRuntimeDurationLine.update()
   window.absoluteMethodRuntimeDurationLine.update()
-}
-
-function getRandomColor () {
-  var letters = '0123456789ABCDEF'.split('')
-  var color = '#'
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)]
-  }
-  return color
 }
 
 function WorkSessionMethodDuration (methodId, timestamp) {
