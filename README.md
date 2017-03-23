@@ -3,13 +3,16 @@ jvm_mechanic - Lightweight JVM Performance Diagnostics
 [![Build Status](https://travis-ci.org/BFergerson/jvm_mechanic.svg?branch=master)](https://travis-ci.org/BFergerson/jvm_mechanic)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/BFergerson/jvm_mechanic/master/LICENSE)
 
-## Goal
+# Goal
 Provide detailed real-time statistics & diagrams for thread-based request/response work streams processing on the JVM. Insights provided can then be used to diagnose difficult to reproduce runtime performance degradation issues.
 
-## Method
+# Method
 Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are fed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time session & method level diagrams to assist in monitoring and diagnosing application performance degradation.
+ 
+# Dashboard UI Example
+<img src="http://codebrig.com/public_files/jvm_mechanic-screenshot--2017-03-23-00-03-57.png" />
 
-## Technical Design
+# Technical Design
 
 ### WorkRequest
 Request by client to process and respond to (request/response model)
@@ -55,4 +58,3 @@ Each event contains the following base metrics (as well as metrics relevant to t
  - Is work stream processing degradation due to application or server code?
  - Which work stream method(s) are most susceptible to performance degradation?
  - To what degree do work stream method(s) experiencing degradation cause others method(s) to degrade?
- 
