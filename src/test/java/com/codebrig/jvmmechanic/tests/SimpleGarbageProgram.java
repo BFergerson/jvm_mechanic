@@ -3,7 +3,7 @@ package com.codebrig.jvmmechanic.tests;
 class SimpleGarbageProgram {
 
     static MyList objList = null;
-    static int wait = 2500; // in milliseconds: 1 second
+    static int wait = 1000; // in milliseconds: 1 second
     static int objSize = 1280; // in KB, default = 1.25 M
     static int initSteps = 320; // # of initial objects
     static int testSteps = 32; // # of added objects
@@ -45,6 +45,7 @@ class SimpleGarbageProgram {
                 + "  " + tm + "  " + fm + "  " + (tm - fm) + "  " + ratio + "%"
                 + "  " + to + "  " + ao + "  " + (to - ao)
                 + "  " + (tm - fm - to));
+        mySleep(wait);
         mySleep(wait);
     }
 
