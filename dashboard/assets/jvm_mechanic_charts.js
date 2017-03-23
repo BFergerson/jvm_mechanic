@@ -198,32 +198,6 @@ function ledgerLoaded() {
         ledgerUpdated();
         setInterval(function() {
             loadLedgerUpdates();
-
-            //update general monitoring info
-            if (earliestSessionTimestamp) {
-                $("#earliestSessionTimestamp").text(moment(earliestSessionTimestamp).format("hh:mm:ss.SSS A"));
-            }
-            if (lastSessionTimestamp) {
-                $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A"));
-            }
-            if (earliestSessionTimestamp && lastSessionTimestamp && monitorMode == 'playback') {
-                updatePlaybackRange(earliestSessionTimestamp, lastSessionTimestamp);
-            }
-
-            //events
-            var eventsAccountedForCount = 0;
-            Object.keys(sessionAccountedForEventCount).forEach(function(key) {
-                var eventCount = sessionAccountedForEventCount[key];
-                eventsAccountedForCount += eventCount;
-            });
-            $("#eventsAccountedFor").text(eventsAccountedForCount);
-
-            //sessions
-            var sessionAccountedForCount = 0;
-            Object.keys(sessionAccountedFor).forEach(function(key) {
-                sessionAccountedForCount++;
-            });
-            $("#sessionsAccountedFor").text(sessionAccountedForCount);
         }, 3000);
     } else {
         updateCharts(null, null); //get it started
@@ -458,8 +432,13 @@ function updateGeneralMonitoringInformation() {
     if (lastSessionTimestamp) {
         $("#latestSessionTimestamp").text(moment(lastSessionTimestamp).format("hh:mm:ss.SSS A"));
     }
-    if (earliestSessionTimestamp && lastSessionTimestamp && monitorMode == 'playback') {
-        updatePlaybackRange(earliestSessionTimestamp, lastSessionTimestamp);
+    if (earliestSessionTimestamp && lastSessionTimestamp) {
+        var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(moment(earliestSessionTimestamp, 'x')));
+        $("#uptimeLabel").text(getPrettyTime(duration.valueOf()));
+
+        if (monitorMode == 'playback') {
+            updatePlaybackRange(earliestSessionTimestamp, lastSessionTimestamp);
+        }
     }
 
     //events
