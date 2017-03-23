@@ -346,6 +346,7 @@ function updateCharts(startTime, endTime) {
 var garbageCanvasMap = {};
 var garbageCanvasPositionMap = {};
 function makeGarbageCharts(startTime, endTime, sessionList) {
+    var invocationCountMap = {};
     getGarbagePauseTimelineMap(startTime, endTime, function(garbagePauseList) {
         var methodRunningMap = {};
         sessionList.forEach(function(sessionId) {
@@ -353,6 +354,14 @@ function makeGarbageCharts(startTime, endTime, sessionList) {
 
             Object.keys(sessionAccountedForCalcMap[sessionId]).forEach(function(key) {
                 var calcMethodDuration = sessionAccountedForCalcMap[sessionId][key];
+                if (!methodRunningMap[calcMethodDuration.methodId]) {
+                    methodRunningMap[calcMethodDuration.methodId] = 0;
+                }
+                if (!invocationCountMap[calcMethodDuration.methodId]) {
+                    invocationCountMap[calcMethodDuration.methodId] = 0;
+                }
+                invocationCountMap[calcMethodDuration.methodId] += calcMethodDuration.invocationCount;
+
                 garbagePauseList.forEach(function(garbagePause) {
                     calcMethodDuration.actualMethodRuntimeList.forEach(function(methodRunningList) {
                         var start = methodRunningList[0];
@@ -362,10 +371,6 @@ function makeGarbageCharts(startTime, endTime, sessionList) {
                             var pauseDuration = end - garbagePause.pauseTimestamp;
                             if (pauseDuration > garbagePause.pauseDuration) {
                                 pauseDuration = garbagePause.pauseDuration;
-                            }
-
-                            if (!methodRunningMap[calcMethodDuration.methodId]) {
-                                methodRunningMap[calcMethodDuration.methodId] = 0;
                             }
                             methodRunningMap[calcMethodDuration.methodId] += pauseDuration;
                         }
@@ -429,6 +434,7 @@ function makeGarbageCharts(startTime, endTime, sessionList) {
             $("#total_run_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalRuntime) + " (" + roundNumber((totalRuntime / totalLive) * 100.00, 2) + "%)");
             $("#total_pause_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalPauseTime) + " (" + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + "%)");
             $("#total_live_" + garbageCanvasPositionMap[methodId]).text(getPrettyTime(totalLive));
+            $("#invocation_count_" + garbageCanvasPositionMap[methodId]).text(invocationCountMap[methodId]);
         });
 
         //clear anything not updated
@@ -581,11 +587,13 @@ function addSessionToCharts(workSessionId, recordedSession) {
             }
 
             var calcMethodDuration = effectChainList.pop();
-            var methodDuration = eventTimestamp - calcMethodDuration.timestamp;
-            calcMethodDuration.relativeDuration += methodDuration;
-            calcMethodDuration.absoluteDuration += methodDuration;
-            calcMethodDuration.invocationCount += 1;
-            resultList.push(calcMethodDuration);
+            if (calcMethodDuration) {
+                var methodDuration = eventTimestamp - calcMethodDuration.timestamp;
+                calcMethodDuration.relativeDuration += methodDuration;
+                calcMethodDuration.absoluteDuration += methodDuration;
+                calcMethodDuration.invocationCount += 1;
+                resultList.push(calcMethodDuration);
+            }
 
             if (effectChainList.length > 0) {
                 var parentCalcMethodDuration = effectChainList[effectChainList.length-1];
@@ -603,6 +611,7 @@ function addSessionToCharts(workSessionId, recordedSession) {
         } else {
             combineMethodDuration.relativeDuration += calcMethodDuration.relativeDuration;
             combineMethodDuration.absoluteDuration += calcMethodDuration.absoluteDuration;
+            combineMethodDuration.invocationCount += calcMethodDuration.invocationCount;
 
             if (calcMethodDuration.timestamp < combineMethodDuration.timestamp) {
                 combineMethodDuration.timestamp = calcMethodDuration.timestamp;

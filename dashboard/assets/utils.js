@@ -50,11 +50,11 @@ function getPrettyTime(millisecondCount) {
     var milliseconds = duration.asMilliseconds();
 
     if (hours > 1) {
-        return hours + " hours";
+        return roundNumber(hours, 2) + " hours";
     } else if (minutes > 1) {
-        return minutes + " minutes";
+        return roundNumber(minutes, 2) + " minutes";
     } else if (seconds > 1) {
-        return seconds + "s";
+        return roundNumber(seconds, 2) + "s";
     } else {
         return milliseconds + "ms";
     }
