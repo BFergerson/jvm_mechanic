@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StashPersistenceStream {
 
     private static final ThreadLocal<AtomicInteger> threadLocalEventIndex = new ThreadLocal<>();
-    private static final ThreadLocal<AtomicInteger> threadLocalLedgerFileIndex = new ThreadLocal<>();
+    private static final AtomicInteger ledgerIdIndex = new AtomicInteger();
     private final ExecutorService executorService;
     private StashLedgerFile stashLedgerFile;
     private StashDataFile stashDataFile;
@@ -28,6 +28,11 @@ public class StashPersistenceStream {
         stashLedgerFile = new StashLedgerFile(ledgerStream.getChannel());
         stashDataFile = new StashDataFile(dataStream.getChannel());
         executorService = Executors.newCachedThreadPool();
+
+        //set ledgerIdIndex based on number of records in ledger file
+        if (ledgerStream.length() != 0) {
+            ledgerIdIndex.set(stashLedgerFile.getJournalEntryCount());
+        }
     }
 
     public void stashMechanicEvent(final MechanicEvent mechanicEvent) {
@@ -37,18 +42,12 @@ public class StashPersistenceStream {
         }
         mechanicEvent.eventId = eventIdIndex.getAndIncrement();
 
-        AtomicInteger tmpLedgerFileIndex = threadLocalLedgerFileIndex.get();
-        if (tmpLedgerFileIndex == null) {
-            threadLocalLedgerFileIndex.set(tmpLedgerFileIndex = new AtomicInteger());
-        }
-        final AtomicInteger ledgerFileIndex = tmpLedgerFileIndex;
-
         executorService.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     synchronized (syncLock) {
-                        int ledgerId = ledgerFileIndex.getAndIncrement();
+                        int ledgerId = ledgerIdIndex.getAndIncrement();
                         DataEntry dataEntry = new DataEntry(mechanicEvent.getEventData());
                         JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, ledgerId, mechanicEvent.workSessionId,
                                 mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,

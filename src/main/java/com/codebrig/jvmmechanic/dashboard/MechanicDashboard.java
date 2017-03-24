@@ -43,6 +43,7 @@ public class MechanicDashboard {
         }
 
         private void preloadForPlayback() throws IOException {
+            System.out.println("Pre-loading data for playback...");
             TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
             Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
             List<JournalEntry> journalEntryList = stashLedgerFile.readAllJournalEntries();
@@ -60,27 +61,23 @@ public class MechanicDashboard {
                 journalEntries.add(journalEntry);
             }
 
+            //order by legerId
+            Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
+
             long filePosition = 0;
-            Set set = entriesSortedByValues(workSessionTreeMap);
-            Iterator iterator = set.iterator();
-            while(iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry)iterator.next();
-                List<JournalEntry> journalEntries = workSessionHashMap.get(entry.getKey());
-                journalEntries.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
+            for (JournalEntry journalEntry : journalEntryList) {
+                DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
+                filePosition += journalEntry.getEventSize();
 
-                for (JournalEntry journalEntry : journalEntries) {
-                    DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
-                    filePosition += journalEntry.getEventSize();
-
-                    MechanicEvent event = dataEntry.toMechanicEvent();
-                    List<MechanicEvent> eventList = sessionEventMap.get(event.workSessionId);
-                    if (eventList == null) {
-                        eventList = new ArrayList<>();
-                        sessionEventMap.put(event.workSessionId, eventList);
-                    }
-                    eventList.add(event);
+                MechanicEvent event = dataEntry.toMechanicEvent();
+                List<MechanicEvent> eventList = sessionEventMap.get(event.workSessionId);
+                if (eventList == null) {
+                    eventList = new ArrayList<>();
+                    sessionEventMap.put(event.workSessionId, eventList);
                 }
+                eventList.add(event);
             }
+            System.out.println("Finished pre-loading data for playback!");
         }
 
         @Override
@@ -203,22 +200,17 @@ public class MechanicDashboard {
                     journalEntries.add(journalEntry);
                 }
 
+                //order by legerId
+                Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
+
                 long filePosition = 0;
-                Set set = entriesSortedByValues(workSessionTreeMap);
-                Iterator iterator = set.iterator();
-                while(iterator.hasNext()) {
-                    Map.Entry entry = (Map.Entry)iterator.next();
-                    List<JournalEntry> journalEntries = workSessionHashMap.get(entry.getKey());
-                    journalEntries.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
+                for (JournalEntry journalEntry : journalEntryList) {
+                    DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
+                    filePosition += journalEntry.getEventSize();
 
-                    for (JournalEntry journalEntry : journalEntries) {
-                        DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
-                        filePosition += journalEntry.getEventSize();
-
-                        MechanicEvent event = dataEntry.toMechanicEvent();
-                        if (sessionIdSet.contains(event.workSessionId)) {
-                            mechanicEventList.add(event);
-                        }
+                    MechanicEvent event = dataEntry.toMechanicEvent();
+                    if (sessionIdSet.contains(event.workSessionId)) {
+                        mechanicEventList.add(event);
                     }
                 }
             } else {
@@ -279,38 +271,33 @@ public class MechanicDashboard {
                 journalEntries.add(journalEntry);
             }
 
+            //order by legerId
+            Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
+
             Set<Integer> includedSessionSet = new HashSet<>();
             long filePosition = 0;
-            Set set = entriesSortedByValues(workSessionTreeMap);
-            Iterator iterator = set.iterator();
-            while(iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry)iterator.next();
-                List<JournalEntry> journalEntries = workSessionHashMap.get(entry.getKey());
-                journalEntries.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
+            for (JournalEntry journalEntry : journalEntryList) {
+                DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
+                filePosition += journalEntry.getEventSize();
 
-                for (JournalEntry journalEntry : journalEntries) {
-                    DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
-                    filePosition += journalEntry.getEventSize();
+                MechanicEvent event = dataEntry.toMechanicEvent();
+                if (playbackData.getFirstActualEvent() == -1 || event.eventTimestamp < playbackData.getFirstActualEvent()) {
+                    playbackData.setFirstActualEvent(event.eventTimestamp);
+                }
+                if (playbackData.getLastActualEvent() == -1 || event.eventTimestamp > playbackData.getLastActualEvent()) {
+                    playbackData.setLastActualEvent(event.eventTimestamp);
+                }
 
-                    MechanicEvent event = dataEntry.toMechanicEvent();
-                    if (playbackData.getFirstActualEvent() == -1 || event.eventTimestamp < playbackData.getFirstActualEvent()) {
-                        playbackData.setFirstActualEvent(event.eventTimestamp);
+                if ((event.eventTimestamp >= startTime && event.eventTimestamp <= endTime)
+                        || includedSessionSet.contains(event.workSessionId)) {
+                    mechanicEventList.add(event);
+                    includedSessionSet.add(event.workSessionId);
+
+                    if (playbackData.getFirstIncludedEvent() == -1 || event.eventTimestamp < playbackData.getFirstIncludedEvent()) {
+                        playbackData.setFirstIncludedEvent(event.eventTimestamp);
                     }
-                    if (playbackData.getLastActualEvent() == -1 || event.eventTimestamp > playbackData.getLastActualEvent()) {
-                        playbackData.setLastActualEvent(event.eventTimestamp);
-                    }
-
-                    if ((event.eventTimestamp >= startTime && event.eventTimestamp <= endTime)
-                            || includedSessionSet.contains(event.workSessionId)) {
-                        mechanicEventList.add(event);
-                        includedSessionSet.add(event.workSessionId);
-
-                        if (playbackData.getFirstIncludedEvent() == -1 || event.eventTimestamp < playbackData.getFirstIncludedEvent()) {
-                            playbackData.setFirstIncludedEvent(event.eventTimestamp);
-                        }
-                        if (playbackData.getLastIncludedEvent() == -1 || event.eventTimestamp > playbackData.getLastIncludedEvent()) {
-                            playbackData.setLastIncludedEvent(event.eventTimestamp);
-                        }
+                    if (playbackData.getLastIncludedEvent() == -1 || event.eventTimestamp > playbackData.getLastIncludedEvent()) {
+                        playbackData.setLastIncludedEvent(event.eventTimestamp);
                     }
                 }
             }
@@ -561,17 +548,6 @@ public class MechanicDashboard {
         stashDataFile = new StashDataFile(dataStream.getChannel());
 
         ServerRunner.run(DashboardServer.class);
-    }
-
-    static <K,V extends Comparable<? super V>> SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
-        SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<>(
-                (e1, e2) -> {
-                    int res = e1.getValue().compareTo(e2.getValue());
-                    return res != 0 ? res : 1;
-                }
-        );
-        sortedEntries.addAll(map.entrySet());
-        return sortedEntries;
     }
 
 }

@@ -21,54 +21,24 @@ public class StashFileDebugOutput {
         stashDataFile = new StashDataFile(dataStream.getChannel());
 
         ObjectMapper mapper = new ObjectMapper();
-        TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
-        Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
 
         System.out.println("Outputting all journal entries...");
         List<JournalEntry> journalEntryList = stashLedgerFile.readAllJournalEntries();
         for (JournalEntry journalEntry : journalEntryList) {
             System.out.println(mapper.writeValueAsString(journalEntry));
-
-            Long earliestTimestamp = workSessionTreeMap.get(journalEntry.getWorkSessionId());
-            if (earliestTimestamp == null || journalEntry.getEventTimestamp() < earliestTimestamp) {
-                workSessionTreeMap.put(journalEntry.getWorkSessionId(), journalEntry.getEventTimestamp());
-            }
-
-            List<JournalEntry> journalEntries = workSessionHashMap.get(journalEntry.getWorkSessionId());
-            if (journalEntries == null) {
-                journalEntries = new ArrayList<>();
-                workSessionHashMap.put(journalEntry.getWorkSessionId(), journalEntries);
-            }
-            journalEntries.add(journalEntry);
         }
+
+        //order by legerId
+        Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
 
         System.out.println("\nOutputting all mechanic events...");
         long filePosition = 0;
-        Set set = entriesSortedByValues(workSessionTreeMap);
-        Iterator iterator = set.iterator();
-        while(iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry)iterator.next();
-            List<JournalEntry> journalEntries = workSessionHashMap.get(entry.getKey());
-            journalEntries.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
-
-            for (JournalEntry journalEntry : journalEntries) {
-                DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
-                MechanicEvent event = dataEntry.toMechanicEvent();
-                System.out.println(mapper.writeValueAsString(event));
-                filePosition += journalEntry.getEventSize();
-            }
+        for (JournalEntry journalEntry : journalEntryList) {
+            DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
+            MechanicEvent event = dataEntry.toMechanicEvent();
+            System.out.println(mapper.writeValueAsString(event));
+            filePosition += journalEntry.getEventSize();
         }
-    }
-
-    static <K,V extends Comparable<? super V>> SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
-        SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<>(
-                (e1, e2) -> {
-                    int res = e1.getValue().compareTo(e2.getValue());
-                    return res != 0 ? res : 1;
-                }
-        );
-        sortedEntries.addAll(map.entrySet());
-        return sortedEntries;
     }
 
 }
