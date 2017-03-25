@@ -1,6 +1,6 @@
 function updatePlaybackRange (startTime, endTime) {
   //make sure we have all sessions in playback range
-  $.getJSON(host + '/data/session/time/?start_time=' + moment(startTime).valueOf() + '&end_time=' + moment(endTime).valueOf(), function (result) {
+  $.getJSON(host + '/playback/data/session/time/?start_time=' + moment(startTime, 'x').valueOf() + '&end_time=' + moment(endTime, 'x').valueOf(), function (result) {
     var dateSlider = document.getElementById('slider-date')
     var momentFormatter = {
       to: function (value) {
@@ -46,13 +46,11 @@ function updatePlaybackRange (startTime, endTime) {
       dateSlider.noUiSlider.on('change', function (values, handle) {
         var start = new Number(values[0])
         var end = new Number(values[1])
-        updateCharts(start, end)
+        updatePlaybackRange(start, end)
       })
     }
 
-    //record sessions mentioned
-    $.each(result.sessionIdList, function (i, sessionId) {
-      getRecordedSessionMap(sessionId, null)
-    })
+    //update charts
+    updatePlaybackCharts(startTime, endTime, result)
   })
 }

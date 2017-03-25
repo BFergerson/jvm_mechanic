@@ -16,7 +16,12 @@ $(document).ready(function () {
   storage.initialized.then(function () {
     console.log('Local storage size: ' + storage.size)
     console.log('Local storage capacity: ' + storage.getCapacity() + ' bytes')
-    loadLedgerUpdates(true)
+
+    if (monitorMode !== 'playback') {
+        loadLedgerUpdates(true)
+    } else {
+        ledgerLoaded()
+    }
 
     //update garbage stats every 30 seconds
     loadGarbageUpdates()

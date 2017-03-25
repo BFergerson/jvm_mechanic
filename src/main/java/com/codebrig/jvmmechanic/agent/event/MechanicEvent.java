@@ -25,9 +25,27 @@ public abstract class MechanicEvent {
     public boolean success = true;
     public final MechanicEventType eventType;
 
+    public MechanicEvent(MechanicEvent mechanicEvent) {
+        this.eventId = mechanicEvent.eventId;
+        this.eventTimestamp = mechanicEvent.eventTimestamp;
+        this.workSessionId = mechanicEvent.workSessionId;
+        this.eventMethodId = mechanicEvent.eventMethodId;
+        this.eventContext = mechanicEvent.eventContext;
+        this.eventThread = mechanicEvent.eventThread;
+        this.eventMethod = mechanicEvent.eventMethod;
+        this.eventTriggerMethod = mechanicEvent.eventTriggerMethod;
+        this.eventAttribute = mechanicEvent.eventAttribute;
+        this.success = mechanicEvent.success;
+        this.eventType = mechanicEvent.eventType;
+    }
+
     public MechanicEvent(MechanicEventType eventType) {
         this.eventType = eventType;
         this.eventTimestamp = System.currentTimeMillis();
+    }
+
+    public int getEventId() {
+        return eventId;
     }
 
     @JsonIgnore

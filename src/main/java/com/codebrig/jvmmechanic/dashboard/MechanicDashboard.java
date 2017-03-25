@@ -5,6 +5,8 @@ import com.codebrig.jvmmechanic.agent.stash.DataEntry;
 import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 import com.codebrig.jvmmechanic.agent.stash.StashDataFile;
 import com.codebrig.jvmmechanic.agent.stash.StashLedgerFile;
+import com.codebrig.jvmmechanic.dashboard.playback.PlaybackData;
+import com.codebrig.jvmmechanic.dashboard.playback.PlaybackLoader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.iki.elonen.NanoHTTPD;
@@ -25,7 +27,8 @@ public class MechanicDashboard {
 
     static StashLedgerFile stashLedgerFile;
     static StashDataFile stashDataFile;
-    static final Map<Integer, List<MechanicEvent>> sessionEventMap = new HashMap<>();
+    static PlaybackLoader playbackLoader;
+
     static final Map<Integer, AtomicInteger> sessionRequestCountMap = new HashMap<>();
 
     public static class DashboardServer extends NanoHTTPD {
@@ -35,49 +38,14 @@ public class MechanicDashboard {
             try {
                 String playbackProperty = System.getProperty("jvm_mechanic.config.playback_enabled", "false");
                 if (playbackProperty.equalsIgnoreCase("true")) {
-                    preloadForPlayback();
+                    String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
+                    GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
+                    playbackLoader = new PlaybackLoader(stashLedgerFile, stashDataFile, logAnalyzer);
+                    playbackLoader.preloadAllEvents();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-
-        private void preloadForPlayback() throws IOException {
-            System.out.println("Pre-loading data for playback...");
-            TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
-            Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
-            List<JournalEntry> journalEntryList = stashLedgerFile.readAllJournalEntries();
-            for (JournalEntry journalEntry : journalEntryList) {
-                Long earliestTimestamp = workSessionTreeMap.get(journalEntry.getWorkSessionId());
-                if (earliestTimestamp == null || journalEntry.getEventTimestamp() < earliestTimestamp) {
-                    workSessionTreeMap.put(journalEntry.getWorkSessionId(), journalEntry.getEventTimestamp());
-                }
-
-                List<JournalEntry> journalEntries = workSessionHashMap.get(journalEntry.getWorkSessionId());
-                if (journalEntries == null) {
-                    journalEntries = new ArrayList<>();
-                    workSessionHashMap.put(journalEntry.getWorkSessionId(), journalEntries);
-                }
-                journalEntries.add(journalEntry);
-            }
-
-            //order by legerId
-            Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
-
-            long filePosition = 0;
-            for (JournalEntry journalEntry : journalEntryList) {
-                DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
-                filePosition += journalEntry.getEventSize();
-
-                MechanicEvent event = dataEntry.toMechanicEvent();
-                List<MechanicEvent> eventList = sessionEventMap.get(event.workSessionId);
-                if (eventList == null) {
-                    eventList = new ArrayList<>();
-                    sessionEventMap.put(event.workSessionId, eventList);
-                }
-                eventList.add(event);
-            }
-            System.out.println("Finished pre-loading data for playback!");
         }
 
         @Override
@@ -86,6 +54,13 @@ public class MechanicDashboard {
             if (session.getUri().startsWith("/ledger") && session.getMethod().equals(Method.GET)) {
                 try {
                     return handleLedgerRequest(session);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+                }
+            } else if (session.getUri().startsWith("/playback/data/session/time/") && session.getMethod().equals(Method.GET)) {
+                try {
+                    return handlePlaybackSessionTimeDataRequest(session);
                 } catch (IOException e) {
                     e.printStackTrace();
                     return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
@@ -122,9 +97,9 @@ public class MechanicDashboard {
                     e.printStackTrace();
                     return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
                 }
-            } else {
-                return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
             }
+
+            return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
         }
 
         private Response handleLedgerRequest(IHTTPSession session) throws IOException {
@@ -176,32 +151,34 @@ public class MechanicDashboard {
             //todo: multiple maybe?
             Set<Integer> sessionIdSet = new HashSet<>();
             int sessionId =  Integer.valueOf(sessionIdParam.get(0));
+            sessionIdSet.add(sessionId);
+
             if (sessionRequestCountMap.get(sessionId) == null) {
                 sessionRequestCountMap.put(sessionId, new AtomicInteger(0));
             }
             sessionRequestCountMap.get(sessionId).getAndIncrement();
 
             //todo: update sessionEventMap with anything new and don't allow it to store with 0 events
-            if (!sessionEventMap.containsKey(sessionId)) {
-                TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
-                Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
+//            if (!sessionEventMap.containsKey(sessionId)) {
+                //TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
+                //Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
                 List<JournalEntry> journalEntryList = stashLedgerFile.readAllJournalEntries();
-                for (JournalEntry journalEntry : journalEntryList) {
-                    Long earliestTimestamp = workSessionTreeMap.get(journalEntry.getWorkSessionId());
-                    if (earliestTimestamp == null || journalEntry.getEventTimestamp() < earliestTimestamp) {
-                        workSessionTreeMap.put(journalEntry.getWorkSessionId(), journalEntry.getEventTimestamp());
-                    }
-
-                    List<JournalEntry> journalEntries = workSessionHashMap.get(journalEntry.getWorkSessionId());
-                    if (journalEntries == null) {
-                        journalEntries = new ArrayList<>();
-                        workSessionHashMap.put(journalEntry.getWorkSessionId(), journalEntries);
-                    }
-                    journalEntries.add(journalEntry);
-                }
+//                for (JournalEntry journalEntry : journalEntryList) {
+////                    Long earliestTimestamp = workSessionTreeMap.get(journalEntry.getWorkSessionId());
+////                    if (earliestTimestamp == null || journalEntry.getEventTimestamp() < earliestTimestamp) {
+////                        workSessionTreeMap.put(journalEntry.getWorkSessionId(), journalEntry.getEventTimestamp());
+////                    }
+////
+////                    List<JournalEntry> journalEntries = workSessionHashMap.get(journalEntry.getWorkSessionId());
+////                    if (journalEntries == null) {
+////                        journalEntries = new ArrayList<>();
+////                        workSessionHashMap.put(journalEntry.getWorkSessionId(), journalEntries);
+////                    }
+//                    journalEntries.add(journalEntry);
+//                }
 
                 //order by legerId
-                Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
+                journalEntryList.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
 
                 long filePosition = 0;
                 for (JournalEntry journalEntry : journalEntryList) {
@@ -213,9 +190,9 @@ public class MechanicDashboard {
                         mechanicEventList.add(event);
                     }
                 }
-            } else {
-                mechanicEventList.addAll(sessionEventMap.get(sessionId));
-            }
+//            } else {
+//                mechanicEventList.addAll(sessionEventMap.get(sessionId));
+//            }
 
             System.out.println("Requested session: " + sessionId + "; Size: " + mechanicEventList.size() + "; Request count: " + sessionRequestCountMap.get(sessionId));
             if (mechanicEventList.isEmpty()) {
@@ -252,7 +229,7 @@ public class MechanicDashboard {
 
             PlaybackData playbackData = new PlaybackData();
             List<MechanicEvent> mechanicEventList = new ArrayList<>();
-            playbackData.setPlaybackEvents(mechanicEventList);
+            //playbackData.setPlaybackEvents(mechanicEventList);
 
             TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
             Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
@@ -281,12 +258,12 @@ public class MechanicDashboard {
                 filePosition += journalEntry.getEventSize();
 
                 MechanicEvent event = dataEntry.toMechanicEvent();
-                if (playbackData.getFirstActualEvent() == -1 || event.eventTimestamp < playbackData.getFirstActualEvent()) {
-                    playbackData.setFirstActualEvent(event.eventTimestamp);
-                }
-                if (playbackData.getLastActualEvent() == -1 || event.eventTimestamp > playbackData.getLastActualEvent()) {
-                    playbackData.setLastActualEvent(event.eventTimestamp);
-                }
+//                if (playbackData.getFirstActualEvent() == -1 || event.eventTimestamp < playbackData.getFirstActualEvent()) {
+//                    playbackData.setFirstActualEvent(event.eventTimestamp);
+//                }
+//                if (playbackData.getLastActualEvent() == -1 || event.eventTimestamp > playbackData.getLastActualEvent()) {
+//                    playbackData.setLastActualEvent(event.eventTimestamp);
+//                }
 
                 if ((event.eventTimestamp >= startTime && event.eventTimestamp <= endTime)
                         || includedSessionSet.contains(event.workSessionId)) {
@@ -317,6 +294,38 @@ public class MechanicDashboard {
             return res;
         }
 
+        private Response handlePlaybackSessionTimeDataRequest(IHTTPSession session) throws IOException {
+            Map<String, List<String>> decodedQueryParameters = decodeParameters(session.getQueryParameterString());
+            List<String> startTimeParam = decodedQueryParameters.get("start_time");
+            List<String> endTimeParam = decodedQueryParameters.get("end_time");
+            if ((startTimeParam == null || startTimeParam.isEmpty())
+                    || (endTimeParam == null || endTimeParam.isEmpty())) {
+                return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+            }
+
+            //todo: maybe multi start_time/end_time ?
+            long startTime = Long.valueOf(startTimeParam.get(0));
+            long endTime = Long.valueOf(endTimeParam.get(0));
+            if (startTime == endTime && startTime != -1) {
+                System.out.println("Ignoring request at same start/end time: " + startTime + "; Date: " + new Date(startTime));
+                return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+            }
+
+            //output json
+            String jsonData;
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                jsonData = mapper.writeValueAsString(playbackLoader.getPlaybackData(startTime, endTime));
+            } catch (JsonProcessingException ex) {
+                ex.printStackTrace();
+                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
+            }
+
+            NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", jsonData);
+            res.addHeader("Access-Control-Allow-Origin", "*");
+            return res;
+        }
+
         private Response handleSessionTimeDataRequest(IHTTPSession session) throws IOException {
             Map<String, List<String>> decodedQueryParameters = decodeParameters(session.getQueryParameterString());
             List<String> startTimeParam = decodedQueryParameters.get("start_time");
@@ -337,12 +346,12 @@ public class MechanicDashboard {
             PlaybackData playbackData = new PlaybackData();
             List<JournalEntry> journalEntryList = stashLedgerFile.readAllJournalEntries();
             for (JournalEntry journalEntry : journalEntryList) {
-                if (playbackData.getFirstActualEvent() == -1 || journalEntry.getEventTimestamp() < playbackData.getFirstActualEvent()) {
-                    playbackData.setFirstActualEvent(journalEntry.getEventTimestamp());
-                }
-                if (playbackData.getLastActualEvent() == -1 || journalEntry.getEventTimestamp() > playbackData.getLastActualEvent()) {
-                    playbackData.setLastActualEvent(journalEntry.getEventTimestamp());
-                }
+//                if (playbackData.getFirstActualEvent() == -1 || journalEntry.getEventTimestamp() < playbackData.getFirstActualEvent()) {
+//                    playbackData.setFirstActualEvent(journalEntry.getEventTimestamp());
+//                }
+//                if (playbackData.getLastActualEvent() == -1 || journalEntry.getEventTimestamp() > playbackData.getLastActualEvent()) {
+//                    playbackData.setLastActualEvent(journalEntry.getEventTimestamp());
+//                }
 
                 if (journalEntry.getEventTimestamp() > startTime && journalEntry.getEventTimestamp() < endTime) {
                     if (playbackData.getFirstIncludedEvent() == -1 || journalEntry.getEventTimestamp() < playbackData.getFirstIncludedEvent()) {
@@ -352,7 +361,7 @@ public class MechanicDashboard {
                         playbackData.setLastIncludedEvent(journalEntry.getEventTimestamp());
                     }
 
-                   playbackData.addSessionId(journalEntry.getWorkSessionId());
+                   //playbackData.addSessionId(journalEntry.getWorkSessionId());
                 }
             }
 

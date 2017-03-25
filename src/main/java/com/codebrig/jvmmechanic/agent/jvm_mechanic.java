@@ -299,7 +299,11 @@ public class jvm_mechanic extends Helper {
         for (int i = 1; i < stacktrace.length; i++) {
             String callerMethod = stacktrace[i].getClassName() + "." + stacktrace[i].getMethodName();
             if (!callerMethod.contains("org.jboss.byteman") && !callerMethod.contains("com.codebrig.jvmmechanic")) {
-                return stacktrace[i + 1].getClassName() + "." + stacktrace[i + 1].getMethodName();
+                if (stacktrace.length > i + 1) {
+                    return stacktrace[i + 1].getClassName() + "." + stacktrace[i + 1].getMethodName();
+                } else {
+                    return callerMethod;
+                }
             }
         }
         return null;

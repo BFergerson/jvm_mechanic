@@ -17,6 +17,7 @@ import java.util.Date;
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
 public class GarbageLogAnalyzer {
+
     private String logFileLocation;
 
     public GarbageLogAnalyzer(String logFileLocation) {

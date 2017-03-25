@@ -1,33 +1,27 @@
 package com.codebrig.jvmmechanic.tests;
 
-class SimpleGarbageProgram {
+public class SimpleGarbageProgram {
 
-    static MyList objList = null;
-    static int wait = 100; // in milliseconds
-    static int objSize = 1280; // in KB, default = 1.25 M
-    static int initSteps = 320; // # of initial objects
-    static int testSteps = 32; // # of added objects
+    MyList objList = null;
+    int wait = 500; // in milliseconds
+    int objSize = 1280; // in KB, default = 1.25 M
+    int testSteps = 32; // # of added objects
 
     public static void main(String[] arg) throws Exception {
-        if (arg.length > 0) objSize = Integer.parseInt(arg[0]);
-        if (arg.length > 1) initSteps = Integer.parseInt(arg[1]);
-        if (arg.length > 2) testSteps = Integer.parseInt(arg[2]);
-
-        objList = new MyList();
-        myTest();
+        new SimpleGarbageProgram().myTest();
     }
 
-    public static void myTest() throws Exception {
+    public void myTest() throws Exception {
         System.out.println("Time  Total  Free  Used  Free  Total  Act.  Dead  Over");
         System.out.println("sec.   Mem.  Mem.  Mem.    %.   Obj.  Obj.  Obj.  Head");
         long dt0 = System.currentTimeMillis() / 1000;
-
+        objList = new MyList();
         while (true) {
             doWork(dt0);
         }
     }
 
-    static void doWork(long dt0) throws Exception {
+    void doWork(long dt0) throws Exception {
         doGarbageStuff1();
         doGarbageStuff2();
         doGarbageStuff3();
@@ -49,7 +43,7 @@ class SimpleGarbageProgram {
         mySleep(wait);
     }
 
-    static void doGarbageStuff1() {
+    void doGarbageStuff1() {
         for (int m = 0; m < testSteps; m++) {
             objList.add(new MyObject(objSize));
         }
@@ -58,7 +52,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static void doGarbageStuff2() {
+    void doGarbageStuff2() {
         for (int m = 0; m < testSteps; m++) {
             objList.add(new MyObject(objSize * 2));
         }
@@ -67,7 +61,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static void doGarbageStuff3() {
+    void doGarbageStuff3() {
         for (int m = 0; m < testSteps; m++) {
             objList.add(new MyObject(objSize * 3));
         }
@@ -76,7 +70,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static void doGarbageStuff4() {
+    void doGarbageStuff4() {
         for (int m = 0; m < testSteps; m++) {
             objList.add(new MyObject(objSize * 4));
         }
@@ -85,7 +79,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static void doGarbageStuff5() {
+    void doGarbageStuff5() {
         for (int m = 0; m < testSteps; m++) {
             objList.add(new MyObject(objSize * 5));
         }
@@ -94,7 +88,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static void mySleep(int t) {
+    void mySleep(int t) {
         try {
             Thread.sleep(t);
         } catch (InterruptedException e) {
@@ -102,7 +96,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static class MyObject {
+    public static class MyObject {
         private static long count = 0;
         private long[] obj = null;
         public MyObject next = null;
@@ -122,7 +116,7 @@ class SimpleGarbageProgram {
         }
     }
 
-    static class MyList {
+    public static class MyList {
         static long count = 0;
         MyObject head = null;
         MyObject tail = null;

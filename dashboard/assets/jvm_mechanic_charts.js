@@ -200,7 +200,10 @@ function ledgerLoaded () {
       loadLedgerUpdates()
     }, 3000)
   } else {
-    updateCharts(null, null) //get it started
+    if (monitorMode === 'playback') {
+      updatePlaybackRange(-1, -1)
+    }
+    //updateCharts(null, null) //get it started
   }
 }
 
@@ -280,6 +283,379 @@ var methodColorMap = {}
 var totalMethodDurationMap = {}
 var averageDurationMap = {}
 var lastSessionTimestamp = null
+
+function updatePlaybackCharts (startTime, endTime, playbackData) {
+    console.log('Updating charts (with playback data)...')
+    if (startTime && endTime) {
+      earliestSessionTimestamp = startTime.valueOf()
+      lastSessionTimestamp = endTime.valueOf()
+    }
+    evictOldChartDataPlayback(relativeMethodRuntimeDurationConfig.data, startTime, endTime)
+    evictOldChartDataPlayback(absoluteMethodRuntimeDurationConfig.data, startTime, endTime)
+
+    //determine method colors
+    var i = 0;
+    Object.keys(playbackData.methodInvocationCountMap).forEach(function (methodId) {
+        var colorNames = Object.keys(window.chartColors)
+        var colorName = colorNames[i % colorNames.length]
+        var newColor = window.chartColors[colorName]
+        if (i >= colorNames.length) {
+            newColor = getRandomColor()
+        }
+
+        methodColorMap[methodId] = newColor
+        i++
+    });
+
+    var map = {}
+    Object.keys(playbackData.sessionTimelineMap).forEach(function (sessionTimestamp) {
+        var sessionIdArr = playbackData.sessionTimelineMap[sessionTimestamp]
+        var innerMap = {}
+        map[sessionTimestamp] = innerMap
+
+        sessionIdArr.forEach(function (sessionId) {
+            innerMap[sessionId] = playbackData.sessionRelativeMethodDurationMap[sessionId]
+        });
+    });
+    batchUpdateRelativeLineChart(map)
+
+    var map = {}
+    Object.keys(playbackData.sessionTimelineMap).forEach(function (sessionTimestamp) {
+        var sessionIdArr = playbackData.sessionTimelineMap[sessionTimestamp]
+        var innerMap = {}
+        map[sessionTimestamp] = innerMap
+
+        sessionIdArr.forEach(function (sessionId) {
+            innerMap[sessionId] = playbackData.sessionAbsoluteMethodDurationMap[sessionId]
+        });
+    });
+    batchUpdateAbsoluteLineChart(map)
+
+    updateAverageMethodDurationPolarChart(playbackData.averageRelativeMethodDurationMap, playbackData.averageAbsoluteMethodDurationMap)
+    updateTotalMethodDurationPolarChart(playbackData.totalRelativeMethodDurationMap, playbackData.totalAbsoluteMethodDurationMap)
+
+    //per method charts
+    updatePerMethodCharts(playbackData)
+
+    sessionAccountedForEventCount = playbackData.sessionEventCountMap
+    sessionAccountedFor = playbackData.sessionEventCountMap
+
+    updateGeneralMonitoringInformation()
+}
+
+function updatePerMethodCharts(playbackData) {
+    //sort by longest lived
+    var sortedList = []
+    Object.keys(playbackData.totalRelativeMethodDurationMap).forEach(function (methodId) {
+        var totalLive = playbackData.totalRelativeMethodDurationMap[methodId]
+        sortedList.push([methodId, totalLive])
+    });
+    sortedList.sort(function (a, b) {
+      return b[1] - a[1]
+    })
+
+    var id = 0
+    sortedList.forEach(function (listArr) {
+      var methodId = listArr[0]
+      var totalLive = playbackData.totalRelativeMethodDurationMap[methodId]
+      var totalPauseTime = playbackData.methodGarbagePauseDurationMap[methodId]
+      if (!totalPauseTime) {
+        totalPauseTime = 0
+      }
+
+      var totalRuntime = totalLive - totalPauseTime
+
+      var chart = null
+      if (garbageCanvasMap[methodId]) {
+        //update old
+        chart = garbageCanvasMap[methodId]
+        chart.data.datasets[0].data = [totalRuntime, totalPauseTime]
+      } else {
+        //add new
+        var ctx = document.getElementById('test_canvas_' + id).getContext('2d')
+        chart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            datasets: [],
+            labels: []
+          }
+        })
+        chart.data.labels.push('Run')
+        chart.data.labels.push('Pause')
+
+        var methodNameList = getClassMethodParamList(methodNameMap[methodId])
+        var headerText = "<b>Class: </b>" + methodNameList[0] + "<br/><b>Method: </b>" + methodNameList[1] + "<br/><b>Params: </b>" + methodNameList[2]
+        $('#test_heading_' + id).html(headerText)
+        garbageCanvasMap[methodId] = chart
+
+        var newDataset = {
+          data: [totalRuntime, totalPauseTime],
+          backgroundColor: [
+            methodColorMap[methodId],
+            '#8B0000'
+          ],
+          hoverBackgroundColor: [
+            methodColorMap[methodId],
+            '#8B0000'
+          ]
+        }
+        chart.data.datasets.push(newDataset)
+      }
+
+      chart.update()
+
+      //update labels
+      $('#total_run_' + id).text(getPrettyTime(totalRuntime) + ' (' + roundNumber((totalRuntime / totalLive) * 100.00, 2) + '%)')
+      $('#total_pause_' + id).text(getPrettyTime(totalPauseTime) + ' (' + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + '%)')
+      $('#total_live_' + id).text(getPrettyTime(totalLive))
+      $('#invocation_count_' + id).text(playbackData.methodInvocationCountMap[methodId])
+
+      $('#relative_duration_range_' + id).text(getPrettyTime(playbackData.minimumRelativeMethodDurationMap[methodId]) + ' - ' + getPrettyTime(playbackData.maximumRelativeMethodDurationMap[methodId]))
+      $('#absolute_duration_range_' + id).text(getPrettyTime(playbackData.minimumAbsoluteMethodDurationMap[methodId]) + ' - ' + getPrettyTime(playbackData.maximumAbsoluteMethodDurationMap[methodId]))
+
+    var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(earliestSessionTimestamp))
+    var hours = duration.asHours()
+    var minutes = duration.asMinutes()
+    var seconds = duration.asSeconds()
+    var milliseconds = duration.asMilliseconds()
+    var invocationCount = playbackData.methodInvocationCountMap[methodId]
+
+    //method frequency
+    if (hours > 2 && ((invocationCount / hours) > 100)) {
+      $('#execution_frequency_' + id).text((invocationCount / hours) + ' per hour')
+    } else if (minutes > 30 && ((invocationCount / minutes) > 100)) {
+      $('#execution_frequency_' + id).text(Math.ceil(invocationCount / minutes) + ' per minute')
+    } else if (seconds > 0) {
+      $('#execution_frequency_' + id).text(Math.ceil(invocationCount / seconds) + ' per second')
+    }
+
+      $('#garbage_panel_' + id).show()
+      id++
+    })
+}
+
+function updateLastSessionBarChart(latestWorkSessionId, latestSessionMethodDurationMap) {
+    var newDataset = {
+      backgroundColor: [],
+      hoverBackgroundColor: [],
+      data: []
+    }
+    if (currentMethodDurationBarChartConfig.data.datasets.length !== 0) {
+      newDataset = currentMethodDurationBarChartConfig.data.datasets[0]
+      newDataset.data = []
+      window.currentMethodDurationBarChart.data.labels = []
+    } else {
+      currentMethodDurationBarChartConfig.data.datasets.push(newDataset)
+    }
+
+    newDataset.label = 'Work Session: ' + latestWorkSessionId
+    Object.keys(latestSessionMethodDurationMap).forEach(function (key) {
+      var methodDuration = latestSessionMethodDurationMap[key]
+      //console.log("Method id: " + methodDuration.methodId + "; Latest (relative): " + methodDuration.relativeDuration);
+      window.currentMethodDurationBarChart.data.labels.push(removePackageAndClassName(methodNameMap[methodDuration.methodId]))
+      newDataset.backgroundColor.push(methodColorMap[methodDuration.methodId])
+      newDataset.data.push(methodDuration.relativeDuration)
+    })
+
+    window.currentMethodDurationBarChart.update()
+}
+
+function updateAverageMethodDurationPolarChart(averageDurationMap, averageAbsoluteDurationMap) {
+    var newDataset = {
+    backgroundColor: [],
+    hoverBackgroundColor: [],
+    data: []
+  }
+  if (averageMethodDurationPolarChartConfig.data.datasets.length !== 0) {
+    newDataset = averageMethodDurationPolarChartConfig.data.datasets[0]
+    newDataset.data = []
+    window.averageMethodDurationPolarChart.data.labels = []
+  } else {
+    averageMethodDurationPolarChartConfig.data.datasets.push(newDataset)
+  }
+
+  Object.keys(averageDurationMap).forEach(function (methodId) {
+    var averageDuration = averageDurationMap[methodId]
+    //console.log("Method id: " + methodId + "; Avg (relative): " + averageDuration);
+    window.averageMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
+    newDataset.backgroundColor.push(methodColorMap[methodId])
+    newDataset.data.push(averageDuration)
+  })
+
+  window.averageMethodDurationPolarChart.update()
+}
+
+function updateTotalMethodDurationPolarChart(totalMethodDurationMap, totalAbsoluteMethodDurationMap) {
+  var newDataset = {
+    backgroundColor: [],
+    hoverBackgroundColor: [],
+    data: []
+  }
+  if (totalMethodDurationPolarChartConfig.data.datasets.length !== 0) {
+    newDataset = totalMethodDurationPolarChartConfig.data.datasets[0]
+    newDataset.data = []
+    window.totalMethodDurationPolarChart.data.labels = []
+  } else {
+    totalMethodDurationPolarChartConfig.data.datasets.push(newDataset)
+  }
+
+  Object.keys(totalMethodDurationMap).forEach(function (methodId) {
+    var totalMethodDuration = totalMethodDurationMap[methodId]
+    //console.log("Method id: " + methodId + "; Total (relative): " + totalMethodDuration);
+    window.totalMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
+    newDataset.backgroundColor.push(methodColorMap[methodId])
+    newDataset.data.push(totalMethodDuration)
+  })
+
+  window.totalMethodDurationPolarChart.update()
+}
+
+function batchUpdateRelativeLineChart(methodRelativeDurationMap) {
+    var orderedTimestampList = Object.keys(methodRelativeDurationMap)
+    orderedTimestampList.sort(function (a, b) {
+      return a - b
+    })
+
+    orderedTimestampList.forEach(function (sessionTimestamp) {
+        var methodDurationMap = methodRelativeDurationMap[sessionTimestamp]
+
+        //label
+        relativeMethodRuntimeDurationConfig.data.labels.push(moment(sessionTimestamp, 'x'))
+
+        //data
+        var map = {};
+        Object.keys(methodDurationMap).forEach(function (sessionId) {
+            Object.keys(methodDurationMap[sessionId]).forEach(function (methodId) {
+                if(!map[methodId]) {
+                    map[methodId] = []
+                }
+                map[methodId] = map[methodId].concat(methodDurationMap[sessionId][methodId])
+            });
+        });
+
+        Object.keys(map).forEach(function (methodId) {
+            var relativeDurationArr = map[methodId]
+
+           var addedData = false
+           relativeMethodRuntimeDurationConfig.data.datasets.forEach(function (dataset) {
+             if (dataset.label === methodNameMap[methodId]) {
+               dataset.data = dataset.data.concat(relativeDurationArr)
+               addedData = true
+             }
+           })
+
+           if (addedData === false) {
+             var newDataset = {
+               label: methodNameMap[methodId],
+               backgroundColor: methodColorMap[methodId],
+               borderColor: methodColorMap[methodId],
+               data: relativeDurationArr,
+               fill: false
+             }
+
+             relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset)
+           }
+        });
+    });
+
+    window.relativeMethodRuntimeDurationLine.update()
+}
+
+function batchUpdateAbsoluteLineChart(methodAbsoluteDurationMap) {
+    var orderedTimestampList = Object.keys(methodAbsoluteDurationMap)
+    orderedTimestampList.sort(function (a, b) {
+      return a - b
+    })
+
+    orderedTimestampList.forEach(function (sessionTimestamp) {
+        var methodDurationMap = methodAbsoluteDurationMap[sessionTimestamp]
+
+        //label
+        absoluteMethodRuntimeDurationConfig.data.labels.push(moment(sessionTimestamp, 'x'))
+
+        //data
+        var map = {};
+        Object.keys(methodDurationMap).forEach(function (sessionId) {
+            Object.keys(methodDurationMap[sessionId]).forEach(function (methodId) {
+                if(!map[methodId]) {
+                    map[methodId] = []
+                }
+                map[methodId] = map[methodId].concat(methodDurationMap[sessionId][methodId])
+            });
+        });
+
+        Object.keys(map).forEach(function (methodId) {
+            var absoluteDurationArr = map[methodId]
+
+           var addedData = false
+           absoluteMethodRuntimeDurationConfig.data.datasets.forEach(function (dataset) {
+             if (dataset.label === methodNameMap[methodId]) {
+               dataset.data = dataset.data.concat(absoluteDurationArr)
+               addedData = true
+             }
+           })
+
+           if (addedData === false) {
+             var newDataset = {
+               label: methodNameMap[methodId],
+               backgroundColor: methodColorMap[methodId],
+               borderColor: methodColorMap[methodId],
+               data: absoluteDurationArr,
+               fill: false
+             }
+
+             absoluteMethodRuntimeDurationConfig.data.datasets.push(newDataset)
+           }
+        });
+    });
+
+    window.absoluteMethodRuntimeDurationLine.update()
+}
+
+function singleUpdateLineCharts(eventTimestamp, workSessionId, eventMethodId, relativeDuration, absoluteDuration) {
+    relativeMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp))
+    absoluteMethodRuntimeDurationConfig.data.labels.push(moment(eventTimestamp))
+
+    var addedData = false
+    relativeMethodRuntimeDurationConfig.data.datasets.forEach(function (dataset) {
+      if (dataset.label === methodNameMap[eventMethodId]) {
+        dataset.data.push(relativeDuration)
+        addedData = true
+      }
+    })
+    absoluteMethodRuntimeDurationConfig.data.datasets.forEach(function (dataset) {
+      if (dataset.label === methodNameMap[eventMethodId]) {
+        dataset.data.push(absoluteDuration)
+        addedData = true
+      }
+    })
+
+    if (addedData === false) {
+      var newDataset = {
+        label: methodNameMap[eventMethodId],
+        backgroundColor: methodColorMap[eventMethodId],
+        borderColor: methodColorMap[eventMethodId],
+        data: [],
+        fill: false,
+        sessionId: workSessionId
+      }
+
+      newDataset.data.push(relativeDuration)
+      relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset)
+
+      newDataset = {
+        label: methodNameMap[eventMethodId],
+        backgroundColor: methodColorMap[eventMethodId],
+        borderColor: methodColorMap[eventMethodId],
+        data: [],
+        fill: false,
+        sessionId: workSessionId
+      }
+
+      newDataset.data.push(absoluteDuration)
+      absoluteMethodRuntimeDurationConfig.data.datasets.push(newDataset)
+    }
+}
 
 function updateCharts (startTime, endTime) {
   if (monitorMode === 'playback') {
@@ -430,10 +806,6 @@ function updateGeneralMonitoringInformation () {
   if (earliestSessionTimestamp && lastSessionTimestamp) {
     var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(moment(earliestSessionTimestamp, 'x')))
     $('#uptimeLabel').text(getPrettyTime(duration.valueOf()))
-
-    if (monitorMode === 'playback') {
-      updatePlaybackRange(earliestSessionTimestamp, lastSessionTimestamp)
-    }
   }
 
   //events
