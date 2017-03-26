@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
+ * todo: this
+ *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
 public class GarbageLogAnalyzer {
