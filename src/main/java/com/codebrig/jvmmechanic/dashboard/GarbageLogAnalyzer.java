@@ -1,7 +1,6 @@
 package com.codebrig.jvmmechanic.dashboard;
 
-import org.eclipselabs.garbagecat.domain.BlockingEvent;
-import org.eclipselabs.garbagecat.domain.JvmRun;
+import org.eclipselabs.garbagecat.domain.*;
 import org.eclipselabs.garbagecat.hsql.JvmDao;
 import org.eclipselabs.garbagecat.service.GcManager;
 import org.eclipselabs.garbagecat.util.Constants;
@@ -68,10 +67,10 @@ public class GarbageLogAnalyzer {
         //jvm run to garbage collection report
         GarbageCollectionReport report = new GarbageCollectionReport();
         report.setTotalGCEvents(jvmRun.getBlockingEventCount());
-        report.setMaxHeapOccupancy(jvmRun.getMaxHeapOccupancy());
-        report.setMaxHeapSpace(jvmRun.getMaxHeapSpace());
-        report.setMaxPermMetaspaceOccupancy(jvmRun.getMaxPermOccupancy());
-        report.setMaxPermMetaspaceSpace(jvmRun.getMaxPermSpace());
+        report.setMaxHeapOccupancy(jvmRun.getMaxHeapOccupancy() * 1024L);
+        report.setMaxHeapSpace(jvmRun.getMaxHeapSpace() * 1024L);
+        report.setMaxPermMetaspaceOccupancy(jvmRun.getMaxPermOccupancy() * 1024L);
+        report.setMaxPermMetaspaceSpace(jvmRun.getMaxPermSpace() * 1024L);
         report.setGCThroughput(jvmRun.getGcThroughput());
         report.setGCMaxPause(jvmRun.getMaxGcPause());
         report.setGCTotalPause(jvmRun.getTotalGcPause());
@@ -80,18 +79,49 @@ public class GarbageLogAnalyzer {
         report.setStoppedTimeTotal(jvmRun.getTotalStoppedTime());
         report.setGCStoppedRatio(jvmRun.getGcStoppedRatio());
 
+        long lastYoungSize = 0;
+        long totalAllocatedBytes = 0;
+        long totalPromotedBytes = 0;
         JvmDao jvmDao = getDAO(gcManager);
         if (jvmDao != null) {
             for (BlockingEvent event : jvmDao.getBlockingEvents()) {
-                long pauseTimestamp = event.getTimestamp();
+                long pauseTimestamp = -1;
                 String dateStamp = JdkUtil.getDateStamp(event.getLogEntry());
                 if (dateStamp != null && !dateStamp.isEmpty()) {
                     pauseTimestamp = GcUtil.parseDateStamp(dateStamp).getTime();
                 }
 
-                report.addGarbageCollectionPause(new GarbageCollectionPause(pauseTimestamp, event.getDuration()));
+                if ((startTime == -1 && endTime == -1) || pauseTimestamp >= startTime && pauseTimestamp <= endTime) {
+                    event = (BlockingEvent) JdkUtil.parseLogLine(event.getLogEntry());
+                    report.addGarbageCollectionPause(new GarbageCollectionPause(pauseTimestamp, event.getDuration()));
 
+                    //gc insights
+                    if (event instanceof YoungData) {
+                        YoungData youngData = (YoungData) event;
+                        long allocated = youngData.getYoungOccupancyInit() - lastYoungSize;
+                        if (allocated > 0) {
+                            totalAllocatedBytes += allocated;
+                        }
+                        lastYoungSize = youngData.getYoungOccupancyEnd();
+
+                        //System.out.println("Allocated during: " + allocated);
+                        //System.out.println("Total allocated: " + totalAllocatedBytes);
+                    }
+                    if (event instanceof OldData) {
+                        OldData oldData = (OldData) event;
+                        long promoted = oldData.getOldOccupancyEnd() - oldData.getOldOccupancyInit();
+                        if (promoted > 0) {
+                            totalPromotedBytes += promoted;
+                        }
+
+                        //System.out.println("Promoted during: " + promoted);
+                        //System.out.println("Total Promoted: " + totalPromotedBytes);
+                    }
+                }
             }
+
+            report.setTotalAllocatedBytes(totalAllocatedBytes * 1024L);
+            report.setTotalPromotedBytes(totalPromotedBytes * 1024L);
         }
 
         if (tmpFile != null) {

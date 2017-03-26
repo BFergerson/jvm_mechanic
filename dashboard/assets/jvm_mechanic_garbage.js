@@ -45,6 +45,17 @@ function loadPlaybackGarbageReport (startTime, endTime) {
     $('#stoppedTimeMaxPause').text(moment.duration(result.stoppedTimeMaxPause).asSeconds() + ' seconds')
     $('#stoppedTimeTotal').text(moment.duration(result.stoppedTimeTotal).asSeconds() + ' seconds')
     $('#GCStoppedRatio').text(result.gcstoppedRatio + '%')
+
+    //gc insights
+    $('#totalAllocatedBytes').text(humanFileSize(result.totalAllocatedBytes))
+    $('#totalPromotedBytes').text(humanFileSize(result.totalPromotedBytes))
+
+    var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(earliestSessionTimestamp))
+    var seconds = duration.asSeconds()
+    $('#averageAllocationRate').text(humanFileSize(Math.ceil(result.totalAllocatedBytes / seconds)) + '/sec')
+    $('#averagePromotionRate').text(humanFileSize(Math.ceil(result.totalPromotedBytes / seconds)) + '/sec')
+
+
   }).always(function (result) {
     //todo: anything?
   })

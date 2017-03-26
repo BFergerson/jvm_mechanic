@@ -93,7 +93,6 @@ function roundNumber (num, scale) {
 
 function humanFileSize (bytes) {
   var si = false
-  bytes *= 1024
   var thresh = si ? 1000 : 1024
   if (Math.abs(bytes) < thresh) {
     return bytes + ' B'

@@ -11,10 +11,10 @@ import java.util.List;
 public class GarbageCollectionReport {
 
     private int totalGCEvents;
-    private int maxHeapOccupancy;
-    private int maxHeapSpace;
-    private int maxPermMetaspaceOccupancy;
-    private int maxPermMetaspaceSpace;
+    private long maxHeapOccupancy;
+    private long maxHeapSpace;
+    private long maxPermMetaspaceOccupancy;
+    private long maxPermMetaspaceSpace;
     private double GCThroughput;
     private double GCMaxPause;
     private double GCTotalPause;
@@ -22,6 +22,8 @@ public class GarbageCollectionReport {
     private double stoppedTimeMaxPause;
     private double stoppedTimeTotal;
     private double GCStoppedRatio;
+    private long totalAllocatedBytes;
+    private long totalPromotedBytes;
     private List<GarbageCollectionPause> garbageCollectionPauseList = new ArrayList<>();
 
     public int getTotalGCEvents() {
@@ -32,35 +34,35 @@ public class GarbageCollectionReport {
         this.totalGCEvents = totalGCEvents;
     }
 
-    public int getMaxHeapOccupancy() {
+    public long getMaxHeapOccupancy() {
         return maxHeapOccupancy;
     }
 
-    public void setMaxHeapOccupancy(int maxHeapOccupancy) {
+    public void setMaxHeapOccupancy(long maxHeapOccupancy) {
         this.maxHeapOccupancy = maxHeapOccupancy;
     }
 
-    public int getMaxHeapSpace() {
+    public long getMaxHeapSpace() {
         return maxHeapSpace;
     }
 
-    public void setMaxHeapSpace(int maxHeapSpace) {
+    public void setMaxHeapSpace(long maxHeapSpace) {
         this.maxHeapSpace = maxHeapSpace;
     }
 
-    public int getMaxPermMetaspaceOccupancy() {
+    public long getMaxPermMetaspaceOccupancy() {
         return maxPermMetaspaceOccupancy;
     }
 
-    public void setMaxPermMetaspaceOccupancy(int maxPermMetaspaceOccupancy) {
+    public void setMaxPermMetaspaceOccupancy(long maxPermMetaspaceOccupancy) {
         this.maxPermMetaspaceOccupancy = maxPermMetaspaceOccupancy;
     }
 
-    public int getMaxPermMetaspaceSpace() {
+    public long getMaxPermMetaspaceSpace() {
         return maxPermMetaspaceSpace;
     }
 
-    public void setMaxPermMetaspaceSpace(int maxPermMetaspaceSpace) {
+    public void setMaxPermMetaspaceSpace(long maxPermMetaspaceSpace) {
         this.maxPermMetaspaceSpace = maxPermMetaspaceSpace;
     }
 
@@ -126,6 +128,22 @@ public class GarbageCollectionReport {
 
     public void addGarbageCollectionPause(GarbageCollectionPause garbageCollectionPause) {
         garbageCollectionPauseList.add(garbageCollectionPause);
+    }
+
+    public long getTotalAllocatedBytes() {
+        return totalAllocatedBytes;
+    }
+
+    public void setTotalAllocatedBytes(long totalAllocatedBytes) {
+        this.totalAllocatedBytes = totalAllocatedBytes;
+    }
+
+    public long getTotalPromotedBytes() {
+        return totalPromotedBytes;
+    }
+
+    public void setTotalPromotedBytes(long totalPromotedBytes) {
+        this.totalPromotedBytes = totalPromotedBytes;
     }
 
 }
