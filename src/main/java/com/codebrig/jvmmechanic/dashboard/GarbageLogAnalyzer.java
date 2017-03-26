@@ -9,9 +9,10 @@ import org.eclipselabs.garbagecat.util.GcUtil;
 import org.eclipselabs.garbagecat.util.jdk.JdkUtil;
 import org.eclipselabs.garbagecat.util.jdk.Jvm;
 
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
@@ -24,10 +25,36 @@ public class GarbageLogAnalyzer {
         this.logFileLocation = logFileLocation;
     }
 
-    public GarbageCollectionReport getGarbageCollectionReport() {
+    public GarbageCollectionReport getGarbageCollectionReport() throws IOException {
+        return getGarbageCollectionReport(-1, -1);
+    }
+
+    public GarbageCollectionReport getGarbageCollectionReport(long startTime, long endTime) throws IOException {
         Date jvmStartDate = null;
         String jvmOptions = null;
         File logFile = new File(logFileLocation);
+        File tmpFile = null;
+
+        if (startTime != -1 && endTime != -1) {
+            tmpFile = File.createTempFile(UUID.randomUUID().toString(), System.currentTimeMillis() + "");
+            PrintWriter writer = new PrintWriter(tmpFile, "UTF-8");
+            try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
+                for (String line; (line = br.readLine()) != null; ) {
+                    long pauseTimestamp = -1;
+                    String dateStamp = JdkUtil.getDateStamp(line);
+                    if (dateStamp != null && !dateStamp.isEmpty()) {
+                        pauseTimestamp = GcUtil.parseDateStamp(dateStamp).getTime();
+                    }
+
+                    if (pauseTimestamp == -1 || (pauseTimestamp >= startTime && pauseTimestamp <= endTime)) {
+                        writer.write(line + "\n");
+                    }
+                }
+            }
+            writer.close();
+            logFile = tmpFile;
+        }
+
         GcManager gcManager = new GcManager();
         boolean reorder = false;
         gcManager.store(logFile, reorder);
@@ -65,6 +92,9 @@ public class GarbageLogAnalyzer {
             }
         }
 
+        if (tmpFile != null) {
+            tmpFile.delete();
+        }
         return report;
     }
 

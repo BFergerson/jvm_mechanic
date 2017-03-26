@@ -89,7 +89,12 @@ public class MechanicDashboard {
             } else if (session.getUri().startsWith("/data/event/") && session.getMethod().equals(Method.GET)) {
                 return handleEventDataRequest(session);
             } else if (session.getUri().startsWith("/gc") && session.getMethod().equals(Method.GET)) {
-                return handleGCRequest(session);
+                try {
+                    return handleGCRequest(session);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+                }
             } else if (session.getUri().startsWith("/config") && session.getMethod().equals(Method.GET)) {
                 try {
                     return handleConfigRequest(session);
@@ -455,12 +460,28 @@ public class MechanicDashboard {
             return res;
         }
 
-        private Response handleGCRequest(IHTTPSession session) {
+        private Response handleGCRequest(IHTTPSession session) throws IOException {
             String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
             if (!new File(gcLogFileName).exists()) {
                 NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", "");
                 res.addHeader("Access-Control-Allow-Origin", "*");
                 return res;
+            }
+
+            Map<String, List<String>> decodedQueryParameters = decodeParameters(session.getQueryParameterString());
+            List<String> startTimeParam = decodedQueryParameters.get("start_time");
+            List<String> endTimeParam = decodedQueryParameters.get("end_time");
+            if ((startTimeParam == null || startTimeParam.isEmpty())
+                    || (endTimeParam == null || endTimeParam.isEmpty())) {
+                return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
+            }
+
+            //todo: maybe multi start_time/end_time ?
+            long startTime = Long.valueOf(startTimeParam.get(0));
+            long endTime = Long.valueOf(endTimeParam.get(0));
+            if (startTime == endTime && startTime != -1) {
+                System.out.println("Ignoring request at same start/end time: " + startTime + "; Date: " + new Date(startTime));
+                return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/javascript", "Bad request");
             }
 
             GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
@@ -469,7 +490,7 @@ public class MechanicDashboard {
             String jsonData;
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                jsonData = mapper.writeValueAsString(logAnalyzer.getGarbageCollectionReport());
+                jsonData = mapper.writeValueAsString(logAnalyzer.getGarbageCollectionReport(startTime, endTime));
             } catch (JsonProcessingException ex) {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());

@@ -47,9 +47,9 @@ public class PlaybackLoader {
             filePosition += journalEntry.getEventSize();
 
             MechanicEvent event = dataEntry.toMechanicEvent();
-            event.eventAttribute = journalEntry.getLedgerId() + "";
-            sessionEventTimeTreeMap.put(event.eventTimestamp, event.workSessionId);
-
+            if (event.eventTimestamp > 0) {
+                sessionEventTimeTreeMap.put(event.eventTimestamp, event.workSessionId);
+            }
             if (!sessionEventMap.containsKey(event.workSessionId)) {
                 sessionEventMap.put(event.workSessionId, new ArrayList<>());
             }
@@ -179,7 +179,7 @@ public class PlaybackLoader {
         System.out.println("Finished pre-loading data for playback!");
     }
 
-    private void associateGarbagePauses() {
+    private void associateGarbagePauses() throws IOException {
         List<GarbageCollectionPause> garbagePauseList = garbageLogAnalyzer.getGarbageCollectionReport().getGarbageCollectionPauseList();
         for (GarbageCollectionPause pause : garbagePauseList) {
             SortedMap<Long, Integer> sortedMap = sessionEventTimeTreeMap.subMap(
@@ -217,16 +217,11 @@ public class PlaybackLoader {
             return playbackData;
         }
 
-        Set<Integer> sessionsIncludedSet = new HashSet<>();
         SortedMap<Long, Integer> sortedMap = sessionEventTimeTreeMap.subMap(
                 startTime, true,
                 endTime, true);
-        for (int sessionId : sortedMap.values()) {
+        for (int sessionId : new HashSet<>(sortedMap.values())) {
             if (sessionMethodInvocationMap.containsKey(sessionId)) {
-                if (sessionsIncludedSet.contains(sessionId)) {
-                    continue;
-                }
-                sessionsIncludedSet.add(sessionId);
                 playbackData.addSessionId(sessionId, sessionStartTimeMap.get(sessionId), false);
 
                 for (SessionMethodInvocationData invocationData : sessionMethodInvocationMap.get(sessionId)) {
@@ -236,7 +231,7 @@ public class PlaybackLoader {
                     playbackData.addMethodDuration(invocationData.getMethodId(), sessionId, invocationData.getRelativeDuration(),
                             invocationData.getAbsoluteDuration(), invocationData.getInvocationCount());
 
-                    for(SessionMethodInvocationData.MethodExecutionTime methodTime : invocationData.getMethodPausedTimeList()) {
+                    for (SessionMethodInvocationData.MethodExecutionTime methodTime : invocationData.getMethodPausedTimeList()) {
                         playbackData.addGarbagePause(invocationData.getMethodId(), (int) methodTime.getDuration());
                     }
                 }

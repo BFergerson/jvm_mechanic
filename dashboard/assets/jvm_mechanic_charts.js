@@ -341,6 +341,8 @@ function updatePlaybackCharts (startTime, endTime, playbackData) {
     sessionAccountedFor = playbackData.sessionEventCountMap
 
     updateGeneralMonitoringInformation()
+
+    loadPlaybackGarbageReport(startTime, endTime)
 }
 
 function updatePerMethodCharts(playbackData) {
