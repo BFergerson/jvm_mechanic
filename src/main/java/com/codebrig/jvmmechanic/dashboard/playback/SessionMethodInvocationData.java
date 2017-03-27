@@ -12,7 +12,6 @@ public class SessionMethodInvocationData {
 
     private short methodId;
     private long sessionTimestamp;
-    private int relativeDuration;
     private int absoluteDuration;
     private int invocationCount;
     private long firstEventTimestamp = -1;
@@ -38,20 +37,19 @@ public class SessionMethodInvocationData {
     }
 
     public int getRelativeDuration() {
+        int relativeDuration = 0;
+        for (MethodExecutionTime executionTime : methodActiveTimeList) {
+            relativeDuration += executionTime.getDuration();
+        }
         return relativeDuration;
-    }
-
-    public void setRelativeDuration(int relativeDuration) {
-        this.relativeDuration = relativeDuration;
     }
 
     public int getAbsoluteDuration() {
         return absoluteDuration;
     }
 
-
-    public void setAbsoluteDuration(int absoluteDuration) {
-        this.absoluteDuration = absoluteDuration;
+    public void incrementAbsoluteDuration(int absoluteDuration) {
+        this.absoluteDuration += absoluteDuration;
     }
 
     public int getInvocationCount() {
@@ -104,14 +102,6 @@ public class SessionMethodInvocationData {
         if (startTime != endTime) {
             methodPausedTimeList.add(new MethodExecutionTime(startTime, endTime));
         }
-    }
-
-    public void addRelativeDuration(int relativeDuration) {
-        this.relativeDuration += relativeDuration;
-    }
-
-    public void addAbsoluteDuration(int absoluteDuration) {
-        this.absoluteDuration = absoluteDuration;
     }
 
     public void incrementInvocationCount() {

@@ -17,6 +17,7 @@ public class PlaybackData {
     private long lastActualEvent = -1;
     private Set<Integer> sessionIdSet = new HashSet<>();
     private Set<Integer> invalidSessionIdSet = new HashSet<>();
+    private Set<Integer> allSessionIdSet = new HashSet<>();
 
     private Map<Integer, Integer> sessionEventCountMap = new HashMap<>();
     private Map<Long, Set<Integer>> sessionTimelineMap = new HashMap<>();
@@ -94,6 +95,14 @@ public class PlaybackData {
 
     public List<Integer> getInvalidSessionIdList() {
         return new ArrayList<>(invalidSessionIdSet);
+    }
+
+    public List<Integer> getAllSessionIdList() {
+        return new ArrayList<>(allSessionIdSet);
+    }
+
+    public void setAllSessionIdSet(Set<Integer> allSessionIdSet) {
+        this.allSessionIdSet = allSessionIdSet;
     }
 
     public void addSessionId(int sessionId, long sessionTimestamp, boolean invalid) {
@@ -227,7 +236,7 @@ public class PlaybackData {
     public Map<Short, Double> getAverageRelativeMethodDurationMap() {
         Map<Short, Double> averageRelativeDurationMap = new HashMap<>();
         for (Map.Entry<Short, Integer> entry : totalRelativeMethodDurationMap.entrySet()) {
-            averageRelativeDurationMap.put(entry.getKey(), (double) (entry.getValue() / methodInvocationCountMap.get(entry.getKey())));
+            averageRelativeDurationMap.put(entry.getKey(), entry.getValue() / (double) methodInvocationCountMap.get(entry.getKey()));
         }
         return averageRelativeDurationMap;
     }
@@ -235,7 +244,7 @@ public class PlaybackData {
     public Map<Short, Double> getAverageAbsoluteMethodDurationMap() {
         Map<Short, Double> averageAbsoluteDurationMap = new HashMap<>();
         for (Map.Entry<Short, Integer> entry : totalAbsoluteMethodDurationMap.entrySet()) {
-            averageAbsoluteDurationMap.put(entry.getKey(), (double) (entry.getValue() / methodInvocationCountMap.get(entry.getKey())));
+            averageAbsoluteDurationMap.put(entry.getKey(), entry.getValue() / (double) methodInvocationCountMap.get(entry.getKey()));
         }
         return averageAbsoluteDurationMap;
     }

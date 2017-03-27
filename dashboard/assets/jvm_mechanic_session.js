@@ -177,14 +177,25 @@ function getSessionTimelineMap (startTime, endTime, callback) {
     endTime = moment(endTime, 'x')
   }
 
-  if (monitorMode === 'playback' && startTime && endTime) {
-    console.log('Fetching sessions during time for playback! Start time: ' + startTime.format('hh:mm:ss.SSS A') + '; End time: ' + endTime.format('hh:mm:ss.SSS A'))
-    $.getJSON(host + '/data/session/time/?start_time=' + startTime.valueOf() + '&end_time=' + endTime.valueOf(), function (result) {
-      $.each(result.sessionIdList, function (i, event) {
-        getRecordedSessionMap(event, null)
+  if (monitorMode === 'playback') {
+    if (!startTime && !endTime) {
+      startTime = endTime = -1
+      console.log('Fetching sessions during time for playback! Start time: -1; End time: -1')
+      $.getJSON(host + '/playback/data/session/time/?start_time=-1&end_time=-1', function (result) {
+        $.each(result.allSessionIdList, function (i, event) {
+          getRecordedSessionMap(event, null)
+        })
+        callback(result.allSessionIdList)
       })
-      callback(result.sessionIdList)
-    })
+    } else {
+      console.log('Fetching sessions during time for playback! Start time: ' + startTime.format('hh:mm:ss.SSS A') + '; End time: ' + endTime.format('hh:mm:ss.SSS A'))
+      $.getJSON(host + '/data/session/time/?start_time=' + startTime.valueOf() + '&end_time=' + endTime.valueOf(), function (result) {
+        $.each(result.sessionIdList, function (i, event) {
+          getRecordedSessionMap(event, null)
+        })
+        callback(result.sessionIdList)
+      })
+    }
     return
   }
 

@@ -22,6 +22,8 @@ public class PlaybackLoader {
     private StashLedgerFile stashLedgerFile;
     private StashDataFile stashDataFile;
     private GarbageLogAnalyzer garbageLogAnalyzer;
+    private final Map<Integer, List<MechanicEvent>> sessionEventMap = new HashMap<>();
+    private final Set<Integer> allSessionIdSet = new HashSet<>();
     private final Map<Integer, Long> sessionStartTimeMap = new HashMap<>();
     private final TreeMap<Long, Integer> sessionEventTimeTreeMap = new TreeMap<>();
     private final Map<Integer, List<SessionMethodInvocationData>> sessionMethodInvocationMap = new HashMap<>();
@@ -41,7 +43,6 @@ public class PlaybackLoader {
 
         //load mechanic events
         long filePosition = 0;
-        Map<Integer, List<MechanicEvent>> sessionEventMap = new HashMap<>();
         for (JournalEntry journalEntry : journalEntryList) {
             DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
             filePosition += journalEntry.getEventSize();
@@ -54,12 +55,14 @@ public class PlaybackLoader {
                 sessionEventMap.put(event.workSessionId, new ArrayList<>());
             }
             sessionEventMap.get(event.workSessionId).add(event);
+            allSessionIdSet.add(event.workSessionId);
         }
 
         //calculate invocation data
         for (Map.Entry<Integer, List<MechanicEvent>> entry : sessionEventMap.entrySet()) {
             Map<Short, SessionMethodInvocationData> invocationDataMap = new HashMap<>();
             LinkedList<SessionMethodInvocationData> parentMethodDataList = new LinkedList<>();
+            LinkedList<MechanicEvent> parentEventList = new LinkedList<>();
             MechanicEventType previousEventType = null;
             boolean hasEnterEvent = false;
             boolean hasExitEvent = false;
@@ -84,6 +87,7 @@ public class PlaybackLoader {
                         enterInvocationData.setSessionTimestamp(sessionTimestamp);
                         invocationDataMap.put(event.eventMethodId, enterInvocationData);
                         parentMethodDataList.add(invocationDataMap.get(event.eventMethodId));
+                        parentEventList.add(event);
                         break;
                     case BEGIN_WORK_EVENT:
                         if (parentMethodDataList.isEmpty()) {
@@ -106,51 +110,21 @@ public class PlaybackLoader {
                             invocationDataMap.put(event.eventMethodId, beginInvocationData);
                         }
                         parentMethodDataList.add(invocationDataMap.get(event.eventMethodId));
+                        parentEventList.add(event);
                         break;
                     case EXIT_EVENT:
                         hasExitEvent = true;
-
-                        if (previousEventType == MechanicEventType.END_WORK_EVENT) {
-                            //end -> exit = actual runtime belongs to exit method (parent)
-                            parentMethodDataList.peekLast().addMethodActiveTime(previousEventTimestamp, event.eventTimestamp);
-                        }
-
-                        if (parentMethodDataList.isEmpty() || parentMethodDataList.peekLast().getMethodId() != event.eventMethodId) {
-                            invalidSession = true;
-                        } else {
-                            int methodDuration = (int) (event.eventTimestamp - sessionTimestamp);
-
-                            //add method duration to self
-                            SessionMethodInvocationData selfInvocationData = parentMethodDataList.pollLast();
-                            selfInvocationData.addRelativeDuration(methodDuration);
-                            selfInvocationData.addAbsoluteDuration(methodDuration);
-                            selfInvocationData.incrementInvocationCount();
-                        }
-                        break;
                     case END_WORK_EVENT:
-                        if (previousEventType == MechanicEventType.BEGIN_WORK_EVENT) {
-                            //begin -> end = actual runtime belongs to begin method (self)
-                            parentMethodDataList.peekLast().addMethodActiveTime(previousEventTimestamp, event.eventTimestamp);
-                        } else if (previousEventType == MechanicEventType.END_WORK_EVENT) {
-                            //end -> end = actual runtime belongs to second end method (parent)
-                            parentMethodDataList.peekLast().addMethodActiveTime(previousEventTimestamp, event.eventTimestamp);
-                        }
-
                         if (parentMethodDataList.isEmpty() || parentMethodDataList.peekLast().getMethodId() != event.eventMethodId) {
                             invalidSession = true;
                         } else {
-                            int methodDuration = (int) (event.eventTimestamp - previousEventTimestamp);
-
                             //add method duration to self
+                            MechanicEvent parentEvent = parentEventList.pollLast();
                             SessionMethodInvocationData selfInvocationData = parentMethodDataList.pollLast();
-                            selfInvocationData.addRelativeDuration(methodDuration);
-                            selfInvocationData.addAbsoluteDuration(methodDuration);
+                            selfInvocationData.addMethodActiveTime(previousEventTimestamp, event.eventTimestamp);
+                            selfInvocationData.incrementAbsoluteDuration((int) (event.eventTimestamp - parentEvent.eventTimestamp));
                             selfInvocationData.incrementInvocationCount();
-
-                            //remove method duration from relative duration of parent
-                            parentMethodDataList.peekLast().addRelativeDuration(-methodDuration);
                         }
-                        break;
                 }
                 if (invocationDataMap.get(event.eventMethodId) == null) {
                     invalidSession = true;
@@ -212,6 +186,7 @@ public class PlaybackLoader {
         playbackData.setLastRequestedEvent(endTime);
         playbackData.setFirstActualEvent(sessionEventTimeTreeMap.firstKey());
         playbackData.setLastActualEvent(sessionEventTimeTreeMap.lastKey());
+        playbackData.setAllSessionIdSet(allSessionIdSet);
 
         if (startTime == -1 || endTime == -1) {
             return playbackData;
@@ -241,6 +216,15 @@ public class PlaybackLoader {
         }
 
         return playbackData;
+    }
+
+    public List<MechanicEvent> getSessionEvents(int sessionId) {
+        List<MechanicEvent> events = sessionEventMap.get(sessionId);
+        if (events == null) {
+            return new ArrayList<>();
+        } else {
+            return events;
+        }
     }
 
 }

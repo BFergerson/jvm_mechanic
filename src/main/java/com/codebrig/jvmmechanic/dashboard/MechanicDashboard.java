@@ -158,46 +158,14 @@ public class MechanicDashboard {
             int sessionId =  Integer.valueOf(sessionIdParam.get(0));
             sessionIdSet.add(sessionId);
 
+            if (playbackLoader != null) {
+                mechanicEventList.addAll(playbackLoader.getSessionEvents(sessionId));
+            }
+
             if (sessionRequestCountMap.get(sessionId) == null) {
                 sessionRequestCountMap.put(sessionId, new AtomicInteger(0));
             }
             sessionRequestCountMap.get(sessionId).getAndIncrement();
-
-            //todo: update sessionEventMap with anything new and don't allow it to store with 0 events
-//            if (!sessionEventMap.containsKey(sessionId)) {
-                //TreeMap<Integer, Long> workSessionTreeMap = new TreeMap<>();
-                //Map<Integer, List<JournalEntry>> workSessionHashMap = new HashMap<>();
-                List<JournalEntry> journalEntryList = stashLedgerFile.readAllJournalEntries();
-//                for (JournalEntry journalEntry : journalEntryList) {
-////                    Long earliestTimestamp = workSessionTreeMap.get(journalEntry.getWorkSessionId());
-////                    if (earliestTimestamp == null || journalEntry.getEventTimestamp() < earliestTimestamp) {
-////                        workSessionTreeMap.put(journalEntry.getWorkSessionId(), journalEntry.getEventTimestamp());
-////                    }
-////
-////                    List<JournalEntry> journalEntries = workSessionHashMap.get(journalEntry.getWorkSessionId());
-////                    if (journalEntries == null) {
-////                        journalEntries = new ArrayList<>();
-////                        workSessionHashMap.put(journalEntry.getWorkSessionId(), journalEntries);
-////                    }
-//                    journalEntries.add(journalEntry);
-//                }
-
-                //order by legerId
-                journalEntryList.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
-
-                long filePosition = 0;
-                for (JournalEntry journalEntry : journalEntryList) {
-                    DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
-                    filePosition += journalEntry.getEventSize();
-
-                    MechanicEvent event = dataEntry.toMechanicEvent();
-                    if (sessionIdSet.contains(event.workSessionId)) {
-                        mechanicEventList.add(event);
-                    }
-                }
-//            } else {
-//                mechanicEventList.addAll(sessionEventMap.get(sessionId));
-//            }
 
             System.out.println("Requested session: " + sessionId + "; Size: " + mechanicEventList.size() + "; Request count: " + sessionRequestCountMap.get(sessionId));
             if (mechanicEventList.isEmpty()) {
