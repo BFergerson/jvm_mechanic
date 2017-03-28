@@ -39,11 +39,11 @@ function loadPlaybackGarbageReport (startTime, endTime) {
     $('#maxPermMetaspaceOccupancy').text(humanFileSize(result.maxPermMetaspaceOccupancy))
     $('#maxPermMetaspaceSpace').text(humanFileSize(result.maxPermMetaspaceSpace))
     $('#GCThroughput').text(result.gcthroughput + '%')
-    $('#GCMaxPause').text(moment.duration(result.gcmaxPause).asSeconds() + ' seconds')
-    $('#GCTotalPause').text(moment.duration(result.gctotalPause).asSeconds() + ' seconds')
+    $('#GCMaxPause').text(getPrettyTime(moment.duration(result.gcmaxPause).valueOf()))
+    $('#GCTotalPause').text(getPrettyTime(moment.duration(result.gctotalPause).valueOf()))
     $('#stoppedTimeThroughput').text(result.stoppedTimeThroughput + '%')
-    $('#stoppedTimeMaxPause').text(moment.duration(result.stoppedTimeMaxPause).asSeconds() + ' seconds')
-    $('#stoppedTimeTotal').text(moment.duration(result.stoppedTimeTotal).asSeconds() + ' seconds')
+    $('#stoppedTimeMaxPause').text(getPrettyTime(moment.duration(result.stoppedTimeMaxPause).valueOf()))
+    $('#stoppedTimeTotal').text(getPrettyTime(moment.duration(result.stoppedTimeTotal).valueOf()))
     $('#GCStoppedRatio').text(result.gcstoppedRatio + '%')
 
     //gc insights
