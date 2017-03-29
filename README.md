@@ -10,7 +10,7 @@ Provide detailed real-time statistics & diagrams for thread-based request/respon
 Using Byteman, inject event generating code in pre-defined locations related to the desired work stream. During normal execution Byteman-injected code generates events which are fed into a data stream. These events mark the time of their occurrence and several other useful data points. This data stream is then used to generate real-time session & method level diagrams to assist in monitoring and diagnosing application performance degradation.
  
 # Dashboard UI Example
-<img src="http://codebrig.com/public_files/jvm_mechanic-screenshot--2017-03-23-00-03-57.png" />
+<img src="http://i.imgur.com/h2mr9YH.png" />
 
 # Technical Design
 
