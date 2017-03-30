@@ -22,17 +22,12 @@
         var cutOffMinutesTime = 5;
 
         //etc
-        function clearCache() {
-            console.log("Cleared cache!");
-            storage.clear();
-        }
-
         window.onload = function () {
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
 
-                if (monitorMode == 'playback') {
+                if (monitorMode === 'playback') {
                     $('#timeline_controls').show();
                 }
             });
@@ -43,7 +38,7 @@
         if (!monitorMode) {
             monitorMode = "live";
         }
-        if (monitorMode == 'playback') {
+        if (monitorMode === 'playback') {
             document.title = 'jvm_mechanic - Playback';
         }
     </script>
@@ -52,7 +47,6 @@
     <script src="assets/taffy-min.js"></script>
     <script src="assets/jquery/jquery-3.1.0.min.js"></script>
     <script src="assets/q.min.js"></script>
-    <script src="assets/LargeLocalStorage.min.js"></script>
     <script src="assets/moment.js"></script>
     <script src="assets/jvm_mechanic_session.js"></script>
     <script src="assets/jvm_mechanic_playback.js"></script>
@@ -78,9 +72,9 @@
                     </div>
                     <div class="brand">
                         <script>
-                            if (!monitorMode || monitorMode == 'live') {
+                            if (!monitorMode || monitorMode === 'live') {
                                 document.write('<a href="index.html?mode=live"><span class="hidden-xs-down m-r-3">jvm_mechanic</span></a>');
-                            } else if (monitorMode == 'playback') {
+                            } else if (monitorMode === 'playback') {
                                 document.write('<a href="index.html?mode=playback"><span class="hidden-xs-down m-r-3">jvm_mechanic</span></a>');
                             }
                         </script>
@@ -88,7 +82,7 @@
                     <div class="dropdown" style="display: inline-block">
                         <button class="btn btn-secondary dropdown-toggle disabled" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <script>
-                                if (!monitorMode || monitorMode == 'live') {
+                                if (!monitorMode || monitorMode === 'live') {
                                     document.write('Real Time');
                                 } else {
                                     document.write('Playback');
@@ -97,7 +91,7 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <script>
-                                if (!monitorMode || monitorMode == 'live') {
+                                if (!monitorMode || monitorMode === 'live') {
                                     document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
                                 } else {
                                     document.write('<a class="dropdown-item" href="?mode=live">Real Time</a>');
@@ -122,7 +116,7 @@
     <ul class="nav nav-sidebar">
         <li>
             <script>
-                if (!monitorMode || monitorMode == 'live') {
+                if (!monitorMode || monitorMode === 'live') {
                     document.write('<a href="index.html?mode=live" class="active"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Real Time</span></a>');
                 } else {
                     document.write('<a href="index.html?mode=playback" class="active"><i class="fa fa-clock-o fa-lg fa-fw" aria-hidden="true"></i><span>Playback</span></a>');
@@ -132,7 +126,7 @@
         <li role="separator" class="divider"></li>
         <li>
             <script>
-                if (!monitorMode || monitorMode == 'live') {
+                if (!monitorMode || monitorMode === 'live') {
                     document.write('<a style="color: grey" class="btn-is-disabled" href="data.html?mode=live"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
                 } else {
                     document.write('<a href="data.html?mode=playback"><i class="fa fa-table fa-lg fa-fw" aria-hidden="true"></i><span>Data</span></a>');
@@ -222,7 +216,8 @@
                             <br/>
                             <br/>
                             <br/>
-                            <button id="clear_cache_button" onclick="clearCache()" type="button" class="btn btn-secondary">Empty Cache</button>
+                            <br/>
+                            <br/>
                         </div>
                     </div>
                 </div>

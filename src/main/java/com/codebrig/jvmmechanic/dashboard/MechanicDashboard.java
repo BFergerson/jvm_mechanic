@@ -7,6 +7,7 @@ import com.codebrig.jvmmechanic.agent.stash.StashDataFile;
 import com.codebrig.jvmmechanic.agent.stash.StashLedgerFile;
 import com.codebrig.jvmmechanic.dashboard.playback.PlaybackData;
 import com.codebrig.jvmmechanic.dashboard.playback.PlaybackLoader;
+import com.codebrig.jvmmechanic.dashboard.realtime.LedgerData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.iki.elonen.NanoHTTPD;
@@ -37,6 +38,8 @@ public class MechanicDashboard {
             super(9000);
             try {
                 String playbackProperty = System.getProperty("jvm_mechanic.config.playback_enabled", "false");
+                System.out.println("Playback enabled: " + playbackProperty);
+
                 if (playbackProperty.equalsIgnoreCase("true")) {
                     String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
                     GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
@@ -130,11 +133,16 @@ public class MechanicDashboard {
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());
             }
 
+            LedgerData ledgerData = new LedgerData();
+            ledgerData.setCurrentLedgerPosition(currentLedgerSize);
+            ledgerData.setMaximumLedgerPosition(stashLedgerFile.getJournalEntryCount());
+            ledgerData.setJournalEntryList(journalEntryList);
+
             //output json
             String jsonData;
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                jsonData = mapper.writeValueAsString(journalEntryList);
+                jsonData = mapper.writeValueAsString(ledgerData);
             } catch (JsonProcessingException ex) {
                 ex.printStackTrace();
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/javascript", ex.getMessage());

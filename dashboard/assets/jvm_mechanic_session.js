@@ -1,76 +1,55 @@
+//session globals
+var earliestSessionTimestamp = null
+var activeSessionMap = {}
+var storedSessionMap = {}
+var activeTimelineMap = {}
+
 function getRecordedSessionMap (sessionId, callback) {
   var d = Q.defer()
-  storage.getContents('session_data.recorded.session.' + sessionId).then(function (content) {
-    if (content) {
-      d.resolve(JSON.parse(content))
-    }
-    if (content && callback) {
-      callback(JSON.parse(content))
-    } else if (!content && monitorMode === 'playback') {
-      //fetch session
-      console.log('Fetching session for playback: ' + sessionId)
 
-      $.getJSON(host + '/data/session/?session_id=' + sessionId, function (result) {
-        if (isSessionComplete(result)) {
-          //session complete, record session
-          addRecordedSession(result)
-        }
-
-        if (callback) callback(result)
-        d.resolve(result)
-      }).fail(function (error) {
-        d.resolve()
-      })
+  if (monitorMode === 'playback') {
+    console.log('Fetching session for playback: ' + sessionId)
+    $.getJSON(host + '/data/session/?session_id=' + sessionId, function (result) {
+      if (callback) {
+        callback(result)
+      }
+      d.resolve(result)
+    }).fail(function (error) {
+      console.log("ERROR (getRecordedSessionMap): " + error)
+      d.resolve()
+    })
+  } else {
+    var result = storedSessionMap[sessionId]
+    if (callback) {
+      callback(result)
     }
-  }).done()
+    d.resolve(result)
+  }
+
   return d.promise
 }
 
-var earliestSessionTimestamp = null
 function addRecordedSession (sessionEventList) {
-  var earliestEvent = null
+  var earliestSessionEvent = null
   var sessionId = null
   sessionEventList.forEach(function (item, index) {
     var eventTime = item.eventTimestamp
-    if (!earliestEvent || moment(earliestEvent).isAfter(moment(eventTime))) {
-      earliestEvent = eventTime
+    if (!earliestSessionEvent || moment(eventTime).isBefore(moment(earliestSessionEvent))) {
+      earliestSessionEvent = eventTime
     }
     sessionId = item.workSessionId
   })
 
-  if (!earliestSessionTimestamp || moment(earliestEvent).isBefore(moment(earliestSessionTimestamp))) {
-    storage.getContents('session_data.timeline.earliest_session').then(function (content) {
-      if (content) {
-        earliestSessionTimestamp = content
-      }
-      if (!earliestSessionTimestamp || moment(earliestEvent).isBefore(moment(earliestSessionTimestamp))) {
-        earliestSessionTimestamp = earliestEvent
-        storage.setContents('session_data.timeline.earliest_session', earliestEvent).then(function () {
-          console.log('Set earliest session timestamp to: ' + earliestEvent)
-        })
-      }
-    }).done()
+  if (!earliestSessionTimestamp || moment(earliestSessionEvent).isBefore(moment(earliestSessionTimestamp))) {
+    console.log('Set earliest session timestamp to: ' + earliestSessionEvent)
+    earliestSessionTimestamp = earliestSessionEvent
   }
 
   delete activeSessionMap[sessionId]
-  savedRecordedSession(sessionId, sessionEventList)
-  saveRecordedSessionToTimelineMap(sessionId, earliestEvent, sessionEventList)
+  storedSessionMap[sessionId] = sessionEventList
+  saveRecordedSessionToTimelineMap(sessionId, earliestSessionEvent, sessionEventList)
 }
 
-var storedSessionMap = {}
-function savedRecordedSession (sessionId, sessionEventList) {
-  if (storedSessionMap[sessionId] || monitorMode === 'playback') return
-  storage.getContents('session_data.recorded.session.' + sessionId).then(function (content) {
-    if (!content) {
-      storage.setContents('session_data.recorded.session.' + sessionId, JSON.stringify(sessionEventList)).then(function () {
-        console.log('Saved recorded session: ' + sessionId)
-        storedSessionMap[sessionId] = true
-      })
-    }
-  }).done()
-}
-
-var activeSessionMap = {}
 function addRecordedEvent (sessionEvent) {
   var sessionEventList = activeSessionMap[sessionEvent.workSessionId]
   if (!sessionEventList) {
@@ -80,7 +59,6 @@ function addRecordedEvent (sessionEvent) {
 
   sessionEventList.push(sessionEvent)
   if (isSessionComplete(sessionEventList)) {
-    //session complete, record session
     addRecordedSession(sessionEventList)
   }
 }
@@ -106,14 +84,12 @@ function isSessionComplete (sessionEventList) {
       eventType = 3
     }
 
-    if (eventType === 0 || eventType === 2) {
-      //enter/begin
+    if (eventType === 0 || eventType === 2) { //enter/begin
       methodIdChainList.push(methodId)
       if (eventType === 0) {
         hasEnterEvent = true
       }
-    } else if (eventType === 1 || eventType === 3) {
-      //exit/end
+    } else if (eventType === 1 || eventType === 3) { //exit/end
       var startMethodId = methodIdChainList.pop()
       if (eventType === 1) {
         hasExitEvent = true
@@ -130,7 +106,6 @@ function isSessionComplete (sessionEventList) {
   }
 }
 
-var activeTimelineMap = {}
 function saveRecordedSessionToTimelineMap (sessionId, earliestEvent) {
   var timelineInterval = moment(earliestEvent).startOf('minute').valueOf()
   var sessionIdList = activeTimelineMap[timelineInterval]
@@ -138,24 +113,8 @@ function saveRecordedSessionToTimelineMap (sessionId, earliestEvent) {
     sessionIdList = []
     activeTimelineMap[timelineInterval] = sessionIdList
   }
-
-  storage.getContents('session_data.timeline.' + timelineInterval.valueOf()).then(function (content) {
-    var storedSessionIdList = []
-    if (content) {
-      storedSessionIdList = JSON.parse(content)
-    }
-    if (storedSessionIdList.length > sessionIdList.length) {
-      sessionIdList = storedSessionIdList
-    }
-    sessionIdList.push(sessionId)
-    sessionIdList = unique(sessionIdList)
-
-    if (sessionIdList.length > storedSessionIdList.length) {
-      storage.setContents('session_data.timeline.' + timelineInterval, JSON.stringify(sessionIdList)).then(function () {
-        console.log('Added session to timeline interval: ' + timelineInterval + '; Sessions at timeline interval: ' + sessionIdList.length)
-      })
-    }
-  }).done()
+  sessionIdList.push(sessionId)
+  activeTimelineMap[timelineInterval] = unique(sessionIdList)
 }
 
 function unique (arr) {
@@ -199,43 +158,30 @@ function getSessionTimelineMap (startTime, endTime, callback) {
     return
   }
 
-  if (!earliestSessionTimestamp) {
-    storage.getContents('session_data.timeline.earliest_session').then(function (content) {
-      if (content) {
-        earliestSessionTimestamp = content
-      }
-
-      doWork()
-    }).done()
-  } else {
-    doWork()
+  if (!startTime || !earliestSessionTimestamp || startTime.isBefore(moment(earliestSessionTimestamp))) {
+    if (earliestSessionTimestamp) {
+      startTime = moment(earliestSessionTimestamp)
+    } else {
+      startTime = moment()
+    }
+  }
+  if (!endTime || endTime.isAfter(moment())) {
+    endTime = moment().add('1', 'minute').startOf('minute')
   }
 
-  function doWork () {
-    if (!startTime || !earliestSessionTimestamp || startTime.isBefore(moment(earliestSessionTimestamp))) {
-      if (earliestSessionTimestamp) {
-        startTime = moment(earliestSessionTimestamp)
-      } else {
-        startTime = moment()
-      }
-    }
-    if (!endTime || endTime.isAfter(moment())) {
-      endTime = moment().add('1', 'minute').startOf('minute')
+  var totalSessionIdList = []
+  startTime = moment(startTime).startOf('minute')
+  endTime = moment(endTime).startOf('minute')
+  while (startTime.isBefore(endTime)) {
+    var sessionIdList = activeTimelineMap[startTime.valueOf()]
+    if (sessionIdList) {
+      totalSessionIdList = totalSessionIdList.concat(sessionIdList)
     }
 
-    startTime = moment(startTime)
-    endTime = moment(endTime)
-    while (startTime.isBefore(endTime)) {
-      startTime.startOf('minute')
-      endTime.startOf('minute')
-      var timelineInterval = startTime
-      storage.getContents('session_data.timeline.' + timelineInterval.valueOf()).then(function (content) {
-        if (content) {
-          callback(JSON.parse(content))
-        }
-      })
+    startTime.add(1, 'minute')
+  }
 
-      startTime.add(1, 'minute')
-    }
+  if (callback) {
+    callback(totalSessionIdList)
   }
 }

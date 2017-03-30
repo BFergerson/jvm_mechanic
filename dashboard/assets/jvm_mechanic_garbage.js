@@ -1,6 +1,9 @@
 //config
 var host = 'http://localhost:9000'
 
+//global
+var activeGarbageTimelineMap = {}
+
 function loadGarbageUpdates () {
   console.log('Downloading latest garbage collection stats...')
 
@@ -29,8 +32,11 @@ function loadGarbageUpdates () {
 }
 
 function loadPlaybackGarbageReport (startTime, endTime) {
-  console.log('Downloading latest garbage collection stats...')
+  if (startTime === -1 && endTime === -1) {
+    return
+  }
 
+  console.log('Downloading latest garbage collection stats...')
   $.getJSON(host + '/gc?start_time=' + startTime + '&end_time=' + endTime, function (result) {
     console.log('Updating GC stats...')
     $('#totalGCEvents').text(result.totalGCEvents)
@@ -61,7 +67,6 @@ function loadPlaybackGarbageReport (startTime, endTime) {
   })
 }
 
-var activeGarbageTimelineMap = {}
 function saveGarbagePauseToTimelineMap (garbagePauseEvent) {
   var timelineInterval = moment(garbagePauseEvent.pauseTimestamp).startOf('minute').valueOf()
   var garbagePauseList = activeGarbageTimelineMap[timelineInterval]
@@ -69,24 +74,9 @@ function saveGarbagePauseToTimelineMap (garbagePauseEvent) {
     garbagePauseList = []
     activeGarbageTimelineMap[timelineInterval] = garbagePauseList
   }
-
-  storage.getContents('garbage_data.timeline.' + timelineInterval.valueOf()).then(function (content) {
-    var storedGarbagePauseList = []
-    if (content) {
-      storedGarbagePauseList = JSON.parse(content)
-    }
-    if (storedGarbagePauseList.length > garbagePauseList.length) {
-      garbagePauseList = storedGarbagePauseList
-    }
-    garbagePauseList.push(garbagePauseEvent)
-    garbagePauseList = uniquePause(garbagePauseList)
-
-    if (garbagePauseList.length > storedGarbagePauseList.length) {
-      storage.setContents('garbage_data.timeline.' + timelineInterval, JSON.stringify(garbagePauseList)).then(function () {
-        console.log('Added garbage pauses to timeline interval: ' + timelineInterval + '; Garbage pauses at timeline interval: ' + garbagePauseList.length)
-      })
-    }
-  }).done()
+  garbagePauseList.push(garbagePauseEvent)
+  garbagePauseList = uniquePause(garbagePauseList)
+  console.log('Added garbage pauses to timeline interval: ' + timelineInterval + '; Garbage pauses at timeline interval: ' + garbagePauseList.length)
 }
 
 function getGarbagePauseTimelineMap (startTime, endTime, callback) {
@@ -97,55 +87,31 @@ function getGarbagePauseTimelineMap (startTime, endTime, callback) {
     endTime = moment(endTime, 'x')
   }
 
-  if (monitorMode === 'playback' && startTime && endTime) {
-    // console.log("Fetching sessions during time for playback! Start time: " + startTime.format('hh:mm:ss.SSS A') + "; End time: " + endTime.format('hh:mm:ss.SSS A'));
-    // $.getJSON(host + "/data/session/time/?start_time=" + startTime.valueOf() + "&end_time=" + endTime.valueOf(), function(result) {
-    //     $.each(result.sessionIdList, function(i, event) {
-    //         getRecordedSessionMap(event, null);
-    //     });
-    //     callback(result.sessionIdList);
-    // });
-    // return;
+  if (!startTime || !earliestSessionTimestamp || startTime.isBefore(moment(earliestSessionTimestamp))) {
+    if (earliestSessionTimestamp) {
+      startTime = moment(earliestSessionTimestamp)
+    } else {
+      startTime = moment()
+    }
+  }
+  if (!endTime || endTime.isAfter(moment())) {
+    endTime = moment().add('1', 'minute').startOf('minute')
   }
 
-  if (!earliestSessionTimestamp) {
-    storage.getContents('session_data.timeline.earliest_session').then(function (content) {
-      if (content) {
-        earliestSessionTimestamp = content
-      }
+  var totalGarbagePauseList = []
+  startTime = moment(startTime).startOf('minute')
+  endTime = moment(endTime).startOf('minute')
+  while (startTime.isBefore(endTime)) {
+    var garbagePauseList = activeGarbageTimelineMap[startTime.valueOf()]
+    if (garbagePauseList) {
+      totalGarbagePauseList = totalGarbagePauseList.concat(garbagePauseList)
+    }
 
-      doWork()
-    }).done()
-  } else {
-    doWork()
+    startTime.add(1, 'minute')
   }
 
-  function doWork () {
-    if (!startTime || !earliestSessionTimestamp || startTime.isBefore(moment(earliestSessionTimestamp))) {
-      if (earliestSessionTimestamp) {
-        startTime = moment(earliestSessionTimestamp)
-      } else {
-        startTime = moment()
-      }
-    }
-    if (!endTime || endTime.isAfter(moment())) {
-      endTime = moment().add('1', 'minute').startOf('minute')
-    }
-
-    startTime = moment(startTime)
-    endTime = moment(endTime)
-    while (startTime.isBefore(endTime)) {
-      startTime.startOf('minute')
-      endTime.startOf('minute')
-      var timelineInterval = startTime
-      storage.getContents('garbage_data.timeline.' + timelineInterval.valueOf()).then(function (content) {
-        if (content) {
-          callback(JSON.parse(content))
-        }
-      })
-
-      startTime.add(1, 'minute')
-    }
+  if (callback) {
+    callback(totalGarbagePauseList)
   }
 }
 

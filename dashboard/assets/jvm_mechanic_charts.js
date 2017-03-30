@@ -286,7 +286,7 @@ var lastSessionTimestamp = null
 
 function updatePlaybackCharts (startTime, endTime, playbackData) {
   console.log('Updating charts (with playback data)...')
-  if (startTime && endTime) {
+  if (startTime && endTime && startTime !== -1 && endTime !== -1) {
     earliestSessionTimestamp = startTime.valueOf()
     lastSessionTimestamp = endTime.valueOf()
   }
@@ -802,10 +802,10 @@ function makeGarbageCharts (startTime, endTime, sessionList) {
 
 function updateGeneralMonitoringInformation () {
   if (earliestSessionTimestamp) {
-    $('#earliestSessionTimestamp').text(moment(earliestSessionTimestamp).format('hh:mm:ss.SSS A'))
+    $('#earliestSessionTimestamp').text(moment(earliestSessionTimestamp, 'x').format('hh:mm:ss.SSS A'))
   }
   if (lastSessionTimestamp) {
-    $('#latestSessionTimestamp').text(moment(lastSessionTimestamp).format('hh:mm:ss.SSS A'))
+    $('#latestSessionTimestamp').text(moment(lastSessionTimestamp, 'x').format('hh:mm:ss.SSS A'))
   }
   if (earliestSessionTimestamp && lastSessionTimestamp) {
     var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(moment(earliestSessionTimestamp, 'x')))

@@ -6,32 +6,18 @@ var ledgerPosition = 0
 var seenMethodIdMap = {}
 var methodNameMap = {}
 
-//load local storage
-var desiredCapacity = 50 * 1024 * 1024 // 50MB
-var storage = new LargeLocalStorage({
-  size: desiredCapacity
-})
-
 $(document).ready(function () {
-  storage.initialized.then(function () {
-    console.log('Local storage size: ' + storage.size)
-    console.log('Local storage capacity: ' + storage.getCapacity() + ' bytes')
+  if (monitorMode !== 'playback') {
+      loadLedgerUpdates(true)
 
-    if (monitorMode !== 'playback') {
-        loadLedgerUpdates(true)
-
-        //update garbage stats every 30 seconds
+      //update garbage stats every 30 seconds
+      loadGarbageUpdates()
+      setInterval(function () {
         loadGarbageUpdates()
-        setInterval(function () {
-          loadGarbageUpdates()
-        }, 30000)
-    } else {
-        ledgerLoaded()
-    }
-  }, function () {
-    console.log('denied')
-    //todo: fail in some spectacular way
-  })
+      }, 30000)
+  } else {
+      ledgerLoaded()
+  }
 })
 
 function loadLedgerUpdates () {
@@ -62,8 +48,9 @@ function sendLedgerRequest (initialLoad) {
   var ledgerUpdated = false
   $.getJSON(host + '/ledger/?current_ledger_size=' + ledgerPosition, function (result) {
     ledgerUpdated = true
-    console.log('Got ledger updates! Size: ' + result.length)
-    $.each(result, function (i, entry) {
+    console.log('Got ledger updates! Size: ' + result.journalEntryList.length)
+    console.log("Ledger difference: " + (result.maximumLedgerPosition - (ledgerPosition + result.journalEntryList.length)))
+    $.each(result.journalEntryList, function (i, entry) {
       ledgerPosition++
       addRecordedEvent(entry)
 
