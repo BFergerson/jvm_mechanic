@@ -79,9 +79,12 @@ public class GarbageLogAnalyzer {
         report.setStoppedTimeTotal(jvmRun.getTotalStoppedTime());
         report.setGCStoppedRatio(jvmRun.getGcStoppedRatio());
 
+        long totalPauseTime = 0;
+        long firstPauseTimestamp = -1;
         long lastYoungSize = 0;
         long totalAllocatedBytes = 0;
         long totalPromotedBytes = 0;
+        ApplicationThroughput applicationThroughput = new ApplicationThroughput();
         JvmDao jvmDao = getDAO(gcManager);
         if (jvmDao != null) {
             for (BlockingEvent event : jvmDao.getBlockingEvents()) {
@@ -90,6 +93,7 @@ public class GarbageLogAnalyzer {
                 if (dateStamp != null && !dateStamp.isEmpty()) {
                     pauseTimestamp = GcUtil.parseDateStamp(dateStamp).getTime();
                 }
+                totalPauseTime += event.getDuration();
 
                 if ((startTime == -1 && endTime == -1) || pauseTimestamp >= startTime && pauseTimestamp <= endTime) {
                     event = (BlockingEvent) JdkUtil.parseLogLine(event.getLogEntry());
@@ -118,8 +122,20 @@ public class GarbageLogAnalyzer {
                         //System.out.println("Total Promoted: " + totalPromotedBytes);
                     }
                 }
+
+                if (firstPauseTimestamp != -1) {
+                    //gc throughput
+                    long duration = pauseTimestamp - firstPauseTimestamp;
+                    double pausePercent = ((double) totalPauseTime / (double) duration) * 100.00D;
+                    double appPercent = (100.00D - pausePercent);
+                    applicationThroughput.addApplicationThroughputMarker(pauseTimestamp, appPercent);
+                    //System.out.println("Application Throughput: " + appPercent + "; At duration: " + duration + "; Total pause: " + totalPauseTime + "; Total run: " + duration);
+                } else {
+                    firstPauseTimestamp = pauseTimestamp;
+                }
             }
 
+            report.setApplicationThroughput(applicationThroughput);
             report.setTotalAllocatedBytes(totalAllocatedBytes * 1024L);
             report.setTotalPromotedBytes(totalPromotedBytes * 1024L);
         }

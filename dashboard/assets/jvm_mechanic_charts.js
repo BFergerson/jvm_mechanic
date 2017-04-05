@@ -1,3 +1,54 @@
+var applicationThroughputChartConfig = {
+  type: 'line',
+  data: {
+    datasets: [],
+    labels: []
+  },
+  options: {
+    legend: {
+      display: false
+    },
+    responsive: true,
+    tooltips: {
+      mode: 'index',
+      intersect: false
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: true
+    },
+    scales: {
+      xAxes: [{
+        type: 'time',
+        time: {
+          displayFormats: {
+            millisecond: 'hh:mm:ss.SSS A',
+            second: 'hh:mm:ss.SSS A',
+            minute: 'hh:mm:ss.SSS A',
+            hour: 'hh:mm:ss.SSS A',
+            day: 'hh:mm:ss.SSS A',
+            week: 'hh:mm:ss.SSS A',
+            month: 'hh:mm:ss.SSS A',
+            quarter: 'hh:mm:ss.SSS A',
+            year: 'hh:mm:ss.SSS A'
+          },
+          tooltipFormat: 'hh:mm:ss.SSS A'
+        }
+      }],
+      yAxes: [{
+        ticks: {
+          suggestedMin: 100
+        },
+        display: true,
+        scaleLabel: {
+          display: true,
+          labelString: 'Throughput (%)'
+        }
+      }]
+    }
+  }
+}
+
 var relativeMethodRuntimeDurationConfig = {
   type: 'line',
   data: {
@@ -172,11 +223,11 @@ window.chartColors = {
 
 function ledgerLoaded () {
   //bar chat
-  ctx = document.getElementById('current_relative_method_runtime_duration_canvas').getContext('2d')
+  var ctx = document.getElementById('current_relative_method_runtime_duration_canvas').getContext('2d')
   window.currentMethodDurationBarChart = new Chart(ctx, currentMethodDurationBarChartConfig)
 
   //relative method duration line chart
-  var ctx = document.getElementById('relative_method_runtime_duration_canvas').getContext('2d')
+  ctx = document.getElementById('relative_method_runtime_duration_canvas').getContext('2d')
   window.relativeMethodRuntimeDurationLine = new Chart(ctx, relativeMethodRuntimeDurationConfig)
 
   //absolute method duration line chart
@@ -190,6 +241,10 @@ function ledgerLoaded () {
   //todo
   ctx = document.getElementById('total_relative_method_duration_polar_canvas').getContext('2d')
   window.totalMethodDurationPolarChart = new Chart(ctx, totalMethodDurationPolarChartConfig)
+
+  //todo
+  ctx = document.getElementById('application_throughput_canvas').getContext('2d')
+  window.applicationThroughputChart = new Chart(ctx, applicationThroughputChartConfig)
 
   //todo: add invocation count bar chart
 
@@ -343,6 +398,32 @@ function updatePlaybackCharts (startTime, endTime, playbackData) {
   updateGeneralMonitoringInformation()
 
   loadPlaybackGarbageReport(startTime, endTime)
+}
+
+function updateApplicationThroughputLineChart (applicationThroughput) {
+  applicationThroughputChartConfig.data.labels = []
+  applicationThroughputChartConfig.data.datasets = []
+
+  applicationThroughput.throughputMarkerList.forEach(function (throughputMarker) {
+    //label
+    applicationThroughputChartConfig.data.labels.push(moment(throughputMarker.timestamp, 'x'))
+
+    //data
+    var newDataset = {
+      backgroundColor: 'rgba(34, 95, 111,0.4)',
+      borderColor: 'rgba(34, 95, 111,0.4)',
+      data: [throughputMarker.throughputPercent],
+      fill: true
+    }
+
+    if (applicationThroughputChartConfig.data.datasets.length !== 0) {
+      applicationThroughputChartConfig.data.datasets[0].data.push(throughputMarker.throughputPercent)
+    } else {
+      applicationThroughputChartConfig.data.datasets.push(newDataset)
+    }
+  })
+
+  window.applicationThroughputChart.update()
 }
 
 function updatePerMethodCharts (playbackData) {

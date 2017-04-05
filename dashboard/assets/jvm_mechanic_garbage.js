@@ -26,6 +26,8 @@ function loadGarbageUpdates () {
     result.garbageCollectionPauseList.forEach(function (event) {
       saveGarbagePauseToTimelineMap(event)
     })
+
+    updateApplicationThroughputLineChart(result.applicationThroughput)
   }).always(function (result) {
     //todo: anything?
   })
@@ -61,7 +63,7 @@ function loadPlaybackGarbageReport (startTime, endTime) {
     $('#averageAllocationRate').text(humanFileSize(Math.ceil(result.totalAllocatedBytes / seconds)) + '/sec')
     $('#averagePromotionRate').text(humanFileSize(Math.ceil(result.totalPromotedBytes / seconds)) + '/sec')
 
-
+    updateApplicationThroughputLineChart(result.applicationThroughput)
   }).always(function (result) {
     //todo: anything?
   })

@@ -25,6 +25,7 @@ public class GarbageCollectionReport {
     private long totalAllocatedBytes;
     private long totalPromotedBytes;
     private List<GarbageCollectionPause> garbageCollectionPauseList = new ArrayList<>();
+    private ApplicationThroughput applicationThroughput;
 
     public int getTotalGCEvents() {
         return totalGCEvents;
@@ -144,6 +145,14 @@ public class GarbageCollectionReport {
 
     public void setTotalPromotedBytes(long totalPromotedBytes) {
         this.totalPromotedBytes = totalPromotedBytes;
+    }
+
+    public ApplicationThroughput getApplicationThroughput() {
+        return applicationThroughput;
+    }
+
+    public void setApplicationThroughput(ApplicationThroughput applicationThroughput) {
+        this.applicationThroughput = applicationThroughput;
     }
 
 }
