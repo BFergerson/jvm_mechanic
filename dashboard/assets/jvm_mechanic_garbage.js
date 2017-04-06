@@ -4,33 +4,32 @@ var host = 'http://localhost:9000'
 //global
 var activeGarbageTimelineMap = {}
 
-function loadGarbageUpdates () {
-  console.log('Downloading latest garbage collection stats...')
+function loadGarbageUpdates (startTime) {
+    console.log('Downloading latest garbage collection stats...')
+    $.getJSON(host + '/gc?start_time=' + startTime + '&end_time=-1', function (result) {
+        console.log('Updating GC stats...')
+        $('#totalGCEvents').text(result.totalGCEvents)
+        $('#maxHeapOccupancy').text(humanFileSize(result.maxHeapOccupancy))
+        $('#maxHeapSpace').text(humanFileSize(result.maxHeapSpace))
+        $('#maxPermMetaspaceOccupancy').text(humanFileSize(result.maxPermMetaspaceOccupancy))
+        $('#maxPermMetaspaceSpace').text(humanFileSize(result.maxPermMetaspaceSpace))
+        $('#GCThroughput').text(result.gcthroughput + '%')
+        $('#GCMaxPause').text(moment.duration(result.gcmaxPause).asSeconds() + ' seconds')
+        $('#GCTotalPause').text(moment.duration(result.gctotalPause).asSeconds() + ' seconds')
+        $('#stoppedTimeThroughput').text(result.stoppedTimeThroughput + '%')
+        $('#stoppedTimeMaxPause').text(moment.duration(result.stoppedTimeMaxPause).asSeconds() + ' seconds')
+        $('#stoppedTimeTotal').text(moment.duration(result.stoppedTimeTotal).asSeconds() + ' seconds')
+        $('#GCStoppedRatio').text(result.gcstoppedRatio + '%')
 
-  $.getJSON(host + '/gc?start_time=-1&end_time=-1', function (result) {
-    console.log('Updating GC stats...')
-    $('#totalGCEvents').text(result.totalGCEvents)
-    $('#maxHeapOccupancy').text(humanFileSize(result.maxHeapOccupancy))
-    $('#maxHeapSpace').text(humanFileSize(result.maxHeapSpace))
-    $('#maxPermMetaspaceOccupancy').text(humanFileSize(result.maxPermMetaspaceOccupancy))
-    $('#maxPermMetaspaceSpace').text(humanFileSize(result.maxPermMetaspaceSpace))
-    $('#GCThroughput').text(result.gcthroughput + '%')
-    $('#GCMaxPause').text(moment.duration(result.gcmaxPause).asSeconds() + ' seconds')
-    $('#GCTotalPause').text(moment.duration(result.gctotalPause).asSeconds() + ' seconds')
-    $('#stoppedTimeThroughput').text(result.stoppedTimeThroughput + '%')
-    $('#stoppedTimeMaxPause').text(moment.duration(result.stoppedTimeMaxPause).asSeconds() + ' seconds')
-    $('#stoppedTimeTotal').text(moment.duration(result.stoppedTimeTotal).asSeconds() + ' seconds')
-    $('#GCStoppedRatio').text(result.gcstoppedRatio + '%')
+        //store garbage events
+        result.garbageCollectionPauseList.forEach(function (event) {
+          saveGarbagePauseToTimelineMap(event)
+        })
 
-    //store garbage events
-    result.garbageCollectionPauseList.forEach(function (event) {
-      saveGarbagePauseToTimelineMap(event)
+        updateApplicationThroughputLineChart(result.applicationThroughput)
+    }).always(function (result) {
+        //todo: anything?
     })
-
-    updateApplicationThroughputLineChart(result.applicationThroughput)
-  }).always(function (result) {
-    //todo: anything?
-  })
 }
 
 function loadPlaybackGarbageReport (startTime, endTime) {

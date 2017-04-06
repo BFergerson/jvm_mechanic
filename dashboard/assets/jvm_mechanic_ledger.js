@@ -9,12 +9,6 @@ var methodNameMap = {}
 $(document).ready(function () {
   if (monitorMode !== 'playback') {
       loadLedgerUpdates(true)
-
-      //update garbage stats every 30 seconds
-      loadGarbageUpdates()
-      setInterval(function () {
-        loadGarbageUpdates()
-      }, 30000)
   } else {
       ledgerLoaded()
   }

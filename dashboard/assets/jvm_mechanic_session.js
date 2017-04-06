@@ -43,6 +43,7 @@ function addRecordedSession (sessionEventList) {
   if (!earliestSessionTimestamp || moment(earliestSessionEvent).isBefore(moment(earliestSessionTimestamp))) {
     console.log('Set earliest session timestamp to: ' + earliestSessionEvent)
     earliestSessionTimestamp = earliestSessionEvent
+    loadGarbageUpdates(earliestSessionTimestamp)
   }
 
   delete activeSessionMap[sessionId]

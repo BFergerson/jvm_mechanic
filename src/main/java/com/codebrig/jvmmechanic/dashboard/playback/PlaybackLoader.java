@@ -149,7 +149,10 @@ public class PlaybackLoader {
             }
         }
 
-        associateGarbagePauses();
+        if (garbageLogAnalyzer.garbageLogExists()) {
+            System.out.println("Associating garbage collection pauses to events...");
+            associateGarbagePauses();
+        }
         System.out.println("Finished pre-loading data for playback!");
     }
 

@@ -26,6 +26,10 @@ public class GarbageLogAnalyzer {
         this.logFileLocation = logFileLocation;
     }
 
+    public boolean garbageLogExists() {
+        return new File(logFileLocation).exists();
+    }
+
     public GarbageCollectionReport getGarbageCollectionReport() throws IOException {
         return getGarbageCollectionReport(-1, -1);
     }
@@ -36,7 +40,7 @@ public class GarbageLogAnalyzer {
         File logFile = new File(logFileLocation);
         File tmpFile = null;
 
-        if (startTime != -1 && endTime != -1) {
+        if (startTime != -1 || endTime != -1) {
             tmpFile = File.createTempFile(UUID.randomUUID().toString(), System.currentTimeMillis() + "");
             PrintWriter writer = new PrintWriter(tmpFile, "UTF-8");
             try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
@@ -47,7 +51,7 @@ public class GarbageLogAnalyzer {
                         pauseTimestamp = GcUtil.parseDateStamp(dateStamp).getTime();
                     }
 
-                    if (pauseTimestamp == -1 || (pauseTimestamp >= startTime && pauseTimestamp <= endTime)) {
+                    if (pauseTimestamp == -1 || ((pauseTimestamp >= startTime || startTime == -1) && (pauseTimestamp <= endTime || endTime == -1))) {
                         writer.write(line + "\n");
                     }
                 }
@@ -95,7 +99,7 @@ public class GarbageLogAnalyzer {
                 }
                 totalPauseTime += event.getDuration();
 
-                if ((startTime == -1 && endTime == -1) || pauseTimestamp >= startTime && pauseTimestamp <= endTime) {
+                if ((startTime == -1 && endTime == -1) || (pauseTimestamp >= startTime || startTime == -1) && (pauseTimestamp <= endTime || endTime == -1)) {
                     event = (BlockingEvent) JdkUtil.parseLogLine(event.getLogEntry());
                     report.addGarbageCollectionPause(new GarbageCollectionPause(pauseTimestamp, event.getDuration()));
 
