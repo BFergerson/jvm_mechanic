@@ -46,6 +46,11 @@ function loadConfigSettings () {
       })
     }
     $('#monitorMethodCount').text(monitorMethodCount)
+  }).fail(function (error) {
+      if (monitorMode === 'playback') {
+        //you shouldn't be here!
+        window.location.replace('index.html?mode=live')
+      }
   }).always(function (result) {
     //todo: anything?
   })

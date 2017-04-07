@@ -275,13 +275,13 @@ function ledgerLoaded () {
       loadLedgerUpdates()
     }, 3000)
 
-    //update garbage stats every 10 seconds
+    //update garbage stats every 6 seconds
     loadGarbageUpdates(moment().subtract(cutOffMinutesTime, 'minutes').valueOf())
     setInterval(function () {
         if (applicationThroughputChartConfig.data.labels[0]) {
             loadGarbageUpdates(applicationThroughputChartConfig.data.labels[0].valueOf())
         }
-    }, 10000)
+    }, 6000)
   } else {
     if (monitorMode === 'playback') {
       updatePlaybackRange(-1, -1)
@@ -543,11 +543,11 @@ function updatePerMethodCharts (playbackData) {
 
     //method frequency
     if (hours > 2 && ((invocationCount / hours) > 100)) {
-      $('#execution_frequency_' + id).text((invocationCount / hours) + ' per hour')
+      $('#execution_frequency_' + id).text((invocationCount / hours) + '/hour')
     } else if (minutes > 30 && ((invocationCount / minutes) > 100)) {
-      $('#execution_frequency_' + id).text(Math.ceil(invocationCount / minutes) + ' per minute')
+      $('#execution_frequency_' + id).text(Math.ceil(invocationCount / minutes) + '/min')
     } else if (seconds > 0) {
-      $('#execution_frequency_' + id).text(Math.ceil(invocationCount / seconds) + ' per second')
+      $('#execution_frequency_' + id).text(Math.ceil(invocationCount / seconds) + '/sec')
     }
 
     $('#garbage_panel_' + id).show()
@@ -955,24 +955,24 @@ function updateGeneralMonitoringInformation () {
 
     //events
     if (hours > 2 && ((eventsAccountedForCount / hours) > 100)) {
-      $('#eventRecordingRate').text((eventsAccountedForCount / hours) + ' per hour')
+      $('#eventRecordingRate').text((eventsAccountedForCount / hours) + '/hour')
     } else if (minutes > 30 && ((eventsAccountedForCount / minutes) > 100)) {
-      $('#eventRecordingRate').text(Math.ceil(eventsAccountedForCount / minutes) + ' per minute')
+      $('#eventRecordingRate').text(Math.ceil(eventsAccountedForCount / minutes) + '/min')
     } else if (seconds > 0) {
-      $('#eventRecordingRate').text(Math.ceil(eventsAccountedForCount / seconds) + ' per second')
+      $('#eventRecordingRate').text(Math.ceil(eventsAccountedForCount / seconds) + '/sec')
     }
 
     //sessions
     if (hours > 2 && ((sessionAccountedForCount / hours) > 100)) {
-      $('#sessionRecordingRate').text((sessionAccountedForCount / hours) + ' per hour')
+      $('#sessionRecordingRate').text((sessionAccountedForCount / hours) + '/hour')
     } else if (minutes > 30 && ((sessionAccountedForCount / minutes) > 100)) {
-      $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / minutes) + ' per minute')
+      $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / minutes) + '/min')
     } else if (seconds > 0) {
       var perSecond = Math.ceil(sessionAccountedForCount / seconds)
       if (perSecond === 1) {
-        $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / minutes) + ' per minute')
+        $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / minutes) + '/min')
       } else {
-        $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / seconds) + ' per second')
+        $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / seconds) + '/sec')
       }
     }
   }

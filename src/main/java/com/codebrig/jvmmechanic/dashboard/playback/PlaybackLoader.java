@@ -187,11 +187,13 @@ public class PlaybackLoader {
         PlaybackData playbackData = new PlaybackData();
         playbackData.setFirstRequestedEvent(startTime);
         playbackData.setLastRequestedEvent(endTime);
-        playbackData.setFirstActualEvent(sessionEventTimeTreeMap.firstKey());
-        playbackData.setLastActualEvent(sessionEventTimeTreeMap.lastKey());
+        if (!sessionEventTimeTreeMap.isEmpty()) {
+            playbackData.setFirstActualEvent(sessionEventTimeTreeMap.firstKey());
+            playbackData.setLastActualEvent(sessionEventTimeTreeMap.lastKey());
+        }
         playbackData.setAllSessionIdSet(allSessionIdSet);
 
-        if (startTime == -1 || endTime == -1) {
+        if ((startTime == -1 && endTime == -1) || sessionEventTimeTreeMap.isEmpty()) {
             return playbackData;
         }
 

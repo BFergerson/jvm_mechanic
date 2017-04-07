@@ -27,7 +27,7 @@ function updatePlaybackRange (startTime, endTime) {
       createSlider = true
     }
 
-    if (createSlider) {
+    if (createSlider && result.firstActualEvent !== -1 && result.lastActualEvent !== -1) {
       noUiSlider.create(dateSlider, {
         range: {
           min: result.firstActualEvent,

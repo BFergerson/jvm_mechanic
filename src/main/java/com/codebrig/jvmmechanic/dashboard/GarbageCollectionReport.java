@@ -1,7 +1,9 @@
 package com.codebrig.jvmmechanic.dashboard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * todo: this
@@ -24,6 +26,9 @@ public class GarbageCollectionReport {
     private double GCStoppedRatio;
     private long totalAllocatedBytes;
     private long totalPromotedBytes;
+    private long firstGarbageCollectionEventTimestamp = -1;
+    private long lastGarbageCollectionEventTimestamp = -1;
+    private Map<String, Integer> garbageEventTypeCountMap = new HashMap<>();
     private List<GarbageCollectionPause> garbageCollectionPauseList = new ArrayList<>();
     private ApplicationThroughput applicationThroughput;
 
@@ -153,6 +158,33 @@ public class GarbageCollectionReport {
 
     public void setApplicationThroughput(ApplicationThroughput applicationThroughput) {
         this.applicationThroughput = applicationThroughput;
+    }
+
+    public Map<String, Integer> getGarbageEventTypeCountMap() {
+        return garbageEventTypeCountMap;
+    }
+
+    public void addGarbageEventType(String eventType) {
+        if (!garbageEventTypeCountMap.containsKey(eventType)) {
+            garbageEventTypeCountMap.put(eventType, 0);
+        }
+        garbageEventTypeCountMap.put(eventType, garbageEventTypeCountMap.get(eventType) + 1);
+    }
+
+    public long getFirstGarbageCollectionEventTimestamp() {
+        return firstGarbageCollectionEventTimestamp;
+    }
+
+    public void setFirstGarbageCollectionEventTimestamp(long firstGarbageCollectionEventTimestamp) {
+        this.firstGarbageCollectionEventTimestamp = firstGarbageCollectionEventTimestamp;
+    }
+
+    public long getLastGarbageCollectionEventTimestamp() {
+        return lastGarbageCollectionEventTimestamp;
+    }
+
+    public void setLastGarbageCollectionEventTimestamp(long lastGarbageCollectionEventTimestamp) {
+        this.lastGarbageCollectionEventTimestamp = lastGarbageCollectionEventTimestamp;
     }
 
 }

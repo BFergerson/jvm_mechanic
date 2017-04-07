@@ -26,10 +26,30 @@ function loadGarbageUpdates (startTime) {
           saveGarbagePauseToTimelineMap(event)
         })
 
+        if (result.firstGarbageCollectionEventTimestamp && result.lastGarbageCollectionEventTimestamp) {
+            var frequencyHtml = '- <br/>'
+            Object.keys(result.garbageEventTypeCountMap).forEach(function (gcEventType) {
+                var eventCount = result.garbageEventTypeCountMap[gcEventType]
+                if (eventCount !== 0) {
+                    var duration = moment.duration(moment(result.lastGarbageCollectionEventTimestamp, 'x').diff(moment(result.firstGarbageCollectionEventTimestamp, 'x')))
+                    var minutes = duration.asMinutes()
+                    frequencyHtml += '<b>' + toCamelCase(gcEventType) + ' Frequency: </b>' + Math.ceil(eventCount / minutes) + '/min<br/>';
+                }
+            })
+            $('#pauseFrequencySpan').html(frequencyHtml);
+        }
+
         updateApplicationThroughputLineChart(result.applicationThroughput)
     }).always(function (result) {
         //todo: anything?
     })
+}
+
+function toCamelCase(str) {
+    var camelCase = str.toLowerCase()
+        .replace( /[-_]+/g, ' ')
+        .replace( / (.)/g, function($1) { return $1.toUpperCase(); });
+    return camelCase[0].toUpperCase() + camelCase.slice(1)
 }
 
 function loadPlaybackGarbageReport (startTime, endTime) {
@@ -61,6 +81,19 @@ function loadPlaybackGarbageReport (startTime, endTime) {
     var seconds = duration.asSeconds()
     $('#averageAllocationRate').text(humanFileSize(Math.ceil(result.totalAllocatedBytes / seconds)) + '/sec')
     $('#averagePromotionRate').text(humanFileSize(Math.ceil(result.totalPromotedBytes / seconds)) + '/sec')
+
+    if (result.firstGarbageCollectionEventTimestamp && result.lastGarbageCollectionEventTimestamp) {
+        var frequencyHtml = '- <br/>'
+        Object.keys(result.garbageEventTypeCountMap).forEach(function (gcEventType) {
+            var eventCount = result.garbageEventTypeCountMap[gcEventType]
+            if (eventCount !== 0) {
+                var duration = moment.duration(moment(result.lastGarbageCollectionEventTimestamp, 'x').diff(moment(result.firstGarbageCollectionEventTimestamp, 'x')))
+                var minutes = duration.asMinutes()
+                frequencyHtml += '<b>' + toCamelCase(gcEventType) + ' Frequency: </b>' + Math.ceil(eventCount / minutes) + '/min<br/>';
+            }
+        })
+        $('#pauseFrequencySpan').html(frequencyHtml);
+    }
 
     updateApplicationThroughputLineChart(result.applicationThroughput)
   }).always(function (result) {

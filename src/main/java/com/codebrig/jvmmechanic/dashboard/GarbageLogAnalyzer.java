@@ -92,6 +92,9 @@ public class GarbageLogAnalyzer {
         JvmDao jvmDao = getDAO(gcManager);
         if (jvmDao != null) {
             for (BlockingEvent event : jvmDao.getBlockingEvents()) {
+                JdkUtil.LogEventType logEventType = JdkUtil.identifyEventType(event.getLogEntry());
+                report.addGarbageEventType(logEventType.name());
+
                 long pauseTimestamp = -1;
                 String dateStamp = JdkUtil.getDateStamp(event.getLogEntry());
                 if (dateStamp != null && !dateStamp.isEmpty()) {
@@ -136,6 +139,13 @@ public class GarbageLogAnalyzer {
                     //System.out.println("Application Throughput: " + appPercent + "; At duration: " + duration + "; Total pause: " + totalPauseTime + "; Total run: " + duration);
                 } else {
                     firstPauseTimestamp = pauseTimestamp;
+                }
+
+                if (report.getFirstGarbageCollectionEventTimestamp() == -1 || pauseTimestamp < report.getFirstGarbageCollectionEventTimestamp()) {
+                    report.setFirstGarbageCollectionEventTimestamp(pauseTimestamp);
+                }
+                if (report.getLastGarbageCollectionEventTimestamp() == -1 || pauseTimestamp > report.getLastGarbageCollectionEventTimestamp()) {
+                    report.setLastGarbageCollectionEventTimestamp(pauseTimestamp);
                 }
             }
 

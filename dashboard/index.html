@@ -186,7 +186,6 @@
                         <div class="panel-heading">Garbage Collection - General</div>
                         <div class="panel-body">
                             <b>Total GC Events:</b> <label id="totalGCEvents" style="margin-bottom: 0">n/a</label><br/>
-                            <!--Event Types: PARALLEL_SCAVENGE, PARALLEL_OLD_COMPACTING <br/>-->
                             <b>Max Heap Occupancy:</b> <label id="maxHeapOccupancy" style="margin-bottom: 0">n/a</label><br/>
                             <b>Max Heap Space:</b> <label id="maxHeapSpace" style="margin-bottom: 0">n/a</label><br/>
                             <b>Max Perm/Metaspace Occupancy:</b> <label id="maxPermMetaspaceOccupancy" style="margin-bottom: 0">n/a</label><br/>
@@ -211,22 +210,8 @@
                             <b>Total Promoted Bytes:</b> <label id="totalPromotedBytes" style="margin-bottom: 0">n/a</label><br/>
                             <b>Average Promotion Rate:</b> <label id="averagePromotionRate" style="margin-bottom: 0">n/a</label>
                             <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
+                            <span id="pauseFrequencySpan"></span>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Application Throughput</div>
-                    <div class="panel-body">
-                        <canvas id="application_throughput_canvas" height="50"></canvas>
                     </div>
                 </div>
             </div>
@@ -241,18 +226,26 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="panel panel-default">
+                        <div class="panel-heading">Method Runtime Duration - Absolute</div>
+                        <div class="panel-body">
+                            <canvas id="absolute_method_runtime_duration_canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
                         <div class="panel-heading">Method Runtime Duration - Relative</div>
                         <div class="panel-body">
                             <canvas id="relative_method_runtime_duration_canvas"></canvas>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Method Runtime Duration - Absolute</div>
-                        <div class="panel-body">
-                            <canvas id="absolute_method_runtime_duration_canvas"></canvas>
-                        </div>
+            </div>
+            <div class="row">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Application Throughput</div>
+                    <div class="panel-body">
+                        <canvas id="application_throughput_canvas" height="50"></canvas>
                     </div>
                 </div>
             </div>
@@ -275,7 +268,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-3" id="garbage_panel_0" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_0" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_0" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -286,8 +279,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_0">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_0">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_0">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_0">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_0">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_0">n/a</label><br/>
@@ -297,7 +290,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_1" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_1" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_1" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -308,8 +301,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_1">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_1">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_1">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_1">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_1">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_1">n/a</label><br/>
@@ -319,7 +312,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_2" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_2" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_2" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -330,8 +323,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_2">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_2">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_2">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_2">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_2">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_2">n/a</label><br/>
@@ -341,7 +334,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_3" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_3" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_3" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -352,8 +345,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_3">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_3">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_3">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_3">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_3">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_3">n/a</label><br/>
@@ -363,7 +356,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_4" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_4" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_4" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -374,8 +367,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_4">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_4">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_4">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_4">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_4">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_4">n/a</label><br/>
@@ -385,7 +378,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_5" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_5" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_5" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -396,8 +389,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_5">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_5">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_5">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_5">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_5">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_5">n/a</label><br/>
@@ -407,7 +400,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_6" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_6" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_6" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -418,8 +411,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_6">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_6">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_6">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_6">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_6">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_6">n/a</label><br/>
@@ -429,7 +422,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_7" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_7" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_7" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -440,8 +433,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_7">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_7">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_7">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_7">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_7">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_7">n/a</label><br/>
@@ -451,7 +444,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_8" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_8" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_8" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -462,8 +455,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_8">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_8">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_8">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_8">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_8">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_8">n/a</label><br/>
@@ -473,7 +466,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_9" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_9" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_9" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -484,8 +477,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_9">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_9">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_9">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_9">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_9">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_9">n/a</label><br/>
@@ -495,7 +488,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_10" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_10" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_10" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -506,8 +499,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_10">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_10">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_10">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_10">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_10">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_10">n/a</label><br/>
@@ -517,7 +510,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_11" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_11" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_11" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -528,8 +521,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_11">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_11">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_11">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_11">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_11">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_11">n/a</label><br/>
@@ -539,7 +532,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_12" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_12" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_12" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -550,8 +543,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_12">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_12">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_12">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_12">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_12">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_12">n/a</label><br/>
@@ -561,7 +554,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_13" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_13" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_13" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -572,8 +565,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_13">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_13">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_13">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_13">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_13">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_13">n/a</label><br/>
@@ -583,7 +576,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_14" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_14" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_14" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -594,8 +587,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_14">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_14">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_14">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_14">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_14">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_14">n/a</label><br/>
@@ -605,7 +598,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3" id="garbage_panel_15" style="display: none">
+                <div class="col-sm-3" id="garbage_panel_15" style="display: none; width: 20%">
                     <div class="panel panel-default">
                         <div class="panel-heading" id="test_heading_15" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
@@ -616,8 +609,8 @@
                                 <b>Execution Frequency:</b> <label id="execution_frequency_15">n/a</label><br/>
                                 <b>Execution Duration Range</b>
                                 <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative Range:</b> <label id="relative_duration_range_15">n/a</label></li>
-                                    <li><b>Absolute Range:</b> <label id="absolute_duration_range_15">n/a</label></li>
+                                    <li><b>Relative:</b> <label id="relative_duration_range_15">n/a</label></li>
+                                    <li><b>Absolute:</b> <label id="absolute_duration_range_15">n/a</label></li>
                                 </ul>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
                                 <b>Total Run:</b> <label id="total_run_15">n/a</label><br/>
