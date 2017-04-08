@@ -252,6 +252,7 @@ var sessionAccountedForEventCount = {}
 var methodColorMap = {}
 var totalMethodDurationMap = {}
 var averageDurationMap = {}
+var averageAbsoluteDurationMap = {}
 var lastSessionTimestamp = null
 var lastGarbageEventMoment = null
 
@@ -348,6 +349,7 @@ function evictOldChartDataPlayback (data, startTime, endTime) {
   sessionAccountedForEventCount = {}
   totalMethodDurationMap = {}
   averageDurationMap = {}
+  averageAbsoluteDurationMap = {}
 
   //window.currentMethodDurationBarChart.update()
   window.averageMethodDurationPolarChart.update()
@@ -377,6 +379,10 @@ function evictOldChartData (data, cutOffMinutesTime) {
       //todo: make own method averages[];
       Object.keys(averageDurationMap).forEach(function (key) {
         var durationList = averageDurationMap[key]
+        durationList.pop()
+      })
+      Object.keys(averageAbsoluteDurationMap).forEach(function (key) {
+        var durationList = averageAbsoluteDurationMap[key]
         durationList.pop()
       })
     }
@@ -527,41 +533,41 @@ function updatePerMethodCharts (playbackData) {
     var totalRuntime = totalLive - totalPauseTime
 
     var chart = null
-    if (garbageCanvasMap[id]) {
-      //update old
-      chart = garbageCanvasMap[id]
-      chart.data.datasets[0].data = [totalRuntime, totalPauseTime]
-    } else {
-//      //add new
-//      var ctx = document.getElementById('test_canvas_' + id).getContext('2d')
-//      chart = new Chart(ctx, {
-//        type: 'doughnut',
-//        data: {
-//          datasets: [],
-//          labels: []
-//        }
-//      })
-//      chart.data.labels.push('Run')
-//      chart.data.labels.push('Pause')
-//      garbageCanvasMap[id] = chart
+//    if (garbageCanvasMap[id]) {
+//      //update old
+//      chart = garbageCanvasMap[id]
+//      chart.data.datasets[0].data = [totalRuntime, totalPauseTime]
+//    } else {
+////      //add new
+////      var ctx = document.getElementById('test_canvas_' + id).getContext('2d')
+////      chart = new Chart(ctx, {
+////        type: 'doughnut',
+////        data: {
+////          datasets: [],
+////          labels: []
+////        }
+////      })
+////      chart.data.labels.push('Run')
+////      chart.data.labels.push('Pause')
+////      garbageCanvasMap[id] = chart
+////
+////      var newDataset = {
+////        data: [totalRuntime, totalPauseTime],
+////        backgroundColor: [
+////          methodColorMap[methodId],
+////          '#8B0000'
+////        ],
+////        hoverBackgroundColor: [
+////          methodColorMap[methodId],
+////          '#8B0000'
+////        ]
+////      }
+////      chart.data.datasets.push(newDataset)
+//    }
 //
-//      var newDataset = {
-//        data: [totalRuntime, totalPauseTime],
-//        backgroundColor: [
-//          methodColorMap[methodId],
-//          '#8B0000'
-//        ],
-//        hoverBackgroundColor: [
-//          methodColorMap[methodId],
-//          '#8B0000'
-//        ]
-//      }
-//      chart.data.datasets.push(newDataset)
-    }
-
-    //update chart colors
-    //chart.data.datasets[0].backgroundColor[0] = methodColorMap[methodId]
-    //chart.data.datasets[0].hoverBackgroundColor[0] = methodColorMap[methodId]
+//    //update chart colors
+//    //chart.data.datasets[0].backgroundColor[0] = methodColorMap[methodId]
+//    //chart.data.datasets[0].hoverBackgroundColor[0] = methodColorMap[methodId]
 
 //    $('#total_run_' + id).text(getPrettyTime(totalRuntime) + ' (' + roundNumber((totalRuntime / totalLive) * 100.00, 2) + '%)')
 //    $('#total_pause_' + id).text(getPrettyTime(totalPauseTime) + ' (' + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + '%)')
@@ -600,11 +606,93 @@ function updatePerMethodCharts (playbackData) {
       methodFrequency = Math.ceil(invocationCount / seconds) + '/sec'
     }
 
-    methodStatsHtml += '<div class="col-sm-3" style="width: 20%"><div class="panel panel-default">'
+    methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-right: 5px"><div class="panel panel-default">'
 
     var methodNameList = getClassMethodParamList(methodNameMap[methodId])
     var titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
     methodStatsHtml += '<div class="panel-heading" style="white-space: nowrap; overflow: hidden;">' + titleHtml + '</div>'
+
+    //method insights
+    if (monitorMode === 'playback') {
+        var usedInsightCount = 0
+        methodStatsHtml += '<div class="panel panel-default panel-body" style="margin-bottom: 0px"><b>Insights:</b><ul>'
+        if (playbackData.methodInsights.highestExecutionCountMethodId == methodId) {
+            methodStatsHtml += '<li>Highest Execution Count</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.lowestExecutionCountMethodId == methodId) {
+            methodStatsHtml += '<li>Lowest Execution Count</li>'
+            usedInsightCount++
+        }
+
+        //relative
+        if (playbackData.methodInsights.fastestRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Fastest Relative Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.slowestRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Slowest Relative Method</li>'
+            usedInsightCount++
+        }
+        if (playbackData.methodInsights.fastestAverageRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Fastest Average Relative Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.slowestAverageRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Slowest Average Relative Method</li>'
+            usedInsightCount++
+        }
+        if (playbackData.methodInsights.mostVolatileRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Most Volatile Relative Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.leastVolatileRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Least Volatile Relative Method</li>'
+            usedInsightCount++
+        }
+        if (playbackData.methodInsights.mostVariantRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Most Variant Relative Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.leastVariantRelativeMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Least Variant Relative Method</li>'
+            usedInsightCount++
+        }
+
+        //absolute
+        if (playbackData.methodInsights.fastestAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Fastest Absolute Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.slowestAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Slowest Absolute Method</li>'
+            usedInsightCount++
+        }
+        if (playbackData.methodInsights.fastestAverageAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Fastest Average Absolute Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.slowestAverageAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Slowest Average Absolute Method</li>'
+            usedInsightCount++
+        }
+        if (playbackData.methodInsights.mostVolatileAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Most Volatile Absolute Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.leastVolatileAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Least Volatile Absolute Method</li>'
+            usedInsightCount++
+        }
+        if (playbackData.methodInsights.mostVariantAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Most Variant Absolute Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.leastVariantAbsoluteMethodDurationMethodId == methodId) {
+            methodStatsHtml += '<li>Least Variant Absolute Method</li>'
+            usedInsightCount++
+        }
+
+        var usedBreakerCount = usedInsightCount
+        while (usedBreakerCount < 8) {
+            methodStatsHtml += '<br/>'
+            usedBreakerCount++
+        }
+
+        methodStatsHtml += '</div>'
+    }
+
     methodStatsHtml += '<div class="panel-body"><div class="panel panel-default panel-body" style="margin-bottom: 0px">'
     methodStatsHtml += '<b>Invocation Count:</b> ' + playbackData.methodInvocationCountMap[methodId] + '<br/>'
     methodStatsHtml += '<b>Execution Frequency:</b> ' + methodFrequency + '<br/>'
@@ -902,113 +990,113 @@ function updateCharts (startTime, endTime) {
         })
 
         updateGeneralMonitoringInformation()
-        makeGarbageCharts(startTime, endTime, sessionIdList)
+        //makeGarbageCharts(startTime, endTime, sessionIdList)
       })
   })
 }
 
-var garbageCanvasMap = {}
-function makeGarbageCharts (startTime, endTime, sessionList) {
-  var invocationCountMap = {}
-  getGarbagePauseTimelineMap(startTime, endTime, function (garbagePauseList) {
-    var methodRunningMap = {}
-    sessionList.forEach(function (sessionId) {
-      if (!sessionAccountedForCalcMap[sessionId]) return
-
-      Object.keys(sessionAccountedForCalcMap[sessionId]).forEach(function (key) {
-        var calcMethodDuration = sessionAccountedForCalcMap[sessionId][key]
-        if (!methodRunningMap[calcMethodDuration.methodId]) {
-          methodRunningMap[calcMethodDuration.methodId] = 0
-        }
-        if (!invocationCountMap[calcMethodDuration.methodId]) {
-          invocationCountMap[calcMethodDuration.methodId] = 0
-        }
-        invocationCountMap[calcMethodDuration.methodId] += calcMethodDuration.invocationCount
-
-        garbagePauseList.forEach(function (garbagePause) {
-          calcMethodDuration.actualMethodRuntimeList.forEach(function (methodRunningList) {
-            var start = methodRunningList[0]
-            var end = methodRunningList[1]
-
-            if (garbagePause.pauseTimestamp >= start && garbagePause.pauseTimestamp <= end) {
-              var pauseDuration = end - garbagePause.pauseTimestamp
-              if (pauseDuration > garbagePause.pauseDuration) {
-                pauseDuration = garbagePause.pauseDuration
-              }
-              methodRunningMap[calcMethodDuration.methodId] += pauseDuration
-            }
-          })
-        })
-      })
-    })
-
-    //todo: better way of ordering a map
-    var sortList = []
-    Object.keys(totalMethodDurationMap).forEach(function (methodId) {
-      sortList.push([methodId, totalMethodDurationMap[methodId]])
-    })
-    sortList.sort(function (a, b) {
-      return b[1] - a[1]
-    })
-
-    var id = 0
-    var updatedMethodMap = {}
-    sortList.forEach(function (methodArr) {
-      var methodId = methodArr[0]
-      var totalLive = totalMethodDurationMap[methodId]
-      var totalPauseTime = methodRunningMap[methodId]
-      var totalRuntime = totalLive - totalPauseTime
-
-      var chart = null
-      if (garbageCanvasMap[methodId]) {
-        //update old
-        chart = garbageCanvasMap[methodId]
-        chart.data.datasets[0].data = [totalRuntime, totalPauseTime]
-      } else {
-        //add new
-        var ctx = document.getElementById('test_canvas_' + id).getContext('2d')
-        chart = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            datasets: [],
-            labels: []
-          }
-        })
-        chart.data.labels.push('Run')
-        chart.data.labels.push('Pause')
-
-        var methodNameList = getClassMethodParamList(methodNameMap[methodId])
-        var headerText = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
-        $('#test_heading_' + id).html(headerText)
-        garbageCanvasMap[methodId] = chart
-
-        var newDataset = {
-          data: [totalRuntime, totalPauseTime],
-          backgroundColor: [
-            methodColorMap[methodId],
-            '#8B0000'
-          ],
-          hoverBackgroundColor: [
-            methodColorMap[methodId],
-            '#8B0000'
-          ]
-        }
-        chart.data.datasets.push(newDataset)
-      }
-
-      chart.update()
-      updatedMethodMap[methodId] = true
-
-      //update labels
-      $('#total_run_' + id).text(getPrettyTime(totalRuntime) + ' (' + roundNumber((totalRuntime / totalLive) * 100.00, 2) + '%)')
-      $('#total_pause_' + id).text(getPrettyTime(totalPauseTime) + ' (' + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + '%)')
-      $('#total_live_' + id).text(getPrettyTime(totalLive))
-      $('#invocation_count_' + id).text(invocationCountMap[methodId])
-      $('#garbage_panel_' + id).show()
-      id++
-    })
-  })
-}
+//var garbageCanvasMap = {}
+//function makeGarbageCharts (startTime, endTime, sessionList) {
+//  var invocationCountMap = {}
+//  getGarbagePauseTimelineMap(startTime, endTime, function (garbagePauseList) {
+//    var methodRunningMap = {}
+//    sessionList.forEach(function (sessionId) {
+//      if (!sessionAccountedForCalcMap[sessionId]) return
+//
+//      Object.keys(sessionAccountedForCalcMap[sessionId]).forEach(function (key) {
+//        var calcMethodDuration = sessionAccountedForCalcMap[sessionId][key]
+//        if (!methodRunningMap[calcMethodDuration.methodId]) {
+//          methodRunningMap[calcMethodDuration.methodId] = 0
+//        }
+//        if (!invocationCountMap[calcMethodDuration.methodId]) {
+//          invocationCountMap[calcMethodDuration.methodId] = 0
+//        }
+//        invocationCountMap[calcMethodDuration.methodId] += calcMethodDuration.invocationCount
+//
+//        garbagePauseList.forEach(function (garbagePause) {
+//          calcMethodDuration.actualMethodRuntimeList.forEach(function (methodRunningList) {
+//            var start = methodRunningList[0]
+//            var end = methodRunningList[1]
+//
+//            if (garbagePause.pauseTimestamp >= start && garbagePause.pauseTimestamp <= end) {
+//              var pauseDuration = end - garbagePause.pauseTimestamp
+//              if (pauseDuration > garbagePause.pauseDuration) {
+//                pauseDuration = garbagePause.pauseDuration
+//              }
+//              methodRunningMap[calcMethodDuration.methodId] += pauseDuration
+//            }
+//          })
+//        })
+//      })
+//    })
+//
+//    //todo: better way of ordering a map
+//    var sortList = []
+//    Object.keys(totalMethodDurationMap).forEach(function (methodId) {
+//      sortList.push([methodId, totalMethodDurationMap[methodId]])
+//    })
+//    sortList.sort(function (a, b) {
+//      return b[1] - a[1]
+//    })
+//
+//    var id = 0
+//    var updatedMethodMap = {}
+//    sortList.forEach(function (methodArr) {
+//      var methodId = methodArr[0]
+//      var totalLive = totalMethodDurationMap[methodId]
+//      var totalPauseTime = methodRunningMap[methodId]
+//      var totalRuntime = totalLive - totalPauseTime
+//
+//      var chart = null
+//      if (garbageCanvasMap[methodId]) {
+//        //update old
+//        chart = garbageCanvasMap[methodId]
+//        chart.data.datasets[0].data = [totalRuntime, totalPauseTime]
+//      } else {
+//        //add new
+//        var ctx = document.getElementById('test_canvas_' + id).getContext('2d')
+//        chart = new Chart(ctx, {
+//          type: 'doughnut',
+//          data: {
+//            datasets: [],
+//            labels: []
+//          }
+//        })
+//        chart.data.labels.push('Run')
+//        chart.data.labels.push('Pause')
+//
+//        var methodNameList = getClassMethodParamList(methodNameMap[methodId])
+//        var headerText = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
+//        $('#test_heading_' + id).html(headerText)
+//        garbageCanvasMap[methodId] = chart
+//
+//        var newDataset = {
+//          data: [totalRuntime, totalPauseTime],
+//          backgroundColor: [
+//            methodColorMap[methodId],
+//            '#8B0000'
+//          ],
+//          hoverBackgroundColor: [
+//            methodColorMap[methodId],
+//            '#8B0000'
+//          ]
+//        }
+//        chart.data.datasets.push(newDataset)
+//      }
+//
+//      chart.update()
+//      updatedMethodMap[methodId] = true
+//
+//      //update labels
+//      $('#total_run_' + id).text(getPrettyTime(totalRuntime) + ' (' + roundNumber((totalRuntime / totalLive) * 100.00, 2) + '%)')
+//      $('#total_pause_' + id).text(getPrettyTime(totalPauseTime) + ' (' + roundNumber((totalPauseTime / totalLive) * 100.00, 2) + '%)')
+//      $('#total_live_' + id).text(getPrettyTime(totalLive))
+//      $('#invocation_count_' + id).text(invocationCountMap[methodId])
+//      $('#garbage_panel_' + id).show()
+//      id++
+//    })
+//  })
+//}
 
 function updateGeneralMonitoringInformation () {
   if (earliestSessionTimestamp) {
@@ -1197,8 +1285,10 @@ function addSessionToCharts (workSessionId, recordedSession) {
 
     if (!averageDurationMap[eventMethodId]) {
       averageDurationMap[eventMethodId] = []
+      averageAbsoluteDurationMap[eventMethodId] = []
     }
     averageDurationMap[eventMethodId].push(relativeDuration)
+    averageAbsoluteDurationMap[eventMethodId].push(absoluteDuration)
 
     if (!totalMethodDurationMap[eventMethodId]) {
       totalMethodDurationMap[eventMethodId] = 0
@@ -1311,31 +1401,58 @@ function addSessionToCharts (workSessionId, recordedSession) {
     newDataset.data.push(durationSum / durationList.length)
   })
 
-  //total method duration polar chat
-  var newDataset = {
-    backgroundColor: [],
-    hoverBackgroundColor: [],
-    data: []
-  }
-  if (totalMethodDurationPolarChartConfig.data.datasets.length !== 0) {
-    newDataset = totalMethodDurationPolarChartConfig.data.datasets[0]
-    newDataset.data = []
-    window.totalMethodDurationPolarChart.data.labels = []
-  } else {
-    totalMethodDurationPolarChartConfig.data.datasets.push(newDataset)
-  }
+    //avg absolute method duration polar chat
+    var newDataset = {
+      backgroundColor: [],
+      hoverBackgroundColor: [],
+      data: []
+    }
+    if (averageAbsoluteMethodDurationPolarChartConfig.data.datasets.length !== 0) {
+      newDataset = averageAbsoluteMethodDurationPolarChartConfig.data.datasets[0]
+      newDataset.data = []
+      window.averageAbsoluteMethodDurationPolarChart.data.labels = []
+    } else {
+      averageAbsoluteMethodDurationPolarChartConfig.data.datasets.push(newDataset)
+    }
 
-  Object.keys(totalMethodDurationMap).forEach(function (methodId) {
-    var totalMethodDuration = totalMethodDurationMap[methodId]
-    //console.log("Method id: " + methodId + "; Total: " + totalMethodDuration);
-    window.totalMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
-    newDataset.backgroundColor.push(methodColorMap[methodId])
-    newDataset.data.push(totalMethodDuration)
-  })
+    Object.keys(averageAbsoluteDurationMap).forEach(function (methodId) {
+      var durationList = averageAbsoluteDurationMap[methodId]
+      var durationSum = 0
+      durationList.forEach(function (item, index) {
+        durationSum += item
+      })
+      //console.log("Method id: " + methodId + "; Avg: " + avg);
+      window.averageAbsoluteMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
+      newDataset.backgroundColor.push(methodColorMap[methodId])
+      newDataset.data.push(durationSum / durationList.length)
+    })
+
+//  //total method duration polar chat
+//  var newDataset = {
+//    backgroundColor: [],
+//    hoverBackgroundColor: [],
+//    data: []
+//  }
+//  if (totalMethodDurationPolarChartConfig.data.datasets.length !== 0) {
+//    newDataset = totalMethodDurationPolarChartConfig.data.datasets[0]
+//    newDataset.data = []
+//    window.totalMethodDurationPolarChart.data.labels = []
+//  } else {
+//    totalMethodDurationPolarChartConfig.data.datasets.push(newDataset)
+//  }
+//
+//  Object.keys(totalMethodDurationMap).forEach(function (methodId) {
+//    var totalMethodDuration = totalMethodDurationMap[methodId]
+//    //console.log("Method id: " + methodId + "; Total: " + totalMethodDuration);
+//    window.totalMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
+//    newDataset.backgroundColor.push(methodColorMap[methodId])
+//    newDataset.data.push(totalMethodDuration)
+//  })
 
   //window.currentMethodDurationBarChart.update()
   window.averageMethodDurationPolarChart.update()
-  window.totalMethodDurationPolarChart.update()
+  window.averageAbsoluteMethodDurationPolarChart.update()
+  //window.totalMethodDurationPolarChart.update()
   window.relativeMethodRuntimeDurationLine.update()
   window.absoluteMethodRuntimeDurationLine.update()
 }

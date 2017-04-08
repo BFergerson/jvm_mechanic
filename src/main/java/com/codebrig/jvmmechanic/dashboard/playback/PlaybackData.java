@@ -203,4 +203,8 @@ public class PlaybackData {
         return absoluteMethodDurationStatisticsMap;
     }
 
+    public MethodInsights getMethodInsights() {
+        return new MethodInsights(relativeMethodDurationStatisticsMap, absoluteMethodDurationStatisticsMap, methodInvocationCountMap);
+    }
+
 }
