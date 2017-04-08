@@ -234,17 +234,17 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Method Runtime Duration - Absolute</div>
+                        <div class="panel-heading">Method Runtime Duration - Relative</div>
                         <div class="panel-body">
-                            <canvas id="absolute_method_runtime_duration_canvas"></canvas>
+                            <canvas id="relative_method_runtime_duration_canvas"></canvas>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Method Runtime Duration - Relative</div>
+                        <div class="panel-heading">Method Runtime Duration - Absolute</div>
                         <div class="panel-body">
-                            <canvas id="relative_method_runtime_duration_canvas"></canvas>
+                            <canvas id="absolute_method_runtime_duration_canvas"></canvas>
                         </div>
                     </div>
                 </div>
@@ -260,362 +260,35 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Total Method Duration - Relative</div>
+                        <div class="panel-heading">Average Method Duration - Absolute</div>
                         <div class="panel-body">
-                            <canvas id="total_relative_method_duration_polar_canvas" height="200"></canvas>
+                            <canvas id="average_absolute_method_duration_polar_canvas" height="200"></canvas>
                         </div>
                     </div>
                 </div>
+                <!--<div class="col-sm-6">-->
+                    <!--<div class="panel panel-default">-->
+                        <!--<div class="panel-heading">Total Method Duration - Relative</div>-->
+                        <!--<div class="panel-body">-->
+                            <!--<canvas id="total_relative_method_duration_polar_canvas" height="200"></canvas>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
             </div>
-            <div class="row">
-                <div class="col-sm-3" id="garbage_panel_0" style="display: none; width: 20%">
+            <div class="row" id="method_stats_row">
+                <div class="col-sm-3" style="display: none; width: 20%">
                     <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_0" style="white-space: nowrap; overflow: hidden;">Test</div>
+                        <div class="panel-heading" style="white-space: nowrap; overflow: hidden;">Test</div>
                         <div class="panel-body">
-                            <canvas id="test_canvas_0"></canvas>
-                            <br/>
                             <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_0">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_0">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_0">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_0">n/a</label></li>
-                                </ul>
+                                <b>Invocation Count:</b> <br/>
+                                <b>Execution Frequency:</b> <br/>
                                 <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_0">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_0">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_0">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_1" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_1" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_1"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_1">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_1">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_1">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_1">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_1">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_1">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_1">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_2" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_2" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_2"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_2">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_2">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_2">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_2">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_2">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_2">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_2">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_3" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_3" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_3"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_3">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_3">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_3">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_3">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_3">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_3">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_3">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_4" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_4" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_4"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_4">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_4">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_4">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_4">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_4">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_4">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_4">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_5" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_5" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_5"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_5">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_5">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_5">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_5">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_5">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_5">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_5">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_6" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_6" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_6"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_6">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_6">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_6">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_6">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_6">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_6">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_6">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_7" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_7" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_7"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_7">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_7">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_7">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_7">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_7">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_7">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_7">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_8" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_8" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_8"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_8">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_8">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_8">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_8">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_8">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_8">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_8">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_9" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_9" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_9"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_9">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_9">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_9">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_9">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_9">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_9">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_9">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_10" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_10" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_10"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_10">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_10">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_10">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_10">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_10">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_10">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_10">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_11" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_11" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_11"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_11">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_11">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_11">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_11">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_11">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_11">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_11">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_12" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_12" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_12"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_12">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_12">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_12">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_12">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_12">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_12">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_12">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_13" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_13" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_13"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_13">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_13">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_13">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_13">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_13">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_13">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_13">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_14" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_14" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_14"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_14">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_14">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_14">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_14">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_14">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_14">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_14">n/a</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3" id="garbage_panel_15" style="display: none; width: 20%">
-                    <div class="panel panel-default">
-                        <div class="panel-heading" id="test_heading_15" style="white-space: nowrap; overflow: hidden;">Test</div>
-                        <div class="panel-body">
-                            <canvas id="test_canvas_15"></canvas>
-                            <br/>
-                            <div class="panel panel-default panel-body" style="margin-bottom: 0px">
-                                <b>Invocation Count:</b> <label id="invocation_count_15">n/a</label><br/>
-                                <b>Execution Frequency:</b> <label id="execution_frequency_15">n/a</label><br/>
-                                <b>Execution Duration Range</b>
-                                <ul style="margin-top: 5px; margin-bottom: 5px">
-                                    <li><b>Relative:</b> <label id="relative_duration_range_15">n/a</label></li>
-                                    <li><b>Absolute:</b> <label id="absolute_duration_range_15">n/a</label></li>
-                                </ul>
-                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-bottom: 15px"></li>
-                                <b>Total Run:</b> <label id="total_run_15">n/a</label><br/>
-                                <b>Total Pause:</b> <label id="total_pause_15">n/a</label><br/>
-                                <b>Total Live:</b> <label id="total_live_15">n/a</label>
+                                <b>Relative Execution Stats</b><br/>
+                                <span id="relative_duration_range_0">n/a</span>
+                                <li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-top: 10px; margin-bottom: 15px"></li>
+                                <b>Absolute Execution Stats</b><br/>
+                                <span id="absolute_duration_range_0">n/a</span>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.dashboard.playback;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 import java.util.*;
 
 /**
@@ -26,12 +28,8 @@ public class PlaybackData {
 
     private Map<Short, Integer> methodInvocationCountMap = new HashMap<>();
     private Map<Short, Integer> methodGarbagePauseDurationMap = new HashMap<>();
-    private Map<Short, Integer> totalRelativeMethodDurationMap = new HashMap<>();
-    private Map<Short, Integer> totalAbsoluteMethodDurationMap = new HashMap<>();
-    private Map<Short, Integer> maximumRelativeMethodDurationMap = new HashMap<>();
-    private Map<Short, Integer> maximumAbsoluteMethodDurationMap = new HashMap<>();
-    private Map<Short, Integer> minimumRelativeMethodDurationMap = new HashMap<>();
-    private Map<Short, Integer> minimumAbsoluteMethodDurationMap = new HashMap<>();
+    private Map<Short, SummaryStatistics> relativeMethodDurationStatisticsMap = new HashMap<>();
+    private Map<Short, SummaryStatistics> absoluteMethodDurationStatisticsMap = new HashMap<>();
 
     public long getFirstRequestedEvent() {
         return firstRequestedEvent;
@@ -126,44 +124,16 @@ public class PlaybackData {
 
     public void addMethodDuration(short methodId, int sessionId, int relativeDuration, int absoluteDuration, int invocationCount) {
         //relative
-        if (!totalRelativeMethodDurationMap.containsKey(methodId)) {
-            totalRelativeMethodDurationMap.put(methodId, 0);
+        if (!relativeMethodDurationStatisticsMap.containsKey(methodId)) {
+            relativeMethodDurationStatisticsMap.put(methodId, new SummaryStatistics());
         }
-        totalRelativeMethodDurationMap.put(methodId, totalRelativeMethodDurationMap.get(methodId) + relativeDuration);
-        if (maximumRelativeMethodDurationMap.containsKey(methodId)) {
-            if (relativeDuration > maximumRelativeMethodDurationMap.get(methodId)) {
-                maximumRelativeMethodDurationMap.put(methodId, relativeDuration);
-            }
-        } else {
-            maximumRelativeMethodDurationMap.put(methodId, relativeDuration);
-        }
-        if (minimumRelativeMethodDurationMap.containsKey(methodId)) {
-            if (relativeDuration < maximumRelativeMethodDurationMap.get(methodId)) {
-                minimumRelativeMethodDurationMap.put(methodId, relativeDuration);
-            }
-        } else {
-            minimumRelativeMethodDurationMap.put(methodId, relativeDuration);
-        }
+        relativeMethodDurationStatisticsMap.get(methodId).addValue(relativeDuration);
 
         //absolute
-        if (!totalAbsoluteMethodDurationMap.containsKey(methodId)) {
-            totalAbsoluteMethodDurationMap.put(methodId, 0);
+        if (!absoluteMethodDurationStatisticsMap.containsKey(methodId)) {
+            absoluteMethodDurationStatisticsMap.put(methodId, new SummaryStatistics());
         }
-        totalAbsoluteMethodDurationMap.put(methodId, totalAbsoluteMethodDurationMap.get(methodId) + absoluteDuration);
-        if (maximumAbsoluteMethodDurationMap.containsKey(methodId)) {
-            if (absoluteDuration > maximumAbsoluteMethodDurationMap.get(methodId)) {
-                maximumAbsoluteMethodDurationMap.put(methodId, absoluteDuration);
-            }
-        } else {
-            maximumAbsoluteMethodDurationMap.put(methodId, absoluteDuration);
-        }
-        if (minimumAbsoluteMethodDurationMap.containsKey(methodId)) {
-            if (absoluteDuration < maximumAbsoluteMethodDurationMap.get(methodId)) {
-                minimumAbsoluteMethodDurationMap.put(methodId, absoluteDuration);
-            }
-        } else {
-            minimumAbsoluteMethodDurationMap.put(methodId, absoluteDuration);
-        }
+        absoluteMethodDurationStatisticsMap.get(methodId).addValue(absoluteDuration);
 
         //invocation
         if (!methodInvocationCountMap.containsKey(methodId)) {
@@ -201,52 +171,12 @@ public class PlaybackData {
         return methodGarbagePauseDurationMap;
     }
 
-    public Map<Short, Integer> getTotalRelativeMethodDurationMap() {
-        return totalRelativeMethodDurationMap;
-    }
-
     public Map<Integer, Integer> getSessionEventCountMap() {
         return sessionEventCountMap;
     }
 
     public Map<Short, Integer> getMethodInvocationCountMap() {
         return methodInvocationCountMap;
-    }
-
-    public Map<Short, Integer> getTotalAbsoluteMethodDurationMap() {
-        return totalAbsoluteMethodDurationMap;
-    }
-
-    public Map<Short, Integer> getMaximumRelativeMethodDurationMap() {
-        return maximumRelativeMethodDurationMap;
-    }
-
-    public Map<Short, Integer> getMaximumAbsoluteMethodDurationMap() {
-        return maximumAbsoluteMethodDurationMap;
-    }
-
-    public Map<Short, Integer> getMinimumRelativeMethodDurationMap() {
-        return minimumRelativeMethodDurationMap;
-    }
-
-    public Map<Short, Integer> getMinimumAbsoluteMethodDurationMap() {
-        return minimumAbsoluteMethodDurationMap;
-    }
-
-    public Map<Short, Double> getAverageRelativeMethodDurationMap() {
-        Map<Short, Double> averageRelativeDurationMap = new HashMap<>();
-        for (Map.Entry<Short, Integer> entry : totalRelativeMethodDurationMap.entrySet()) {
-            averageRelativeDurationMap.put(entry.getKey(), entry.getValue() / (double) methodInvocationCountMap.get(entry.getKey()));
-        }
-        return averageRelativeDurationMap;
-    }
-
-    public Map<Short, Double> getAverageAbsoluteMethodDurationMap() {
-        Map<Short, Double> averageAbsoluteDurationMap = new HashMap<>();
-        for (Map.Entry<Short, Integer> entry : totalAbsoluteMethodDurationMap.entrySet()) {
-            averageAbsoluteDurationMap.put(entry.getKey(), entry.getValue() / (double) methodInvocationCountMap.get(entry.getKey()));
-        }
-        return averageAbsoluteDurationMap;
     }
 
     public Map<Long, List<Integer>> getSessionTimelineMap() {
@@ -263,6 +193,14 @@ public class PlaybackData {
 
     public Map<Integer, Map<Short, Integer>> getSessionAbsoluteMethodDurationMap() {
         return sessionAbsoluteMethodDurationMap;
+    }
+
+    public Map<Short, SummaryStatistics> getRelativeMethodDurationStatisticsMap() {
+        return relativeMethodDurationStatisticsMap;
+    }
+
+    public Map<Short, SummaryStatistics> getAbsoluteMethodDurationStatisticsMap() {
+        return absoluteMethodDurationStatisticsMap;
     }
 
 }

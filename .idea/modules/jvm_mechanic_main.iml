@@ -26,6 +26,7 @@
     <orderEntry type="library" name="Gradle: org.nanohttpd:nanohttpd:2.3.1" level="project" />
     <orderEntry type="library" name="Gradle: hsqldb:hsqldb:1.8.0.7" level="project" />
     <orderEntry type="library" name="Gradle: commons-cli:commons-cli:1.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.commons:commons-math3:3.6.1" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.8.0" level="project" />
     <orderEntry type="library" name="Gradle: com.github.javaparser:javaparser-core:2.3.0" level="project" />
     <orderEntry type="library" name="Gradle: org.javassist:javassist:3.19.0-GA" level="project" />
