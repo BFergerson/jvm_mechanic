@@ -569,17 +569,17 @@ function updatePerMethodCharts (playbackData) {
 //    $('#invocation_count_' + id).text()
 
     var relHtml = ''
-    relHtml += 'Average: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].mean) + '<br/>'
     relHtml += 'Minimum: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].min) + '<br/>'
     relHtml += 'Maximum: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].max) + '<br/>'
+    relHtml += 'Average: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].mean) + '<br/>-<br/>'
     relHtml += 'Deviation: ' + roundNumber(playbackData.relativeMethodDurationStatisticsMap[methodId].standardDeviation, 2) + '<br/>'
     relHtml += 'Variance: ' + roundNumber(playbackData.relativeMethodDurationStatisticsMap[methodId].variance, 2) + '<br/>'
     relHtml += 'Total: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].sum) + '<br/>'
 
     var absHtml = ''
-    absHtml += 'Average: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].mean) + '<br/>'
     absHtml += 'Minimum: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].min) + '<br/>'
     absHtml += 'Maximum: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].max) + '<br/>'
+    absHtml += 'Average: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].mean) + '<br/>-<br/>'
     absHtml += 'Deviation: ' + roundNumber(playbackData.absoluteMethodDurationStatisticsMap[methodId].standardDeviation, 2) + '<br/>'
     absHtml += 'Variance: ' + roundNumber(playbackData.absoluteMethodDurationStatisticsMap[methodId].variance, 2) + '<br/>'
     absHtml += 'Total: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].sum) + '<br/>'
