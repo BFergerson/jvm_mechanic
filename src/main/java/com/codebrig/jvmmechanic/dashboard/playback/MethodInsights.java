@@ -2,7 +2,9 @@ package com.codebrig.jvmmechanic.dashboard.playback;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * todo: this
@@ -13,6 +15,7 @@ public class MethodInsights {
 
     private short lowestExecutionCountMethodId = -1;
     private short highestExecutionCountMethodId = -1;
+    private Set<Short> constantMethodIdSet = new HashSet<>();
 
     //relative
     private short slowestRelativeMethodDurationMethodId = -1;
@@ -50,6 +53,10 @@ public class MethodInsights {
 
         //Relative
         for (Map.Entry<Short, SummaryStatistics> entry : relativeSummaryStatisticsMap.entrySet()) {
+            if (entry.getValue().getStandardDeviation() < 0.50D && entry.getValue().getVariance() < 0.25D) {
+                constantMethodIdSet.add(entry.getKey());
+            }
+
             //Lowest/Highest Execution Count
             if (methodInvocationCountMap.get(entry.getKey()) > highestExecutionCount || highestExecutionCount == -1) {
                 highestExecutionCount = methodInvocationCountMap.get(entry.getKey());
@@ -235,6 +242,10 @@ public class MethodInsights {
 
     public short getMostVariantAbsoluteMethodDurationMethodId() {
         return mostVariantAbsoluteMethodDurationMethodId;
+    }
+
+    public Set<Short> getConstantMethodIdSet() {
+        return constantMethodIdSet;
     }
 
 }

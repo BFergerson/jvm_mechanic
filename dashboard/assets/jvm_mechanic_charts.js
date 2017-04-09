@@ -624,68 +624,79 @@ function updatePerMethodCharts (playbackData) {
             usedInsightCount++
         }
 
+        var constantMethod = false
+        playbackData.methodInsights.constantMethodIdSet.forEach(function (constantMethodId) {
+            if (methodId == constantMethodId) {
+                constantMethod = true
+            }
+        })
+        if (constantMethod) {
+            methodStatsHtml += '<li style="color: blue">Constant Method</li>'
+            usedInsightCount++
+        }
+
         //relative
         if (playbackData.methodInsights.fastestRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Fastest Relative Method</li>'
+            methodStatsHtml += '<li style="color: green">Fastest Method Execution</li>'
             usedInsightCount++
         } else if (playbackData.methodInsights.slowestRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Slowest Relative Method</li>'
+            methodStatsHtml += '<li style="color: red">Slowest Method Execution</li>'
             usedInsightCount++
         }
         if (playbackData.methodInsights.fastestAverageRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Fastest Average Relative Method</li>'
+            methodStatsHtml += '<li style="color: green">Fastest Average Method</li>'
             usedInsightCount++
         } else if (playbackData.methodInsights.slowestAverageRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Slowest Average Relative Method</li>'
+            methodStatsHtml += '<li style="color: red">Slowest Average Method</li>'
             usedInsightCount++
         }
         if (playbackData.methodInsights.mostVolatileRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Most Volatile Relative Method</li>'
+            methodStatsHtml += '<li style="color: red">Most Volatile Method</li>'
             usedInsightCount++
         } else if (playbackData.methodInsights.leastVolatileRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Least Volatile Relative Method</li>'
+            methodStatsHtml += '<li style="color: green">Least Volatile Method</li>'
             usedInsightCount++
         }
         if (playbackData.methodInsights.mostVariantRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Most Variant Relative Method</li>'
+            methodStatsHtml += '<li style="color: red">Most Variant Method</li>'
             usedInsightCount++
         } else if (playbackData.methodInsights.leastVariantRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Least Variant Relative Method</li>'
+            methodStatsHtml += '<li style="color: green">Least Variant Method</li>'
             usedInsightCount++
         }
 
-        //absolute
-        if (playbackData.methodInsights.fastestAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Fastest Absolute Method</li>'
-            usedInsightCount++
-        } else if (playbackData.methodInsights.slowestAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Slowest Absolute Method</li>'
-            usedInsightCount++
-        }
-        if (playbackData.methodInsights.fastestAverageAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Fastest Average Absolute Method</li>'
-            usedInsightCount++
-        } else if (playbackData.methodInsights.slowestAverageAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Slowest Average Absolute Method</li>'
-            usedInsightCount++
-        }
-        if (playbackData.methodInsights.mostVolatileAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Most Volatile Absolute Method</li>'
-            usedInsightCount++
-        } else if (playbackData.methodInsights.leastVolatileAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Least Volatile Absolute Method</li>'
-            usedInsightCount++
-        }
-        if (playbackData.methodInsights.mostVariantAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Most Variant Absolute Method</li>'
-            usedInsightCount++
-        } else if (playbackData.methodInsights.leastVariantAbsoluteMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li>Least Variant Absolute Method</li>'
-            usedInsightCount++
-        }
+//        //absolute
+//        if (playbackData.methodInsights.fastestAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Fastest Absolute Method</li>'
+//            usedInsightCount++
+//        } else if (playbackData.methodInsights.slowestAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Slowest Absolute Method</li>'
+//            usedInsightCount++
+//        }
+//        if (playbackData.methodInsights.fastestAverageAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Fastest Average Absolute Method</li>'
+//            usedInsightCount++
+//        } else if (playbackData.methodInsights.slowestAverageAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Slowest Average Absolute Method</li>'
+//            usedInsightCount++
+//        }
+//        if (playbackData.methodInsights.mostVolatileAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Most Volatile Absolute Method</li>'
+//            usedInsightCount++
+//        } else if (playbackData.methodInsights.leastVolatileAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Least Volatile Absolute Method</li>'
+//            usedInsightCount++
+//        }
+//        if (playbackData.methodInsights.mostVariantAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Most Variant Absolute Method</li>'
+//            usedInsightCount++
+//        } else if (playbackData.methodInsights.leastVariantAbsoluteMethodDurationMethodId == methodId) {
+//            methodStatsHtml += '<li>Least Variant Absolute Method</li>'
+//            usedInsightCount++
+//        }
 
         var usedBreakerCount = usedInsightCount
-        while (usedBreakerCount < 8) {
+        while (usedBreakerCount < 6) {
             methodStatsHtml += '<br/>'
             usedBreakerCount++
         }
