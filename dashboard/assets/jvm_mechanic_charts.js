@@ -391,10 +391,6 @@ function evictOldChartData (data, cutOffMinutesTime) {
 
 function updatePlaybackCharts (startTime, endTime, playbackData) {
   console.log('Updating charts (with playback data)...')
-  if (startTime && endTime && startTime !== -1 && endTime !== -1) {
-    earliestSessionTimestamp = startTime.valueOf()
-    lastSessionTimestamp = endTime.valueOf()
-  }
   evictOldChartDataPlayback(relativeMethodRuntimeDurationConfig.data, startTime, endTime)
   evictOldChartDataPlayback(absoluteMethodRuntimeDurationConfig.data, startTime, endTime)
 
@@ -606,7 +602,7 @@ function updatePerMethodCharts (playbackData) {
       methodFrequency = Math.ceil(invocationCount / seconds) + '/sec'
     }
 
-    methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-right: 5px"><div class="panel panel-default">'
+    methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-left: 5px; padding-right: 5px"><div class="panel panel-default">'
 
     var methodNameList = getClassMethodParamList(methodNameMap[methodId])
     var titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
@@ -698,7 +694,7 @@ function updatePerMethodCharts (playbackData) {
 //        }
 
         var usedBreakerCount = usedInsightCount
-        while (usedBreakerCount < 6) {
+        while (usedBreakerCount < 5) {
             methodStatsHtml += '<br/>'
             usedBreakerCount++
         }

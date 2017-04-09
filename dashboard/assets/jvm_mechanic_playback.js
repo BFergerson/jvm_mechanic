@@ -11,12 +11,6 @@ function updatePlaybackRange (startTime, endTime) {
       }
     }
 
-    var stepCount = 60 * 1000
-    var playbackMinutes = moment.duration(moment(result.lastActualEvent).diff(result.firstActualEvent)).asMinutes()
-    if (playbackMinutes < 30) {
-      stepCount /= 60 //step count: seconds
-    }
-
     var createSlider = false
     if (dateSlider.noUiSlider) {
       if (startTime < dateSlider.noUiSlider.options.range.min || endTime > dateSlider.noUiSlider.options.range.max) {
@@ -27,13 +21,16 @@ function updatePlaybackRange (startTime, endTime) {
       createSlider = true
     }
 
+    earliestSessionTimestamp = result.firstIncludedEvent
+    lastSessionTimestamp = result.lastIncludedEvent
+
     if (createSlider && result.firstActualEvent !== -1 && result.lastActualEvent !== -1) {
       noUiSlider.create(dateSlider, {
         range: {
           min: result.firstActualEvent,
-          max: result.lastActualEvent
+          max: moment(result.lastActualEvent, 'x').endOf('minute').valueOf()
         },
-        step: stepCount,
+        step: 1000, //step count: seconds
         start: [startTime, endTime],
         behaviour: 'drag',
         connect: true,
@@ -46,6 +43,10 @@ function updatePlaybackRange (startTime, endTime) {
       dateSlider.noUiSlider.on('change', function (values, handle) {
         var start = new Number(values[0])
         var end = new Number(values[1])
+        start = moment(start, 'x').startOf('minute').valueOf()
+        if (start < result.firstActualEvent) {
+            start = result.firstActualEvent
+        }
         updatePlaybackRange(start, end)
       })
     }

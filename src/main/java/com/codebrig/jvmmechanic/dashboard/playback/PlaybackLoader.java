@@ -202,6 +202,9 @@ public class PlaybackLoader {
                 endTime, true);
         for (int sessionId : new HashSet<>(sortedMap.values())) {
             if (sessionMethodInvocationMap.containsKey(sessionId)) {
+                if (sessionStartTimeMap.get(sessionId) < startTime || sessionStartTimeMap.get(sessionId) > endTime) {
+                    continue;
+                }
                 playbackData.addSessionId(sessionId, sessionStartTimeMap.get(sessionId), false);
 
                 for (SessionMethodInvocationData invocationData : sessionMethodInvocationMap.get(sessionId)) {
