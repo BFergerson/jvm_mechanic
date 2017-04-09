@@ -663,6 +663,13 @@ function updatePerMethodCharts (playbackData) {
             methodStatsHtml += '<li style="color: green">Least Variant Method</li>'
             usedInsightCount++
         }
+        if (playbackData.methodInsights.longestTotalLivedRelativeMethodId == methodId) {
+            methodStatsHtml += '<li>Longest Lived Method</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.shortestTotalLivedRelativeMethodId == methodId) {
+            methodStatsHtml += '<li>Shortest Lived Method</li>'
+            usedInsightCount++
+        }
 
 //        //absolute
 //        if (playbackData.methodInsights.fastestAbsoluteMethodDurationMethodId == methodId) {
@@ -695,7 +702,7 @@ function updatePerMethodCharts (playbackData) {
 //        }
 
         var usedBreakerCount = usedInsightCount
-        while (usedBreakerCount < 5) {
+        while (usedBreakerCount < 6) {
             methodStatsHtml += '<br/>'
             usedBreakerCount++
         }

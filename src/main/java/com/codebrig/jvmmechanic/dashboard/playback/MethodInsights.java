@@ -26,6 +26,8 @@ public class MethodInsights {
     private short mostVolatileRelativeMethodDurationMethodId = -1;
     private short leastVariantRelativeMethodDurationMethodId = -1;
     private short mostVariantRelativeMethodDurationMethodId = -1;
+    private short shortestTotalLivedRelativeMethodId = -1;
+    private short longestTotalLivedRelativeMethodId = -1;
 
     //absolute
     private short slowestAbsoluteMethodDurationMethodId = -1;
@@ -36,6 +38,8 @@ public class MethodInsights {
     private short mostVolatileAbsoluteMethodDurationMethodId = -1;
     private short leastVariantAbsoluteMethodDurationMethodId = -1;
     private short mostVariantAbsoluteMethodDurationMethodId = -1;
+    private short shortestTotalLivedAbsoluteMethodId = -1;
+    private short longestTotalLivedAbsoluteMethodId = -1;
 
     public MethodInsights(Map<Short, SummaryStatistics> relativeSummaryStatisticsMap,
                           Map<Short, SummaryStatistics> absoluteSummaryStatisticsMap,
@@ -50,6 +54,8 @@ public class MethodInsights {
         double mostVolatileMethodDuration = -1.0D;
         double leastVariantMethodDuration = -1.0D;
         double mostVariantMethodDuration = -1.0D;
+        double shortestTotalLivedDuration = -1.0D;
+        double longestTotalLivedDuration = -1.0D;
 
         //Relative
         for (Map.Entry<Short, SummaryStatistics> entry : relativeSummaryStatisticsMap.entrySet()) {
@@ -106,6 +112,16 @@ public class MethodInsights {
                 leastVariantMethodDuration = entry.getValue().getVariance();
                 leastVariantRelativeMethodDurationMethodId = entry.getKey();
             }
+
+            //Shortest/Longest Total Lived Relative Method
+            if (entry.getValue().getSum() > longestTotalLivedDuration || longestTotalLivedDuration == -1.0D) {
+                longestTotalLivedDuration = entry.getValue().getSum();
+                longestTotalLivedRelativeMethodId = entry.getKey();
+            }
+            if (entry.getValue().getSum() < shortestTotalLivedDuration || shortestTotalLivedDuration == -1.0D) {
+                shortestTotalLivedDuration = entry.getValue().getSum();
+                shortestTotalLivedRelativeMethodId = entry.getKey();
+            }
         }
 
         //reset variables
@@ -117,6 +133,8 @@ public class MethodInsights {
         mostVolatileMethodDuration = -1.0D;
         leastVariantMethodDuration = -1.0D;
         mostVariantMethodDuration = -1.0D;
+        shortestTotalLivedDuration = -1.0D;
+        longestTotalLivedDuration = -1.0D;
 
         //Absolute
         for (Map.Entry<Short, SummaryStatistics> entry : absoluteSummaryStatisticsMap.entrySet()) {
@@ -169,6 +187,16 @@ public class MethodInsights {
                 leastVariantMethodDuration = entry.getValue().getVariance();
                 leastVariantAbsoluteMethodDurationMethodId = entry.getKey();
             }
+
+            //Shortest/Longest Total Lived Absolute Method
+            if (entry.getValue().getSum() > longestTotalLivedDuration || longestTotalLivedDuration == -1.0D) {
+                longestTotalLivedDuration = entry.getValue().getSum();
+                longestTotalLivedAbsoluteMethodId = entry.getKey();
+            }
+            if (entry.getValue().getSum() < shortestTotalLivedDuration || shortestTotalLivedDuration == -1.0D) {
+                shortestTotalLivedDuration = entry.getValue().getSum();
+                shortestTotalLivedAbsoluteMethodId = entry.getKey();
+            }
         }
     }
 
@@ -178,6 +206,10 @@ public class MethodInsights {
 
     public short getHighestExecutionCountMethodId() {
         return highestExecutionCountMethodId;
+    }
+
+    public Set<Short> getConstantMethodIdSet() {
+        return constantMethodIdSet;
     }
 
     public short getSlowestRelativeMethodDurationMethodId() {
@@ -212,6 +244,14 @@ public class MethodInsights {
         return mostVariantRelativeMethodDurationMethodId;
     }
 
+    public short getShortestTotalLivedRelativeMethodId() {
+        return shortestTotalLivedRelativeMethodId;
+    }
+
+    public short getLongestTotalLivedRelativeMethodId() {
+        return longestTotalLivedRelativeMethodId;
+    }
+
     public short getSlowestAbsoluteMethodDurationMethodId() {
         return slowestAbsoluteMethodDurationMethodId;
     }
@@ -244,8 +284,12 @@ public class MethodInsights {
         return mostVariantAbsoluteMethodDurationMethodId;
     }
 
-    public Set<Short> getConstantMethodIdSet() {
-        return constantMethodIdSet;
+    public short getShortestTotalLivedAbsoluteMethodId() {
+        return shortestTotalLivedAbsoluteMethodId;
+    }
+
+    public short getLongestTotalLivedAbsoluteMethodId() {
+        return longestTotalLivedAbsoluteMethodId;
     }
 
 }
