@@ -28,6 +28,9 @@ function loadLedgerUpdates (initialLoad) {
       console.log('Starting with ledger position: ' + ledgerPosition)
 
       sendLedgerRequest(initialLoad)
+    }).fail(function (error) {
+        //start with 0 position
+        sendLedgerRequest(initialLoad)
     }).always(function (result) {
       //todo: anything?
     })
