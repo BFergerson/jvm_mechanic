@@ -23,6 +23,10 @@
 
         //etc
         window.onload = function () {
+            //hide by default
+            $('#sidebar').toggleClass('sidebar-toggle');
+            $('#page-content-wrapper').toggleClass('page-content-toggle');
+
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
