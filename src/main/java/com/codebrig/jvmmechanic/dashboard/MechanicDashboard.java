@@ -36,6 +36,7 @@ public class MechanicDashboard {
 
         public DashboardServer() {
             super(9000);
+            preloadPlaybackData();
         }
 
         private void preloadPlaybackData() {
@@ -44,8 +45,9 @@ public class MechanicDashboard {
                 if (playbackProperty.equalsIgnoreCase("true")) {
                     String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
                     GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
-                    playbackLoader = new PlaybackLoader(stashLedgerFile, stashDataFile, logAnalyzer);
+                    PlaybackLoader playbackLoader = new PlaybackLoader(stashLedgerFile, stashDataFile, logAnalyzer);
                     playbackLoader.preloadAllEvents();
+                    MechanicDashboard.playbackLoader = playbackLoader;
                 }
             } catch(IOException ex) {
                 ex.printStackTrace();
