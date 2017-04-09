@@ -610,7 +610,9 @@ function updatePerMethodCharts (playbackData) {
 
     var methodNameList = getClassMethodParamList(methodNameMap[methodId])
     var titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
-    methodStatsHtml += '<div class="panel-heading" style="white-space: nowrap; overflow: hidden;">' + titleHtml + '</div>'
+    methodStatsHtml += '<div class="panel-heading" style="white-space: nowrap; overflow: hidden;">'
+    methodStatsHtml += '<div class="panel panel-default panel-body" style="background-color: ' + methodColorMap[methodId] + '; padding: 0px; padding-bottom: 25px; margin-top: 5px; margin-bottom: 10px"></div>'
+    methodStatsHtml += titleHtml + '</div>'
 
     //method insights
     if (monitorMode === 'playback') {
