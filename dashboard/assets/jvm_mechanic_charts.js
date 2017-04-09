@@ -614,13 +614,6 @@ function updatePerMethodCharts (playbackData) {
     if (monitorMode === 'playback') {
         var usedInsightCount = 0
         methodStatsHtml += '<div class="panel panel-default panel-body" style="margin-bottom: 0px"><b>Insights:</b><ul>'
-        if (playbackData.methodInsights.highestExecutionCountMethodId == methodId) {
-            methodStatsHtml += '<li>Highest Execution Count</li>'
-            usedInsightCount++
-        } else if (playbackData.methodInsights.lowestExecutionCountMethodId == methodId) {
-            methodStatsHtml += '<li>Lowest Execution Count</li>'
-            usedInsightCount++
-        }
 
         var constantMethod = false
         playbackData.methodInsights.constantMethodIdSet.forEach(function (constantMethodId) {
@@ -630,6 +623,14 @@ function updatePerMethodCharts (playbackData) {
         })
         if (constantMethod) {
             methodStatsHtml += '<li style="color: blue">Constant Method</li>'
+            usedInsightCount++
+        }
+
+        if (playbackData.methodInsights.highestExecutionCountMethodId == methodId) {
+            methodStatsHtml += '<li>Highest Execution Count</li>'
+            usedInsightCount++
+        } else if (playbackData.methodInsights.lowestExecutionCountMethodId == methodId) {
+            methodStatsHtml += '<li>Lowest Execution Count</li>'
             usedInsightCount++
         }
 
