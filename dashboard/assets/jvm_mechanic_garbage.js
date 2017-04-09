@@ -39,7 +39,7 @@ function loadGarbageUpdates (startTime) {
             $('#pauseFrequencySpan').html(frequencyHtml);
         }
 
-        updateApplicationThroughputLineChart(result.applicationThroughput)
+        updateApplicationThroughputLineChart(startTime, -1, result.applicationThroughput)
     }).always(function (result) {
         //todo: anything?
     })
@@ -58,7 +58,7 @@ function loadPlaybackGarbageReport (startTime, endTime) {
   }
 
   console.log('Downloading latest garbage collection stats...')
-  $.getJSON(host + '/gc?start_time=' + startTime + '&end_time=' + endTime, function (result) {
+  $.getJSON(host + '/gc?start_time=' + startTime + '&end_time=' + endTime + '&relative_throughput=n', function (result) {
     console.log('Updating GC stats...')
     $('#totalGCEvents').text(result.totalGCEvents)
     $('#maxHeapOccupancy').text(humanFileSize(result.maxHeapOccupancy))
@@ -95,7 +95,7 @@ function loadPlaybackGarbageReport (startTime, endTime) {
         $('#pauseFrequencySpan').html(frequencyHtml);
     }
 
-    updateApplicationThroughputLineChart(result.applicationThroughput)
+    updateApplicationThroughputLineChart(startTime, endTime, result.playbackAbsoluteThroughput)
   }).always(function (result) {
     //todo: anything?
   })

@@ -31,6 +31,7 @@ public class GarbageCollectionReport {
     private Map<String, Integer> garbageEventTypeCountMap = new HashMap<>();
     private List<GarbageCollectionPause> garbageCollectionPauseList = new ArrayList<>();
     private ApplicationThroughput applicationThroughput;
+    private ApplicationThroughput playbackAbsoluteThroughput;
 
     public int getTotalGCEvents() {
         return totalGCEvents;
@@ -158,6 +159,14 @@ public class GarbageCollectionReport {
 
     public void setApplicationThroughput(ApplicationThroughput applicationThroughput) {
         this.applicationThroughput = applicationThroughput;
+    }
+
+    public ApplicationThroughput getPlaybackAbsoluteThroughput() {
+        return playbackAbsoluteThroughput;
+    }
+
+    public void setPlaybackAbsoluteThroughput(ApplicationThroughput playbackAbsoluteThroughput) {
+        this.playbackAbsoluteThroughput = playbackAbsoluteThroughput;
     }
 
     public Map<String, Integer> getGarbageEventTypeCountMap() {

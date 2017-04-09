@@ -21,6 +21,7 @@ import java.util.UUID;
 public class GarbageLogAnalyzer {
 
     private String logFileLocation;
+    private ApplicationThroughput playbackAbsoluteThroughput;
 
     public GarbageLogAnalyzer(String logFileLocation) {
         this.logFileLocation = logFileLocation;
@@ -150,12 +151,19 @@ public class GarbageLogAnalyzer {
             }
 
             report.setApplicationThroughput(applicationThroughput);
+            if (startTime == -1 && endTime == -1 && playbackAbsoluteThroughput == null) {
+                playbackAbsoluteThroughput = applicationThroughput;
+            }
+
             report.setTotalAllocatedBytes(totalAllocatedBytes * 1024L);
             report.setTotalPromotedBytes(totalPromotedBytes * 1024L);
         }
 
         if (tmpFile != null) {
             tmpFile.delete();
+        }
+        if (playbackAbsoluteThroughput != null) {
+            report.setPlaybackAbsoluteThroughput(playbackAbsoluteThroughput);
         }
         System.out.println("Generated garbage report! From: " +
                 new Date(report.getFirstGarbageCollectionEventTimestamp()) + " - To: " +
@@ -174,6 +182,16 @@ public class GarbageLogAnalyzer {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public ApplicationThroughput getPlaybackAbsoluteThroughput() {
+        return playbackAbsoluteThroughput;
+    }
+
+    public void setPlaybackAbsoluteThroughput(ApplicationThroughput playbackAbsoluteThroughput) {
+        if (playbackAbsoluteThroughput != null) {
+            this.playbackAbsoluteThroughput = playbackAbsoluteThroughput;
+        }
     }
 
 }

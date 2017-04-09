@@ -6,6 +6,7 @@ import com.codebrig.jvmmechanic.agent.stash.DataEntry;
 import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 import com.codebrig.jvmmechanic.agent.stash.StashDataFile;
 import com.codebrig.jvmmechanic.agent.stash.StashLedgerFile;
+import com.codebrig.jvmmechanic.dashboard.ApplicationThroughput;
 import com.codebrig.jvmmechanic.dashboard.GarbageCollectionPause;
 import com.codebrig.jvmmechanic.dashboard.GarbageLogAnalyzer;
 
@@ -22,6 +23,7 @@ public class PlaybackLoader {
     private StashLedgerFile stashLedgerFile;
     private StashDataFile stashDataFile;
     private GarbageLogAnalyzer garbageLogAnalyzer;
+    private ApplicationThroughput playbackAbsoluteApplicationThroughput;
     private final Map<Integer, List<MechanicEvent>> sessionEventMap = new HashMap<>();
     private final Set<Integer> allSessionIdSet = new HashSet<>();
     private final Map<Integer, Long> sessionStartTimeMap = new HashMap<>();
@@ -152,6 +154,7 @@ public class PlaybackLoader {
         if (garbageLogAnalyzer.garbageLogExists()) {
             System.out.println("Associating garbage collection pauses to events...");
             associateGarbagePauses();
+            playbackAbsoluteApplicationThroughput = garbageLogAnalyzer.getGarbageCollectionReport().getPlaybackAbsoluteThroughput();
         }
         System.out.println("Finished pre-loading data for playback!");
     }
@@ -233,6 +236,10 @@ public class PlaybackLoader {
         } else {
             return events;
         }
+    }
+
+    public ApplicationThroughput getPlaybackAbsoluteApplicationThroughput() {
+        return playbackAbsoluteApplicationThroughput;
     }
 
 }

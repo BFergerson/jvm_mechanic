@@ -461,6 +461,9 @@ public class MechanicDashboard {
             }
 
             GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
+            if (playbackLoader != null) {
+                logAnalyzer.setPlaybackAbsoluteThroughput(playbackLoader.getPlaybackAbsoluteApplicationThroughput());
+            }
 
             //output json
             String jsonData;

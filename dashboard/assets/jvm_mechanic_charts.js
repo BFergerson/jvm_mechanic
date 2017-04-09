@@ -462,7 +462,7 @@ function updatePlaybackCharts (startTime, endTime, playbackData) {
   loadPlaybackGarbageReport(startTime, endTime)
 }
 
-function updateApplicationThroughputLineChart (applicationThroughput) {
+function updateApplicationThroughputLineChart (startTime, endTime, applicationThroughput) {
     if (monitorMode === 'playback') {
         applicationThroughputChartConfig.data.labels = []
         applicationThroughputChartConfig.data.datasets = []
@@ -481,24 +481,26 @@ function updateApplicationThroughputLineChart (applicationThroughput) {
 
   applicationThroughput.throughputMarkerList.forEach(function (throughputMarker) {
     var gcMoment = moment(throughputMarker.timestamp, 'x')
-    if (!lastGarbageEventMoment || lastGarbageEventMoment.isBefore(gcMoment)) {
-        //label
-        applicationThroughputChartConfig.data.labels.push(gcMoment)
+    if ((gcMoment.valueOf() > startTime || startTime === -1) && (gcMoment.valueOf() < endTime || endTime === -1)) {
+        if (!lastGarbageEventMoment || lastGarbageEventMoment.isBefore(gcMoment)) {
+            //label
+            applicationThroughputChartConfig.data.labels.push(gcMoment)
 
-        //data
-        var newDataset = {
-          backgroundColor: 'rgba(34, 95, 111, 0.7)',
-          borderColor: 'rgb(34, 95, 111)',
-          data: [throughputMarker.throughputPercent],
-          fill: true
-        }
+            //data
+            var newDataset = {
+              backgroundColor: 'rgba(34, 95, 111, 0.7)',
+              borderColor: 'rgb(34, 95, 111)',
+              data: [throughputMarker.throughputPercent],
+              fill: true
+            }
 
-        if (applicationThroughputChartConfig.data.datasets.length !== 0) {
-          applicationThroughputChartConfig.data.datasets[0].data.push(throughputMarker.throughputPercent)
-        } else {
-          applicationThroughputChartConfig.data.datasets.push(newDataset)
+            if (applicationThroughputChartConfig.data.datasets.length !== 0) {
+              applicationThroughputChartConfig.data.datasets[0].data.push(throughputMarker.throughputPercent)
+            } else {
+              applicationThroughputChartConfig.data.datasets.push(newDataset)
+            }
+            lastGarbageEventMoment = gcMoment
         }
-        lastGarbageEventMoment = gcMoment
     }
   })
 
