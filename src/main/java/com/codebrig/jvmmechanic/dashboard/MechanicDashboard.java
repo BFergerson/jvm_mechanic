@@ -36,25 +36,32 @@ public class MechanicDashboard {
 
         public DashboardServer() {
             super(9000);
+        }
+
+        private void preloadPlaybackData() {
             try {
                 String playbackProperty = System.getProperty("jvm_mechanic.config.playback_enabled", "false");
-                System.out.println("Playback enabled: " + playbackProperty);
-
                 if (playbackProperty.equalsIgnoreCase("true")) {
                     String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
                     GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
                     playbackLoader = new PlaybackLoader(stashLedgerFile, stashDataFile, logAnalyzer);
                     playbackLoader.preloadAllEvents();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch(IOException ex) {
+                ex.printStackTrace();
             }
         }
 
         @Override
         public Response serve(IHTTPSession session) {
             System.out.println("Dashboard request: " + session.getUri() + "; Method: " + session.getMethod().toString());
-            if (session.getUri().startsWith("/ledger") && session.getMethod().equals(Method.GET)) {
+            if (session.getUri().startsWith("/playback/load") && session.getMethod().equals(Method.GET)) {
+                preloadPlaybackData();
+
+                NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", "");
+                res.addHeader("Access-Control-Allow-Origin", "*");
+                return res;
+            } else if (session.getUri().startsWith("/ledger") && session.getMethod().equals(Method.GET)) {
                 try {
                     return handleLedgerRequest(session);
                 } catch (IOException e) {

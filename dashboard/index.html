@@ -35,6 +35,11 @@
                     $('#timeline_controls').show();
                 }
             });
+
+            if (monitorMode === 'playback') {
+                $.getJSON(host + '/playback/load', function (result) {
+                });
+            }
         };
 
         //monitor mode
