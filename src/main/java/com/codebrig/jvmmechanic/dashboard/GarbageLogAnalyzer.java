@@ -157,6 +157,9 @@ public class GarbageLogAnalyzer {
         if (tmpFile != null) {
             tmpFile.delete();
         }
+        System.out.println("Generated garbage report! From: " +
+                new Date(report.getFirstGarbageCollectionEventTimestamp()) + " - To: " +
+                new Date(report.getLastGarbageCollectionEventTimestamp()));
         return report;
     }
 
