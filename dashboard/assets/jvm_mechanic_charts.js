@@ -704,7 +704,7 @@ function updatePerMethodCharts (playbackData) {
 //        }
 
         var usedBreakerCount = usedInsightCount
-        while (usedBreakerCount < 6) {
+        while (usedBreakerCount < 7) {
             methodStatsHtml += '<br/>'
             usedBreakerCount++
         }
