@@ -43,10 +43,6 @@ function updatePlaybackRange (startTime, endTime) {
       dateSlider.noUiSlider.on('change', function (values, handle) {
         var start = new Number(values[0])
         var end = new Number(values[1])
-        start = moment(start, 'x').startOf('minute').valueOf()
-        if (start < result.firstActualEvent) {
-            start = result.firstActualEvent
-        }
         updatePlaybackRange(start, end)
       })
     }
