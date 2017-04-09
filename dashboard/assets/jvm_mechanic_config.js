@@ -2,10 +2,10 @@
 var host = 'http://localhost:9000'
 
 loadConfigSettings()
-//update config every 30 seconds
+//update config every 10 seconds
 setInterval(function () {
   loadConfigSettings()
-}, 30000)
+}, 10000)
 
 function loadConfigSettings () {
   console.log('Downloading jvm_mechanic configuration settings...')
