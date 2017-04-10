@@ -22,6 +22,8 @@ import java.util.Set;
 /**
  * todo: this
  * todo: import static methods support
+ * todo: package exclude
+ * todo: simple getter/setter ignore functionality
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
