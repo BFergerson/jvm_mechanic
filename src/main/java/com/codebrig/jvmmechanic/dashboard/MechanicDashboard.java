@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * todo: this
  * todo: legal stuff for libraries I'm using
  * todo: deep cleaning on this class
+ * todo: don't reload playback data if it hasn't changed
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
