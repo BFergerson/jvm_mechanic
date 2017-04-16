@@ -8,7 +8,9 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.google.common.collect.Sets;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 import me.tomassetti.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
+import me.tomassetti.symbolsolver.model.declarations.MethodDeclaration;
 import me.tomassetti.symbolsolver.model.invokations.MethodUsage;
+import me.tomassetti.symbolsolver.model.resolution.SymbolReference;
 import me.tomassetti.symbolsolver.model.typesystem.ReferenceTypeUsage;
 import me.tomassetti.symbolsolver.model.typesystem.TypeUsage;
 
@@ -77,17 +79,22 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
         System.out.println("Resolving method call: " + methodCall.toStringWithoutComments());
         try {
-//            SymbolReference<MethodDeclaration> solve = javaParserFacade.solve(methodCall);
-//            if (!solve.isSolved() || !(solve.getCorrespondingDeclaration() instanceof JavaParserMethodDeclaration)) {
-//                return;
-//            }
-//            JavaParserMethodDeclaration sourceMethodDeclaration = (JavaParserMethodDeclaration) solve.getCorrespondingDeclaration();
-            MethodUsage methodUsage = javaParserFacade.solveMethodAsUsage(methodCall);
-            if (methodUsage == null || !(methodUsage.getDeclaration() instanceof JavaParserMethodDeclaration)) {
-                return;
+            com.github.javaparser.ast.body.MethodDeclaration methodDeclaration;
+            try {
+                SymbolReference<MethodDeclaration> solve = javaParserFacade.solve(methodCall);
+                if (!solve.isSolved() || !(solve.getCorrespondingDeclaration() instanceof JavaParserMethodDeclaration)) {
+                    return;
+                }
+                JavaParserMethodDeclaration sourceMethodDeclaration = (JavaParserMethodDeclaration) solve.getCorrespondingDeclaration();
+                methodDeclaration = sourceMethodDeclaration.getWrappedNode();
+            } catch (Exception ex) {
+                MethodUsage methodUsage = javaParserFacade.solveMethodAsUsage(methodCall);
+                if (!(methodUsage.getDeclaration() instanceof JavaParserMethodDeclaration)) {
+                    throw ex;
+                } else {
+                    methodDeclaration = ((JavaParserMethodDeclaration) methodUsage.getDeclaration()).getWrappedNode();
+                }
             }
-            JavaParserMethodDeclaration sourceMethodDeclaration = (JavaParserMethodDeclaration) methodUsage.getDeclaration();
-            com.github.javaparser.ast.body.MethodDeclaration methodDeclaration = sourceMethodDeclaration.getWrappedNode();
 
             Node tmp = methodDeclaration;
             CompilationUnit compilationUnit = null;

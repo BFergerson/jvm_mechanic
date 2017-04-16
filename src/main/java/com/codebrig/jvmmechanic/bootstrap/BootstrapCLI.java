@@ -94,9 +94,6 @@ public class BootstrapCLI {
             System.out.println("Missing source code directories or scan directories! Use -help to view valid arguments.");
             System.exit(-1);
         }
-        if (cli.excludePackageList == null) {
-            cli.excludePackageList = new ArrayList<>();
-        }
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new JreTypeSolver());
@@ -153,6 +150,12 @@ public class BootstrapCLI {
             }
         }
 
+        if (cli.excludePackageList == null) {
+            cli.excludePackageList = new ArrayList<>();
+        }
+        if (cli.sourceDirectoryList == null) {
+            cli.sourceDirectoryList = new ArrayList<>();
+        }
         if (cli.excludeFunctionList == null) {
             cli.excludeFunctionList = new ArrayList<>();
         }
