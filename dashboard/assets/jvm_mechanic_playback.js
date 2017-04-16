@@ -1,3 +1,6 @@
+var playbackLastStart
+var playbackLastEnd
+
 function updatePlaybackRange (startTime, endTime) {
   //make sure we have all sessions in playback range
   $.getJSON(host + '/playback/data/session/time/?start_time=' + moment(startTime, 'x').valueOf() + '&end_time=' + moment(endTime, 'x').valueOf(), function (result) {
@@ -43,7 +46,11 @@ function updatePlaybackRange (startTime, endTime) {
       dateSlider.noUiSlider.on('change', function (values, handle) {
         var start = new Number(values[0])
         var end = new Number(values[1])
-        updatePlaybackRange(start, end)
+        if ((!playbackLastStart || !playbackLastEnd) || (playbackLastStart.valueOf() !== start.valueOf() || playbackLastEnd.valueOf() !== end.valueOf())) {
+          updatePlaybackRange(start, end)
+          playbackLastStart = start
+          playbackLastEnd = end
+        }
       })
     }
 
