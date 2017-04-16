@@ -19,6 +19,7 @@ import java.util.Set;
 public class RecursiveMethodExplorer {
 
     private final Set<String> targetPackageSet;
+    private final Set<String> excludePackageSet;
     private final Set<String> sourceDirectorySet;
     private final Set<String> targetFunctionSet;
     private final Set<String> excludeFunctionSet;
@@ -29,10 +30,12 @@ public class RecursiveMethodExplorer {
     private final boolean includeGetters;
     private final boolean includeSetters;
 
-    public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> sourceDirectorySet,
+    public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> excludePackageSet,
+                                   Set<String> sourceDirectorySet,
                                    Set<String> targetFunctionSet, Set<String> excludeFunctionSet,
                                    boolean includeGetters, boolean includeSetters) {
         this.targetPackageSet = targetPackageSet;
+        this.excludePackageSet= excludePackageSet;
         this.sourceDirectorySet = sourceDirectorySet;
         this.targetFunctionSet = targetFunctionSet;
         this.excludeFunctionSet = excludeFunctionSet;
@@ -72,6 +75,10 @@ public class RecursiveMethodExplorer {
 
     public Set<String> getTargetPackageSet() {
         return targetPackageSet;
+    }
+
+    public Set<String> getExcludePackageSet() {
+        return excludePackageSet;
     }
 
     public Set<String> getSourceDirectorySet() {

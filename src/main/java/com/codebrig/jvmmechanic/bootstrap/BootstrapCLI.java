@@ -22,7 +22,6 @@ import java.util.Set;
 /**
  * todo: this
  * todo: import static methods support
- * todo: package exclude
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
@@ -30,6 +29,9 @@ public class BootstrapCLI {
 
     @Parameter(names = "-source_package", description = "Package(s) of Java source code to be used for type solving")
     public List<String> sourcePackageList;
+
+    @Parameter(names = "-exclude_package", description = "Package(s) of Java source code to be excluded")
+    public List<String> excludePackageList;
 
     @Parameter(names = "-source_directory", description = "Directory/Directories of Java source code to be used for type solving")
     public List<String> sourceDirectoryList;
@@ -91,6 +93,9 @@ public class BootstrapCLI {
             //invalid
             System.out.println("Missing source code directories or scan directories! Use -help to view valid arguments.");
             System.exit(-1);
+        }
+        if (cli.excludePackageList == null) {
+            cli.excludePackageList = new ArrayList<>();
         }
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
@@ -159,6 +164,7 @@ public class BootstrapCLI {
         System.out.println("\nExploring target function method hierarchy...");
         RecursiveMethodExplorer explorer = new RecursiveMethodExplorer(
                 new HashSet<>(cli.sourcePackageList),
+                new HashSet<>(cli.excludePackageList),
                 new HashSet<>(cli.sourceDirectoryList),
                 new HashSet<>(cli.targetFunctionList),
                 new HashSet<>(cli.excludeFunctionList),

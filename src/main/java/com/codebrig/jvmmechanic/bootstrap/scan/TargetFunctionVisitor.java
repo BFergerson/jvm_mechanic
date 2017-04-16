@@ -31,6 +31,12 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
                 break;
             }
         }
+        for (String packageName : methodExplorer.getExcludePackageSet()) {
+            if (functionSignature.startsWith(packageName)) {
+                monitor = false;
+                break;
+            }
+        }
 
         if (monitor && (!methodExplorer.includeGetters() || !methodExplorer.includeSetters())) {
             GetterSetterResolver resolver = new GetterSetterResolver();
