@@ -31,6 +31,19 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
                 break;
             }
         }
+
+        if (monitor && (!methodExplorer.includeGetters() || !methodExplorer.includeSetters())) {
+            GetterSetterResolver resolver = new GetterSetterResolver();
+            methodDeclaration.accept(resolver, javaParserFacade);
+            if (resolver.isValidGetter() && !methodExplorer.includeGetters()) {
+                System.out.println("Skipping getter method: " + functionSignature);
+                monitor = false;
+            } else if (resolver.isValidSetter() && !methodExplorer.includeSetters()) {
+                System.out.println("Skipping setter method: " + functionSignature);
+                monitor = false;
+            }
+        }
+
         if (monitor && methodExplorer.getTargetFunctionSet().contains(functionSignature)
                 && !methodExplorer.getVisitedFunctionSet().contains(functionSignature)
                 && !methodExplorer.getExcludeFunctionSet().contains(functionSignature)) {

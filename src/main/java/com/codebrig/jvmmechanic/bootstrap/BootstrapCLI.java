@@ -23,7 +23,6 @@ import java.util.Set;
  * todo: this
  * todo: import static methods support
  * todo: package exclude
- * todo: simple getter/setter ignore functionality
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
@@ -49,6 +48,12 @@ public class BootstrapCLI {
 
     @Parameter(names = "-enter_function", description = "Functions to use as enter function")
     public List<String> enterFunctionList;
+
+    @Parameter(names = {"-include_getters"}, description = "Whether or not to include monitoring getter methods")
+    public boolean includeGetters = false;
+
+    @Parameter(names = {"-include_setters"}, description = "Whether or not to include monitoring setter methods")
+    public boolean includeSetters = false;
 
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
     public boolean help;
@@ -156,7 +161,8 @@ public class BootstrapCLI {
                 new HashSet<>(cli.sourcePackageList),
                 new HashSet<>(cli.sourceDirectoryList),
                 new HashSet<>(cli.targetFunctionList),
-                new HashSet<>(cli.excludeFunctionList));
+                new HashSet<>(cli.excludeFunctionList),
+                cli.includeGetters, cli.includeSetters);
         explorer.explore(JavaParserFacade.get(typeSolver));
         System.out.println("Finished exploring target function method hierarchy!");
 

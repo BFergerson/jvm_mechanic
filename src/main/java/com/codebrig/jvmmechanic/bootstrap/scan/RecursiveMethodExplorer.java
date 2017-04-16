@@ -7,6 +7,7 @@ import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,9 +26,12 @@ public class RecursiveMethodExplorer {
     private final Set<String> visitedFunctionSet;
     private final Set<String> visitedConstructorSet;
     private final Set<String> failedConstructorSet;
+    private final boolean includeGetters;
+    private final boolean includeSetters;
 
     public RecursiveMethodExplorer(Set<String> targetPackageSet, Set<String> sourceDirectorySet,
-                                   Set<String> targetFunctionSet, Set<String> excludeFunctionSet) {
+                                   Set<String> targetFunctionSet, Set<String> excludeFunctionSet,
+                                   boolean includeGetters, boolean includeSetters) {
         this.targetPackageSet = targetPackageSet;
         this.sourceDirectorySet = sourceDirectorySet;
         this.targetFunctionSet = targetFunctionSet;
@@ -36,10 +40,12 @@ public class RecursiveMethodExplorer {
         this.failedFunctionSet = new HashSet<>();
         this.visitedConstructorSet = new HashSet<>();
         this.failedConstructorSet = new HashSet<>();
+        this.includeGetters = includeGetters;
+        this.includeSetters = includeSetters;
     }
 
     public void explore(JavaParserFacade javaParserFacade) throws IOException, ParseException {
-        for (String targetFunction : targetFunctionSet) {
+        for (String targetFunction : new ArrayList<>(targetFunctionSet)) {
             String[] targetFunctionArr = targetFunction.split("\\.");
 
             StringBuilder qualifiedClassName = new StringBuilder();
@@ -94,6 +100,14 @@ public class RecursiveMethodExplorer {
 
     public Set<String> getFailedConstructorSet() {
         return failedConstructorSet;
+    }
+
+    public boolean includeGetters() {
+        return includeGetters;
+    }
+
+    public boolean includeSetters() {
+        return includeSetters;
     }
 
 }
