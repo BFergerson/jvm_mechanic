@@ -18,7 +18,7 @@ import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * todo: this
+ * Convenient static class for use in the Byteman rule scripts.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

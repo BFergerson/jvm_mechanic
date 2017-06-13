@@ -8,7 +8,7 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
 
 /**
- * todo: this
+ * Used to determine if source code expression is a valid getter/setter function (mutator method).
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

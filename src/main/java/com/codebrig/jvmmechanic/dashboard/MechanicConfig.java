@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * todo: this
+ * Configuration DTO for jvm_mechanic dashboard UI
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

@@ -18,14 +18,11 @@ public class RealtimeMechanicDashboardTest {
     private static final AtomicInteger eventIdIndex = new AtomicInteger();
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MechanicDashboard.main(null);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                MechanicDashboard.main(null);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }).start();
 

@@ -14,7 +14,8 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * todo: this
+ * Analyzes garbage log files to produce {@link ApplicationThroughput} at the specified
+ * start and end time (or the entire garbage log if none given).
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

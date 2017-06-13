@@ -1,7 +1,7 @@
 package com.codebrig.jvmmechanic.dashboard;
 
 /**
- * todo: this
+ * Represents the exact time and duration of a JVM garbage collection pause.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
@@ -10,10 +10,7 @@ public class GarbageCollectionPause {
     private long pauseTimestamp;
     private int pauseDuration;
 
-    public GarbageCollectionPause() {
-    }
-
-    public GarbageCollectionPause(long pauseTimestamp, int pauseDuration) {
+    GarbageCollectionPause(long pauseTimestamp, int pauseDuration) {
         this.pauseTimestamp = pauseTimestamp;
         this.pauseDuration = pauseDuration;
     }
