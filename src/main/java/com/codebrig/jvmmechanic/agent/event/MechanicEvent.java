@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.nio.ByteBuffer;
 
 /**
- * todo: this
+ * Represents any event created by an application being monitored by jvm_mechanic.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

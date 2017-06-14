@@ -1,7 +1,8 @@
 package com.codebrig.jvmmechanic.agent.event;
 
 /**
- * todo: this
+ * Corrupt mechanical event.
+ * Represents any of the other events that failed to be properly decoded.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

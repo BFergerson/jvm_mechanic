@@ -1,7 +1,7 @@
 package com.codebrig.jvmmechanic.agent.event;
 
 /**
- * todo: this
+ * Possible events an application being monitored by jvm_mechanic can produce.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

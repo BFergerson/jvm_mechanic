@@ -1,7 +1,8 @@
 package com.codebrig.jvmmechanic.agent.event;
 
 /**
- * todo: this
+ * Work end context event.
+ * Event is triggered when application running on JVM finishes executing its own code.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */

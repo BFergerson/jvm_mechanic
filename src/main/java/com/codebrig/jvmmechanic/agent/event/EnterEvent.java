@@ -1,7 +1,8 @@
 package com.codebrig.jvmmechanic.agent.event;
 
 /**
- * todo: this
+ * Enter context event.
+ * Event is triggered when work request is received.
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
