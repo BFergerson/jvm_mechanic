@@ -231,16 +231,12 @@ public class MechanicDashboard {
                     workSessionTreeMap.put(journalEntry.getWorkSessionId(), journalEntry.getEventTimestamp());
                 }
 
-                List<JournalEntry> journalEntries = workSessionHashMap.get(journalEntry.getWorkSessionId());
-                if (journalEntries == null) {
-                    journalEntries = new ArrayList<>();
-                    workSessionHashMap.put(journalEntry.getWorkSessionId(), journalEntries);
-                }
+                List<JournalEntry> journalEntries = workSessionHashMap.computeIfAbsent(journalEntry.getWorkSessionId(), k -> new ArrayList<>());
                 journalEntries.add(journalEntry);
             }
 
             //order by legerId
-            Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
+            journalEntryList.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
 
             Set<Integer> includedSessionSet = new HashSet<>();
             long filePosition = 0;

@@ -24,7 +24,7 @@ public class GarbageLogAnalyzer {
     private String logFileLocation;
     private ApplicationThroughput playbackAbsoluteThroughput;
 
-    public GarbageLogAnalyzer(String logFileLocation) {
+    GarbageLogAnalyzer(String logFileLocation) {
         this.logFileLocation = logFileLocation;
     }
 
@@ -161,7 +161,9 @@ public class GarbageLogAnalyzer {
         }
 
         if (tmpFile != null) {
-            tmpFile.delete();
+            if (!tmpFile.delete()) {
+                tmpFile.deleteOnExit();
+            }
         }
         if (playbackAbsoluteThroughput != null) {
             report.setPlaybackAbsoluteThroughput(playbackAbsoluteThroughput);

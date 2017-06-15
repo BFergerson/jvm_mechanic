@@ -30,7 +30,7 @@ public class DataEntry {
         return (short) (rawData.length);
     }
 
-    public ByteBuffer toByteBuffer() {
+    ByteBuffer toByteBuffer() {
         //buffer allocation: rawData.length (*)
         ByteBuffer buffer = ByteBuffer.allocate(rawData.length);
         buffer.put(rawData);

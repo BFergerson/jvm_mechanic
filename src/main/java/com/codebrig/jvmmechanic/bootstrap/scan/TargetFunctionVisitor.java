@@ -14,7 +14,7 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
     private final String qualifiedClassName;
     private final RecursiveMethodExplorer methodExplorer;
 
-    public TargetFunctionVisitor(String qualifiedClassName, RecursiveMethodExplorer methodExplorer) {
+    TargetFunctionVisitor(String qualifiedClassName, RecursiveMethodExplorer methodExplorer) {
         this.qualifiedClassName = qualifiedClassName;
         this.methodExplorer = methodExplorer;
     }
@@ -23,7 +23,7 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
     public void visit(final MethodDeclaration methodDeclaration, final JavaParserFacade javaParserFacade) {
         super.visit(methodDeclaration, javaParserFacade);
 
-        String functionSignature = Utils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
+        String functionSignature = ScanUtils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
         boolean monitor = false;
         for (String packageName : methodExplorer.getTargetPackageSet()) {
             if (functionSignature.startsWith(packageName)) {

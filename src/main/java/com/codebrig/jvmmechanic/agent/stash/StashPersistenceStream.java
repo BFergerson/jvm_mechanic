@@ -42,23 +42,20 @@ public class StashPersistenceStream {
         }
         mechanicEvent.eventId = eventIdIndex.getAndIncrement();
 
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    synchronized (syncLock) {
-                        int ledgerId = ledgerIdIndex.getAndIncrement();
-                        DataEntry dataEntry = new DataEntry(mechanicEvent.getEventData());
-                        JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, ledgerId, mechanicEvent.workSessionId,
-                                mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
-                                mechanicEvent.eventType.toEventTypeId());
+        executorService.execute(() -> {
+            try {
+                synchronized (syncLock) {
+                    int ledgerId = ledgerIdIndex.getAndIncrement();
+                    DataEntry dataEntry = new DataEntry(mechanicEvent.getEventData());
+                    JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, ledgerId, mechanicEvent.workSessionId,
+                            mechanicEvent.eventTimestamp, dataEntry.getDataEntrySize(), mechanicEvent.eventMethodId,
+                            mechanicEvent.eventType.toEventTypeId());
 
-                        stashLedgerFile.stashJournalEntry(journalEntry);
-                        stashDataFile.stashDataEntry(dataEntry);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                    stashLedgerFile.stashJournalEntry(journalEntry);
+                    stashDataFile.stashDataEntry(dataEntry);
                 }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         });
     }

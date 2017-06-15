@@ -41,9 +41,7 @@ public class ExtendedJavaParserTypeSolver extends JavaParserTypeSolver {
                 }
                 TypeDeclaration typeDeclaration = JavaParserFacade.get(this).getTypeDeclaration(astTypeDeclaration.get());
                 return SymbolReference.solved(typeDeclaration);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (ParseException | IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
@@ -62,9 +60,7 @@ public class ExtendedJavaParserTypeSolver extends JavaParserTypeSolver {
                     }
                     TypeDeclaration typeDeclaration = JavaParserFacade.get(this).getTypeDeclaration(astTypeDeclaration);
                     return SymbolReference.solved(typeDeclaration);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
+                } catch (ParseException | IOException e) {
                     throw new RuntimeException(e);
                 }
             }

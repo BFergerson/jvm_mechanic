@@ -28,7 +28,7 @@ public class jvm_mechanic extends Helper {
     private static StashPersistenceStream stashStream;
     private static final Object singletonLock = new Object();
     private static final ThreadLocal<Integer> threadLocalStorage = new ThreadLocal<>();
-    public static final Map<Short, String> REGISTERED_METHOD_ID_MAP = new HashMap<>();
+    private static final Map<Short, String> REGISTERED_METHOD_ID_MAP = new HashMap<>();
     private static final Properties prop = new Properties();
     private static OutputStream output = null;
 

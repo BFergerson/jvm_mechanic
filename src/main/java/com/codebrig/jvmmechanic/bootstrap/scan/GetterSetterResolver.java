@@ -43,7 +43,7 @@ public class GetterSetterResolver extends VoidVisitorAdapter<JavaParserFacade> {
         returnStatementPresent = true;
     }
 
-    public boolean isValidGetter() {
+    boolean isValidGetter() {
         //todo: cannot set any values
         if (fieldsAccessed > 1) {
             return false; //can only access up to one field
@@ -57,7 +57,7 @@ public class GetterSetterResolver extends VoidVisitorAdapter<JavaParserFacade> {
         return true;
     }
 
-    public boolean isValidSetter() {
+    boolean isValidSetter() {
         //todo: cannot set any values but one which has to be what the singular arg passed
         if (methodCalled) {
             return false; //cannot call any functions

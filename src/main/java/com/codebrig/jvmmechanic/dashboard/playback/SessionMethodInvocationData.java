@@ -116,25 +116,26 @@ public class SessionMethodInvocationData {
         return eventCount;
     }
 
-    public static class MethodExecutionTime {
+    static class MethodExecutionTime {
         private long startTimestamp;
         private long endTimestamp;
 
-        public MethodExecutionTime(long startTimestamp, long endTimestamp) {
+        MethodExecutionTime(long startTimestamp, long endTimestamp) {
             this.startTimestamp = startTimestamp;
             this.endTimestamp = endTimestamp;
         }
 
-        public long getStartTimestamp() {
+        long getStartTimestamp() {
             return startTimestamp;
         }
 
-        public long getEndTimestamp() {
+        long getEndTimestamp() {
             return endTimestamp;
         }
 
-        public long getDuration() {
+        long getDuration() {
             return endTimestamp - startTimestamp;
         }
     }
+
 }

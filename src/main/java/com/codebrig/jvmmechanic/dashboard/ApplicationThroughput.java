@@ -12,7 +12,7 @@ public class ApplicationThroughput {
 
     private List<ApplicationThroughputMarker> throughputMarkerList;
 
-    public ApplicationThroughput() {
+    ApplicationThroughput() {
         throughputMarkerList = new ArrayList<>();
     }
 
@@ -30,7 +30,7 @@ public class ApplicationThroughput {
         private long timestamp;
         private double throughputPercent;
 
-        public ApplicationThroughputMarker(long timestamp, double throughputPercent) {
+        ApplicationThroughputMarker(long timestamp, double throughputPercent) {
             this.timestamp = timestamp;
             this.throughputPercent = throughputPercent;
         }

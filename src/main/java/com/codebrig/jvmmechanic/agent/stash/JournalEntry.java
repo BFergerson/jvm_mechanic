@@ -67,7 +67,7 @@ public class JournalEntry {
         this.uniqueEventId = uniqueId;
     }
 
-    public ByteBuffer toByteBuffer() {
+    ByteBuffer toByteBuffer() {
         //buffer allocation: eventId(4) + ledgerId(4) + workSessionId(4) + eventTimestamp(8) + eventSize(2) + eventMethodId(2) + eventType(1) = 25
         ByteBuffer buffer = ByteBuffer.allocate(JOURNAL_ENTRY_SIZE);
         buffer.putInt(eventId);

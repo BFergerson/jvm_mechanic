@@ -106,7 +106,7 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
             }
 
             String qualifiedClassName = compilationUnit.getPackage().getName().toStringWithoutComments() + "." + compilationUnit.getTypes().get(0).getName();
-            String functionSignature = Utils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
+            String functionSignature = ScanUtils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
             if (!methodExplorer.getVisitedFunctionSet().contains(functionSignature)) {
                 methodExplorer.getTargetFunctionSet().add(functionSignature);
                 TargetFunctionVisitor targetFunctionVisitor = new TargetFunctionVisitor(qualifiedClassName, methodExplorer);

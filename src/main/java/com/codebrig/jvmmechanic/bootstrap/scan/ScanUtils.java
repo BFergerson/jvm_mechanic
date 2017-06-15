@@ -12,9 +12,9 @@ import java.util.List;
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
-public class Utils {
+class ScanUtils {
 
-    public static StringBuilder getFunctionSignature(String qualifiedClassName, MethodDeclaration methodDeclaration) {
+    static StringBuilder getFunctionSignature(String qualifiedClassName, MethodDeclaration methodDeclaration) {
         Node parentNode = methodDeclaration.getParentNode();
         if (parentNode instanceof ClassOrInterfaceDeclaration) {
             ClassOrInterfaceDeclaration declaration = (ClassOrInterfaceDeclaration) parentNode;
@@ -38,7 +38,7 @@ public class Utils {
         return functionSignature;
     }
 
-    public static String getClassName(String qualifiedClassName) {
+    private static String getClassName(String qualifiedClassName) {
         if (qualifiedClassName != null && qualifiedClassName.contains(".")) {
             String[] arr = qualifiedClassName.split("\\.");
             return arr[arr.length - 1];

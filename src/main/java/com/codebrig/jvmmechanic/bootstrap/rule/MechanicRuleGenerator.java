@@ -148,7 +148,7 @@ public class MechanicRuleGenerator {
         return ruleName;
     }
 
-    public StringBuilder getRuleHeader(String ruleName) {
+    private StringBuilder getRuleHeader(String ruleName) {
         StringBuilder ruleHeader = new StringBuilder();
         ruleHeader.append("#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#\n");
         ruleHeader.append("#").append(ruleName).append("\n");
@@ -157,7 +157,7 @@ public class MechanicRuleGenerator {
         return ruleHeader;
     }
 
-    public StringBuilder getHeader() {
+    private StringBuilder getHeader() {
         StringBuilder header = new StringBuilder();
         header.append("#jvm_mechanic - Mechanic Event Rules\n");
         header.append("#Version: 1.0\n");

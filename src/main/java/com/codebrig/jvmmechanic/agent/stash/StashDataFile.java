@@ -20,7 +20,6 @@ public class StashDataFile {
     public void stashDataEntry(DataEntry dataEntry) throws IOException {
         fileChannel.position(fileChannel.size());
         fileChannel.write(dataEntry.toByteBuffer());
-        //fileChannel.force(false);
     }
 
     public DataEntry readDataEntry(long filePosition, int length) throws IOException {

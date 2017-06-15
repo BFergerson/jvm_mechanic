@@ -41,7 +41,7 @@ public class MethodInsights {
     private short shortestTotalLivedAbsoluteMethodId = -1;
     private short longestTotalLivedAbsoluteMethodId = -1;
 
-    public MethodInsights(Map<Short, SummaryStatistics> relativeSummaryStatisticsMap,
+    MethodInsights(Map<Short, SummaryStatistics> relativeSummaryStatisticsMap,
                           Map<Short, SummaryStatistics> absoluteSummaryStatisticsMap,
                           Map<Short, Integer> methodInvocationCountMap) {
         long lowestExecutionCount = -1;
