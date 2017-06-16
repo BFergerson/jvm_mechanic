@@ -300,7 +300,7 @@ function ledgerLoaded () {
     }, 3000)
 
     //update garbage stats every 6 seconds
-    loadGarbageUpdates(moment().subtract(cutOffMinutesTime, 'minutes').valueOf())
+    loadGarbageUpdates(moment().valueOf())
     setInterval(function () {
         if (applicationThroughputChartConfig.data.labels[0]) {
             loadGarbageUpdates(applicationThroughputChartConfig.data.labels[0].valueOf())
