@@ -28,37 +28,37 @@ import java.util.Set;
 public class BootstrapCLI {
 
     @Parameter(names = "-source_package", description = "Package(s) of Java source code to be used for type solving")
-    public List<String> sourcePackageList;
+    private List<String> sourcePackageList;
 
     @Parameter(names = "-exclude_package", description = "Package(s) of Java source code to be excluded")
-    public List<String> excludePackageList;
+    private List<String> excludePackageList;
 
     @Parameter(names = "-source_directory", description = "Directory/Directories of Java source code to be used for type solving")
-    public List<String> sourceDirectoryList;
+    private List<String> sourceDirectoryList;
 
     @Parameter(names = "-scan_directory", description = "Directory/directories to scan for Java source code to be used for type solving")
-    public List<String> scanDirectoryList;
+    private List<String> scanDirectoryList;
 
     @Parameter(names = "-target_function", description = "Functions to create rules for")
-    public List<String> targetFunctionList;
+    private List<String> targetFunctionList;
 
     @Parameter(names = "-project_library", description = ".jar(s) of Java libraries to be used for type solving")
-    public List<String> projectLibraryList;
+    private List<String> projectLibraryList;
 
     @Parameter(names = "-exclude_function", description = "Functions to exclude creating rules for")
-    public List<String> excludeFunctionList;
+    private List<String> excludeFunctionList;
 
     @Parameter(names = "-enter_function", description = "Functions to use as enter function")
-    public List<String> enterFunctionList;
+    private List<String> enterFunctionList;
 
     @Parameter(names = {"-include_getters"}, description = "Whether or not to include monitoring getter methods")
-    public boolean includeGetters = false;
+    private boolean includeGetters = false;
 
     @Parameter(names = {"-include_setters"}, description = "Whether or not to include monitoring setter methods")
-    public boolean includeSetters = false;
+    private boolean includeSetters = false;
 
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
-    public boolean help;
+    private boolean help;
 
     public static void main(String[] args) throws IOException, ParseException {
         BootstrapCLI cli = new BootstrapCLI();
@@ -248,7 +248,7 @@ public class BootstrapCLI {
         System.out.println(ruleGenerator.getGeneratedRules().toString());
     }
 
-    static List<File> findSourceDirectories(File searchDirectory, List<File> queue) {
+    private static List<File> findSourceDirectories(File searchDirectory, List<File> queue) {
         //BFS recursive search for all src/main/java directories
         if (searchDirectory.isDirectory()) {
             File srcMainJavaDir = new File(searchDirectory, "src/main/java");
