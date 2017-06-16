@@ -8,17 +8,14 @@ import java.util.*;
 
 public class StashFileDebugOutput {
 
-    private static StashLedgerFile stashLedgerFile;
-    private static StashDataFile stashDataFile;
-
     public static void main(String[] args) throws Exception {
         String ledgerFileProperty = System.getProperty("jvm_mechanic.stash.ledger.filename", "C:\\temp\\jvm_mechanic.ledger");
         String dataFileProperty = System.getProperty("jvm_mechanic.stash.data.filename", "C:\\temp\\jvm_mechanic.data");
 
         RandomAccessFile ledgerStream = new RandomAccessFile(ledgerFileProperty, "rw");
         RandomAccessFile dataStream = new RandomAccessFile(dataFileProperty, "rw");
-        stashLedgerFile = new StashLedgerFile(ledgerStream.getChannel());
-        stashDataFile = new StashDataFile(dataStream.getChannel());
+        StashLedgerFile stashLedgerFile = new StashLedgerFile(ledgerStream.getChannel());
+        StashDataFile stashDataFile = new StashDataFile(dataStream.getChannel());
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -29,7 +26,7 @@ public class StashFileDebugOutput {
         }
 
         //order by legerId
-        Collections.sort(journalEntryList, Comparator.comparingInt(JournalEntry::getLedgerId));
+        journalEntryList.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
 
         System.out.println("\nOutputting all mechanic events...");
         long filePosition = 0;
