@@ -2,9 +2,7 @@ package com.codebrig.jvmmechanic.dashboard.playback;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * todo: this
@@ -28,6 +26,8 @@ public class MethodInsights {
     private short mostVariantRelativeMethodDurationMethodId = -1;
     private short shortestTotalLivedRelativeMethodId = -1;
     private short longestTotalLivedRelativeMethodId = -1;
+    private TreeMap<Double, List<Short>> slowestRelativeMethodDurationMap = new TreeMap<>();
+    private TreeMap<Double, List<Short>> fastestRelativeMethodDurationMap = new TreeMap<>();
 
     //absolute
     private short slowestAbsoluteMethodDurationMethodId = -1;
@@ -40,6 +40,8 @@ public class MethodInsights {
     private short mostVariantAbsoluteMethodDurationMethodId = -1;
     private short shortestTotalLivedAbsoluteMethodId = -1;
     private short longestTotalLivedAbsoluteMethodId = -1;
+    private TreeMap<Double, List<Short>> slowestAbsoluteMethodDurationMap = new TreeMap<>();
+    private TreeMap<Double, List<Short>> fastestAbsoluteMethodDurationMap = new TreeMap<>();
 
     MethodInsights(Map<Short, SummaryStatistics> relativeSummaryStatisticsMap,
                           Map<Short, SummaryStatistics> absoluteSummaryStatisticsMap,
@@ -74,9 +76,18 @@ public class MethodInsights {
             }
 
             //Slowest/Fastest Relative Method Duration
+            List<Short> methodIdList = slowestRelativeMethodDurationMap.computeIfAbsent(entry.getValue().getMax(), k -> new ArrayList<>());
+            if (!methodIdList.contains(entry.getKey())) {
+                methodIdList.add(entry.getKey());
+            }
             if (entry.getValue().getMax() > slowestMethodDuration || slowestMethodDuration == -1.0D) {
                 slowestMethodDuration = entry.getValue().getMax();
                 slowestRelativeMethodDurationMethodId = entry.getKey();
+            }
+
+            methodIdList = fastestRelativeMethodDurationMap.computeIfAbsent(entry.getValue().getMin(), k -> new ArrayList<>());
+            if (!methodIdList.contains(entry.getKey())) {
+                methodIdList.add(entry.getKey());
             }
             if (entry.getValue().getMin() < fastestMethodDuration || fastestMethodDuration == -1.0D) {
                 fastestMethodDuration = entry.getValue().getMin();
@@ -149,9 +160,18 @@ public class MethodInsights {
             }
 
             //Slowest/Fastest Absolute Method Duration
+            List<Short> methodIdList = slowestAbsoluteMethodDurationMap.computeIfAbsent(entry.getValue().getMax(), k -> new ArrayList<>());
+            if (!methodIdList.contains(entry.getKey())) {
+                methodIdList.add(entry.getKey());
+            }
             if (entry.getValue().getMax() > slowestMethodDuration || slowestMethodDuration == -1.0D) {
                 slowestMethodDuration = entry.getValue().getMax();
                 slowestAbsoluteMethodDurationMethodId = entry.getKey();
+            }
+
+            methodIdList = fastestAbsoluteMethodDurationMap.computeIfAbsent(entry.getValue().getMin(), k -> new ArrayList<>());
+            if (!methodIdList.contains(entry.getKey())) {
+                methodIdList.add(entry.getKey());
             }
             if (entry.getValue().getMin() < fastestMethodDuration || fastestMethodDuration == -1.0D) {
                 fastestMethodDuration = entry.getValue().getMin();
@@ -290,6 +310,40 @@ public class MethodInsights {
 
     public short getLongestTotalLivedAbsoluteMethodId() {
         return longestTotalLivedAbsoluteMethodId;
+    }
+
+    public List<Short> getSlowestRelativeMethodIdList() {
+        List<Short> returnMethodIdList = new ArrayList<>();
+        NavigableMap<Double, List<Short>> navigableMap = slowestRelativeMethodDurationMap.descendingMap();
+        for (Map.Entry<Double, List<Short>> entry: navigableMap.entrySet()) {
+            returnMethodIdList.addAll(entry.getValue());
+        }
+        return returnMethodIdList;
+    }
+
+    public List<Short> getFastestRelativeMethodIdList() {
+        List<Short> returnMethodIdList = new ArrayList<>();
+        for (Map.Entry<Double, List<Short>> entry: fastestRelativeMethodDurationMap.entrySet()) {
+            returnMethodIdList.addAll(entry.getValue());
+        }
+        return returnMethodIdList;
+    }
+
+    public List<Short> getSlowestAbsoluteMethodIdList() {
+        List<Short> returnMethodIdList = new ArrayList<>();
+        NavigableMap<Double, List<Short>> navigableMap = slowestAbsoluteMethodDurationMap.descendingMap();
+        for (Map.Entry<Double, List<Short>> entry: navigableMap.entrySet()) {
+            returnMethodIdList.addAll(entry.getValue());
+        }
+        return returnMethodIdList;
+    }
+
+    public List<Short> getFastestAbsoluteMethodIdList() {
+        List<Short> returnMethodIdList = new ArrayList<>();
+        for (Map.Entry<Double, List<Short>> entry: fastestAbsoluteMethodDurationMap.entrySet()) {
+            returnMethodIdList.addAll(entry.getValue());
+        }
+        return returnMethodIdList;
     }
 
 }
