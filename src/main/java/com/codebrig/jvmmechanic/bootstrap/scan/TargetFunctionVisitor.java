@@ -4,12 +4,21 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * todo: this
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
 public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> {
+
+    private static final ExecutorService executorService = Executors.newCachedThreadPool();
+    static void shutdownExecutorService() {
+        executorService.shutdown();
+    }
 
     private final String qualifiedClassName;
     private final RecursiveMethodExplorer methodExplorer;
@@ -54,8 +63,16 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
                 && !methodExplorer.getVisitedFunctionSet().contains(functionSignature)
                 && !methodExplorer.getExcludeFunctionSet().contains(functionSignature)) {
             methodExplorer.getVisitedFunctionSet().add(functionSignature);
-            System.out.println("Exploring method: " + functionSignature);
-            methodDeclaration.accept(new MethodCallResolver(methodExplorer), javaParserFacade);
+
+            //explore method
+            try {
+                executorService.submit(() -> {
+                    System.out.println("Exploring method: " + functionSignature);
+                    methodDeclaration.accept(new MethodCallResolver(methodExplorer), javaParserFacade);
+                }).get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }
     }
 

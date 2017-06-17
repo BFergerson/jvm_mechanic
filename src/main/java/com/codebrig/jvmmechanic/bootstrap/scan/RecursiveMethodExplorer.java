@@ -70,6 +70,7 @@ public class RecursiveMethodExplorer {
                     cu.accept(new TargetFunctionVisitor(qualifiedClassName.toString(), this), javaParserFacade);
                 }
             }
+            TargetFunctionVisitor.shutdownExecutorService();
         }
     }
 
