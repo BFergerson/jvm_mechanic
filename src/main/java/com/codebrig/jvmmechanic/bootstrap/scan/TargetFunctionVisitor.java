@@ -2,7 +2,7 @@ package com.codebrig.jvmmechanic.bootstrap.scan;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 
 /**
  * todo: this
@@ -24,7 +24,7 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
         super.visit(methodDeclaration, javaParserFacade);
 
         String functionSignature = ScanUtils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
-        boolean monitor = false;
+        boolean monitor = methodExplorer.getTargetPackageSet().isEmpty();
         for (String packageName : methodExplorer.getTargetPackageSet()) {
             if (functionSignature.startsWith(packageName)) {
                 monitor = true;

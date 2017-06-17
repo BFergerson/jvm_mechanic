@@ -4,13 +4,13 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.codebrig.jvmmechanic.bootstrap.rule.MechanicRuleGenerator;
-import com.codebrig.jvmmechanic.bootstrap.scan.ExtendedJavaParserTypeSolver;
 import com.codebrig.jvmmechanic.bootstrap.scan.RecursiveMethodExplorer;
 import com.github.javaparser.ParseException;
-import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
-import me.tomassetti.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import me.tomassetti.symbolsolver.resolution.typesolvers.JarTypeSolver;
-import me.tomassetti.symbolsolver.resolution.typesolvers.JreTypeSolver;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class BootstrapCLI {
 
-    @Parameter(names = "-source_package", description = "Package(s) of Java source code to be used for type solving")
+    @Parameter(names = "-source_package", description = "Package(s) of Java source code to be used for type solving (Default: accept all)")
     private List<String> sourcePackageList;
 
     @Parameter(names = "-exclude_package", description = "Package(s) of Java source code to be excluded")
@@ -84,11 +84,7 @@ public class BootstrapCLI {
             System.exit(-1);
         }
 
-        if (cli.sourcePackageList == null || cli.sourcePackageList.isEmpty()) {
-            //invalid
-            System.out.println("Missing source code packages! Use -help to view valid arguments.");
-            System.exit(-1);
-        } else if ((cli.sourceDirectoryList == null || cli.sourceDirectoryList.isEmpty())
+        if ((cli.sourceDirectoryList == null || cli.sourceDirectoryList.isEmpty())
                 && (cli.scanDirectoryList == null || cli.scanDirectoryList.isEmpty())) {
             //invalid
             System.out.println("Missing source code directories or scan directories! Use -help to view valid arguments.");
@@ -96,7 +92,7 @@ public class BootstrapCLI {
         }
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
-        typeSolver.add(new JreTypeSolver());
+        typeSolver.add(new ReflectionTypeSolver());
 
         //add java libraries (.jar)
         if (cli.projectLibraryList != null && !cli.projectLibraryList.isEmpty()) {
@@ -123,11 +119,11 @@ public class BootstrapCLI {
                     tempAddList.add(sourceDirectory);
                 }
                 if (srcTestJavaDir.exists()) {
-                    typeSolver.add(new ExtendedJavaParserTypeSolver(srcTestJavaDir));
+                    typeSolver.add(new JavaParserTypeSolver(srcTestJavaDir));
                     System.out.println("Added direct source code directory (testing classes): " + srcTestJavaDir.getAbsolutePath());
                 }
 
-                typeSolver.add(new ExtendedJavaParserTypeSolver(new File(sourceDirectory)));
+                typeSolver.add(new JavaParserTypeSolver(new File(sourceDirectory)));
                 System.out.println("Added direct source code directory: " + sourceDirectory);
             }
             cli.sourceDirectoryList.removeAll(tempRemoveList);
@@ -144,12 +140,15 @@ public class BootstrapCLI {
                 }
                 for (File file : queue) {
                     cli.sourceDirectoryList.add(file.getAbsolutePath());
-                    typeSolver.add(new ExtendedJavaParserTypeSolver(new File(file.getAbsolutePath())));
+                    typeSolver.add(new JavaParserTypeSolver(new File(file.getAbsolutePath())));
                     System.out.println("Added scanned source code directory: " + file.getAbsolutePath());
                 }
             }
         }
 
+        if (cli.sourcePackageList == null) {
+            cli.sourcePackageList = new ArrayList<>();
+        }
         if (cli.excludePackageList == null) {
             cli.excludePackageList = new ArrayList<>();
         }

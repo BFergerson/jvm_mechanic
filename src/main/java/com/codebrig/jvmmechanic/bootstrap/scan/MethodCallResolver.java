@@ -2,22 +2,26 @@ package com.codebrig.jvmmechanic.bootstrap.scan;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
+import com.github.javaparser.symbolsolver.model.declarations.MethodDeclaration;
+import com.github.javaparser.symbolsolver.model.methods.MethodUsage;
+import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
+import com.github.javaparser.symbolsolver.model.typesystem.ReferenceType;
+import com.github.javaparser.symbolsolver.model.typesystem.Type;
 import com.google.common.collect.Sets;
-import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
-import me.tomassetti.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
-import me.tomassetti.symbolsolver.model.declarations.MethodDeclaration;
-import me.tomassetti.symbolsolver.model.invokations.MethodUsage;
-import me.tomassetti.symbolsolver.model.resolution.SymbolReference;
-import me.tomassetti.symbolsolver.model.typesystem.ReferenceTypeUsage;
-import me.tomassetti.symbolsolver.model.typesystem.TypeUsage;
 
 import java.util.Set;
 
 /**
- * todo: this
+ * Given a method call expression this resolver attempts to determine the
+ * invoked method's source code declaration.
+ *
  * todo: given abstract/interface find implementations
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
@@ -26,7 +30,7 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
     private final RecursiveMethodExplorer methodExplorer;
 
-    public MethodCallResolver(RecursiveMethodExplorer methodExplorer) {
+    MethodCallResolver(RecursiveMethodExplorer methodExplorer) {
         this.methodExplorer = methodExplorer;
     }
 
@@ -35,12 +39,12 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
         super.visit(objectCreation, javaParserFacade);
 
         try {
-            TypeUsage typeUsage = javaParserFacade.getType(objectCreation);
-            if (typeUsage instanceof ReferenceTypeUsage) {
-                ReferenceTypeUsage referenceTypeUsage = (ReferenceTypeUsage) typeUsage;
+            Type typeUsage = javaParserFacade.getType(objectCreation);
+            if (typeUsage instanceof ReferenceType) {
+                ReferenceType referenceTypeUsage = (ReferenceType) typeUsage;
                 String qualifiedName = referenceTypeUsage.getTypeDeclaration().getQualifiedName();
 
-                boolean monitor = false;
+                boolean monitor = methodExplorer.getTargetPackageSet().isEmpty();
                 for (String packageName : methodExplorer.getTargetPackageSet()) {
                     if (qualifiedName.startsWith(packageName)) {
                         monitor = true;
@@ -52,13 +56,8 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
                     System.out.println("Will monitor constructor(s) of class: " + qualifiedName);
                 }
             }
-            //visitedConstructorSet.add(o2.toString());
-//            MethodUsage methodUsage = javaParserFacade.solveMethodAsUsage(objectCreation);
-//            if (methodUsage == null || !(methodUsage.getDeclaration() instanceof JavaParserMethodDeclaration)) {
-//                return;
-//            }
         } catch(Exception ex) {
-            String objectType = objectCreation.getType().toStringWithoutComments();
+            String objectType = objectCreation.getType().toString(new PrettyPrinterConfiguration().setPrintComments(false));
             if (!methodExplorer.getFailedConstructorSet().contains(objectType)) {
                 methodExplorer.getFailedConstructorSet().add(objectType);
                 //System.err.println("Unable monitor constructor(s): " + objectType);
@@ -77,7 +76,7 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
             methodCallExpr.accept(this, javaParserFacade);
         }
 
-        System.out.println("Resolving method call: " + methodCall.toStringWithoutComments());
+        System.out.println("Resolving method call: " + methodCall.toString(new PrettyPrinterConfiguration().setPrintComments(false)));
         try {
             com.github.javaparser.ast.body.MethodDeclaration methodDeclaration;
             try {
@@ -98,14 +97,18 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
             Node tmp = methodDeclaration;
             CompilationUnit compilationUnit = null;
-            while (compilationUnit == null) {
-                tmp = tmp.getParentNode();
+            while (compilationUnit == null && tmp != null) {
+                tmp = tmp.getParentNode().orElse(null);
                 if (tmp instanceof CompilationUnit) {
                     compilationUnit = (CompilationUnit) tmp;
                 }
             }
 
-            String qualifiedClassName = compilationUnit.getPackage().getName().toStringWithoutComments() + "." + compilationUnit.getTypes().get(0).getName();
+            String packageName = "";
+            if (compilationUnit.getPackageDeclaration().isPresent()) {
+                packageName = compilationUnit.getPackageDeclaration().get().getName().toString(new PrettyPrinterConfiguration().setPrintComments(false));
+            }
+            String qualifiedClassName = packageName + "." + compilationUnit.getTypes().get(0).getName();
             String functionSignature = ScanUtils.getFunctionSignature(qualifiedClassName, methodDeclaration).toString();
             if (!methodExplorer.getVisitedFunctionSet().contains(functionSignature)) {
                 methodExplorer.getTargetFunctionSet().add(functionSignature);
@@ -134,8 +137,8 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
 
             String functionSignature = getFunctionSignatureFromMethodCall(methodCall, javaParserFacade).toString();
             if (!methodExplorer.getFailedFunctionSet().contains(functionSignature)) {
-                methodExplorer.getFailedFunctionSet().add(methodCall.toStringWithoutComments());
-//                System.err.println("Unable to resolve method call: " + methodCall.toStringWithoutComments());
+                methodExplorer.getFailedFunctionSet().add(methodCall.toString(new PrettyPrinterConfiguration().setPrintComments(false)));
+//                System.err.println("Unable to resolve method call: " + methodCall.toString(new PrettyPrinterConfiguration().setPrintComments(false)));
 //                System.err.println("Failed rule injection on method: " + functionSignature);
 //                System.err.println("Reason: " + reason);
 //                System.err.println("If you want to monitor this method please add manually with -target_function argument!");
@@ -143,30 +146,31 @@ public class MethodCallResolver extends VoidVisitorAdapter<JavaParserFacade> {
         }
     }
 
-
-
     private StringBuilder getFunctionSignatureFromMethodCall(MethodCallExpr methodCall, JavaParserFacade javaParserFacade) {
         StringBuilder functionSignature = new StringBuilder();
         if (methodCall.getScope() != null) {
-            functionSignature.append(methodCall.getScope().toStringWithoutComments()).append(".");
+            functionSignature.append(methodCall.getScope().orElse(null).toString(new PrettyPrinterConfiguration().setPrintComments(false))).append(".");
         }
         functionSignature.append(methodCall.getName()).append("(");
-//        for (Expression arg : methodCall.getArgs()) {
-//            try {
-//                TypeUsage type = javaParserFacade.getType(arg);
-//                String s = type.describe();
-//
-//                System.out.println(type);
-//            } catch(Exception ex) {
-//                ex.printStackTrace();
-//            }
-//        }
+        boolean endsWithComma = false;
+        for (Expression arg : methodCall.getArguments()) {
+            try {
+                Type type = javaParserFacade.getType(arg);
+                functionSignature.append(type.describe()).append(",");
+                endsWithComma = true;
+            } catch(Exception ex) {
+                //ex.printStackTrace();
+            }
+        }
+        if (endsWithComma) {
+            functionSignature.substring(0, functionSignature.length() - 2);
+        }
         functionSignature.append(")");
         return functionSignature;
     }
 
     private static Set<MethodCallExpr> getInnerMethodCalls(Node node, Set<MethodCallExpr> methodCallExprList) {
-        for (Node childNode : node.getChildrenNodes()) {
+        for (Node childNode : node.getChildNodes()) {
             if (childNode instanceof MethodCallExpr) {
                 methodCallExprList.add((MethodCallExpr) childNode);
             }
