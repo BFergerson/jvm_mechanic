@@ -247,7 +247,7 @@ window.chartColors = {
 //
 // GLOBALS
 //
-var TOP_RESULTS_COUNT = 25
+var TOP_RESULTS_COUNT = 20
 var sessionAccountedForCalcMap = {}
 var sessionAccountedFor = {}
 var sessionAccountedForEventCount = {}
@@ -390,7 +390,9 @@ function updatePlaybackCharts (startTime, endTime, playbackData) {
       newColor = getRandomColor()
     }
 
-    methodColorMap[methodId] = newColor
+    if (!methodColorMap[methodId]) {
+      methodColorMap[methodId] = newColor
+    }
     i++
   })
 
@@ -545,7 +547,10 @@ function updatePerMethodCharts (playbackData) {
     methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-left: 5px; padding-right: 5px"><div class="panel panel-default">'
 
     var methodNameList = getClassMethodParamList(methodNameMap[methodId])
-    var titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
+    var titleHtml = '<b>Class: </b>N/A<br/><b>Method: </b>N/A<br/><b>Params: </b>N/A'
+    if (methodNameList) {
+      titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
+    }
     methodStatsHtml += '<div class="panel-heading" style="white-space: nowrap; overflow: hidden;">'
     methodStatsHtml += '<div class="panel panel-default panel-body" style="background-color: ' + methodColorMap[methodId] + '; padding: 0px; padding-bottom: 25px; margin-top: 5px; margin-bottom: 10px"></div>'
     methodStatsHtml += titleHtml + '</div>'
@@ -652,23 +657,17 @@ function updateAverageMethodDurationPolarChart (averageDurationMap, playbackData
     averageMethodDurationPolarChartConfig.data.datasets.push(newDataset)
   }
 
-  //only show slowest methods
-  var visibleMonitorMethodIdMap = {}
+  //show top slowest average methods
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.slowestRelativeMethodIdList.forEach(function (methodId) {
+  playbackData.methodInsights.averageSlowestRelativeMethodIdList.forEach(function (methodId) {
     if (topResults > 0) {
-      visibleMonitorMethodIdMap[methodId] = 1
       topResults--
-    }
-  })
-
-  Object.keys(averageDurationMap).forEach(function (methodId) {
-    if (visibleMonitorMethodIdMap[methodId]) {
-      var averageDuration = averageDurationMap[methodId]
-      //console.log("Method id: " + methodId + "; Avg (relative): " + averageDuration);
       window.averageMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
       newDataset.backgroundColor.push(methodColorMap[methodId])
+
+      var averageDuration = averageDurationMap[methodId]
       newDataset.data.push(averageDuration)
+      //console.log("Method id: " + methodId + "; Avg (relative): " + averageDuration);
     }
   })
 
@@ -689,23 +688,17 @@ function updateAbsoluteAverageMethodDurationPolarChart (averageDurationMap, play
     averageAbsoluteMethodDurationPolarChartConfig.data.datasets.push(newDataset)
   }
 
-  //only show slowest methods
-  var visibleMonitorMethodIdMap = {}
+  //show top slowest average methods
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.slowestAbsoluteMethodIdList.forEach(function (methodId) {
+  playbackData.methodInsights.averageSlowestAbsoluteMethodIdList.forEach(function (methodId) {
     if (topResults > 0) {
-      visibleMonitorMethodIdMap[methodId] = 1
       topResults--
-    }
-  })
-
-  Object.keys(averageDurationMap).forEach(function (methodId) {
-    if (visibleMonitorMethodIdMap[methodId]) {
-      var averageDuration = averageDurationMap[methodId]
-      //console.log("Method id: " + methodId + "; Avg (relative): " + averageDuration);
       window.averageAbsoluteMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
       newDataset.backgroundColor.push(methodColorMap[methodId])
+
+      var averageDuration = averageDurationMap[methodId]
       newDataset.data.push(averageDuration)
+      //console.log("Method id: " + methodId + "; Avg (relative): " + averageDuration);
     }
   })
 
@@ -721,10 +714,19 @@ function batchUpdateRelativeLineChart (methodRelativeDurationMap, playbackData) 
   //only show slowest methods
   var visibleMonitorMethodIdMap = {}
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.slowestRelativeMethodIdList.forEach(function (methodId) {
+  playbackData.methodInsights.overallSlowestRelativeMethodIdList.forEach(function (methodId) {
     if (topResults > 0) {
       visibleMonitorMethodIdMap[methodId] = 1
       topResults--
+
+      //method doesn't exist on chart; make new dataset
+      var newDataset = {
+        label: methodNameMap[methodId],
+        backgroundColor: methodColorMap[methodId],
+        borderColor: methodColorMap[methodId],
+        fill: false
+      }
+      relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset)
     }
   })
 
@@ -750,27 +752,16 @@ function batchUpdateRelativeLineChart (methodRelativeDurationMap, playbackData) 
     Object.keys(map).forEach(function (methodId) {
       if (visibleMonitorMethodIdMap[methodId]) {
         var relativeDurationArr = map[methodId]
-
-        var addedData = false
         relativeMethodRuntimeDurationConfig.data.datasets.forEach(function (dataset) {
           if (dataset.label === methodNameMap[methodId]) {
             //method exists on chart; add to existing dataset
-            dataset.data = dataset.data.concat(relativeDurationArr)
-            addedData = true
+            if (dataset.data) {
+              dataset.data = dataset.data.concat(relativeDurationArr)
+            } else {
+              dataset.data = relativeDurationArr
+            }
           }
         })
-
-        if (addedData === false) {
-          //method doesn't exist on chart; make new dataset
-          var newDataset = {
-            label: methodNameMap[methodId],
-            backgroundColor: methodColorMap[methodId],
-            borderColor: methodColorMap[methodId],
-            data: relativeDurationArr,
-            fill: false
-          }
-          relativeMethodRuntimeDurationConfig.data.datasets.push(newDataset)
-        }
       }
     })
   })
@@ -787,7 +778,7 @@ function batchUpdateAbsoluteLineChart (methodAbsoluteDurationMap, playbackData) 
   //only show slowest methods
   var visibleMonitorMethodIdMap = {}
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.slowestAbsoluteMethodIdList.forEach(function (methodId) {
+  playbackData.methodInsights.overallSlowestAbsoluteMethodIdList.forEach(function (methodId) {
     if (topResults > 0) {
       visibleMonitorMethodIdMap[methodId] = 1
       topResults--

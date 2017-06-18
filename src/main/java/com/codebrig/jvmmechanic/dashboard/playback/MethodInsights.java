@@ -28,6 +28,8 @@ public class MethodInsights {
     private short longestTotalLivedRelativeMethodId = -1;
     private TreeMap<Double, List<Short>> slowestRelativeMethodDurationMap = new TreeMap<>();
     private TreeMap<Double, List<Short>> fastestRelativeMethodDurationMap = new TreeMap<>();
+    private TreeMap<Double, List<Short>> averageRelativeMethodDurationMap = new TreeMap<>();
+    private TreeMap<Double, List<Short>> overallRelativeMethodDurationMap = new TreeMap<>();
 
     //absolute
     private short slowestAbsoluteMethodDurationMethodId = -1;
@@ -42,6 +44,8 @@ public class MethodInsights {
     private short longestTotalLivedAbsoluteMethodId = -1;
     private TreeMap<Double, List<Short>> slowestAbsoluteMethodDurationMap = new TreeMap<>();
     private TreeMap<Double, List<Short>> fastestAbsoluteMethodDurationMap = new TreeMap<>();
+    private TreeMap<Double, List<Short>> averageAbsoluteMethodDurationMap = new TreeMap<>();
+    private TreeMap<Double, List<Short>> overallAbsoluteMethodDurationMap = new TreeMap<>();
 
     MethodInsights(Map<Short, SummaryStatistics> relativeSummaryStatisticsMap,
                           Map<Short, SummaryStatistics> absoluteSummaryStatisticsMap,
@@ -77,24 +81,22 @@ public class MethodInsights {
 
             //Slowest/Fastest Relative Method Duration
             List<Short> methodIdList = slowestRelativeMethodDurationMap.computeIfAbsent(entry.getValue().getMax(), k -> new ArrayList<>());
-            if (!methodIdList.contains(entry.getKey())) {
-                methodIdList.add(entry.getKey());
-            }
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getMax() > slowestMethodDuration || slowestMethodDuration == -1.0D) {
                 slowestMethodDuration = entry.getValue().getMax();
                 slowestRelativeMethodDurationMethodId = entry.getKey();
             }
 
             methodIdList = fastestRelativeMethodDurationMap.computeIfAbsent(entry.getValue().getMin(), k -> new ArrayList<>());
-            if (!methodIdList.contains(entry.getKey())) {
-                methodIdList.add(entry.getKey());
-            }
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getMin() < fastestMethodDuration || fastestMethodDuration == -1.0D) {
                 fastestMethodDuration = entry.getValue().getMin();
                 fastestRelativeMethodDurationMethodId = entry.getKey();
             }
 
             //Slowest/Fastest Average Relative Method Duration
+            methodIdList = averageRelativeMethodDurationMap.computeIfAbsent(entry.getValue().getMean(), k -> new ArrayList<>());
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getMean() < fastestAverageMethodDuration || fastestAverageMethodDuration == -1.0D) {
                 fastestAverageMethodDuration = entry.getValue().getMean();
                 fastestAverageRelativeMethodDurationMethodId = entry.getKey();
@@ -125,6 +127,8 @@ public class MethodInsights {
             }
 
             //Shortest/Longest Total Lived Relative Method
+            methodIdList = overallRelativeMethodDurationMap.computeIfAbsent(entry.getValue().getSum(), k -> new ArrayList<>());
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getSum() > longestTotalLivedDuration || longestTotalLivedDuration == -1.0D) {
                 longestTotalLivedDuration = entry.getValue().getSum();
                 longestTotalLivedRelativeMethodId = entry.getKey();
@@ -161,24 +165,22 @@ public class MethodInsights {
 
             //Slowest/Fastest Absolute Method Duration
             List<Short> methodIdList = slowestAbsoluteMethodDurationMap.computeIfAbsent(entry.getValue().getMax(), k -> new ArrayList<>());
-            if (!methodIdList.contains(entry.getKey())) {
-                methodIdList.add(entry.getKey());
-            }
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getMax() > slowestMethodDuration || slowestMethodDuration == -1.0D) {
                 slowestMethodDuration = entry.getValue().getMax();
                 slowestAbsoluteMethodDurationMethodId = entry.getKey();
             }
 
             methodIdList = fastestAbsoluteMethodDurationMap.computeIfAbsent(entry.getValue().getMin(), k -> new ArrayList<>());
-            if (!methodIdList.contains(entry.getKey())) {
-                methodIdList.add(entry.getKey());
-            }
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getMin() < fastestMethodDuration || fastestMethodDuration == -1.0D) {
                 fastestMethodDuration = entry.getValue().getMin();
                 fastestAbsoluteMethodDurationMethodId = entry.getKey();
             }
 
             //Slowest/Fastest Average Absolute Method Duration
+            methodIdList = averageAbsoluteMethodDurationMap.computeIfAbsent(entry.getValue().getMean(), k -> new ArrayList<>());
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getMean() < fastestAverageMethodDuration || fastestAverageMethodDuration == -1.0D) {
                 fastestAverageMethodDuration = entry.getValue().getMean();
                 fastestAverageAbsoluteMethodDurationMethodId = entry.getKey();
@@ -209,6 +211,8 @@ public class MethodInsights {
             }
 
             //Shortest/Longest Total Lived Absolute Method
+            methodIdList = overallAbsoluteMethodDurationMap.computeIfAbsent(entry.getValue().getSum(), k -> new ArrayList<>());
+            methodIdList.add(entry.getKey());
             if (entry.getValue().getSum() > longestTotalLivedDuration || longestTotalLivedDuration == -1.0D) {
                 longestTotalLivedDuration = entry.getValue().getSum();
                 longestTotalLivedAbsoluteMethodId = entry.getKey();
@@ -312,36 +316,121 @@ public class MethodInsights {
         return longestTotalLivedAbsoluteMethodId;
     }
 
-    public List<Short> getSlowestRelativeMethodIdList() {
+    public List<Short> getAverageSlowestRelativeMethodIdList() {
+        return getOrderedMethodIdByAverage(averageRelativeMethodDurationMap, true);
+    }
+
+    public List<Short> getAverageFastestRelativeMethodIdList() {
+        return getOrderedMethodIdByAverage(averageRelativeMethodDurationMap, false);
+    }
+
+    public List<Short> getPeakSlowestRelativeMethodIdList() {
+        return getOrderedMethodIdByPeak(slowestRelativeMethodDurationMap, true);
+    }
+
+    public List<Short> getPeakFastestRelativeMethodIdList() {
+        return getOrderedMethodIdByPeak(fastestRelativeMethodDurationMap, false);
+    }
+
+    public List<Short> getOverallSlowestRelativeMethodIdList() {
+        return getOrderedMethodIdByOverall(overallRelativeMethodDurationMap, true);
+    }
+
+    public List<Short> getOverallFastestRelativeMethodIdList() {
+        return getOrderedMethodIdByOverall(overallRelativeMethodDurationMap, false);
+    }
+
+    public List<Short> getAverageSlowestAbsoluteMethodIdList() {
+        return getOrderedMethodIdByAverage(averageAbsoluteMethodDurationMap, true);
+    }
+
+    public List<Short> getAverageFastestAbsoluteMethodIdList() {
+        return getOrderedMethodIdByAverage(averageAbsoluteMethodDurationMap, false);
+    }
+
+    public List<Short> getPeakSlowestAbsoluteMethodIdList() {
+        return getOrderedMethodIdByPeak(slowestAbsoluteMethodDurationMap, true);
+    }
+
+    public List<Short> getPeakFastestAbsoluteMethodIdList() {
+        return getOrderedMethodIdByPeak(fastestAbsoluteMethodDurationMap, false);
+    }
+
+    public List<Short> getOverallSlowestAbsoluteMethodIdList() {
+        return getOrderedMethodIdByOverall(overallAbsoluteMethodDurationMap, true);
+    }
+
+    public List<Short> getOverallFastestAbsoluteMethodIdList() {
+        return getOrderedMethodIdByOverall(overallAbsoluteMethodDurationMap, false);
+    }
+
+    private static List<Short> getOrderedMethodIdByAverage(NavigableMap<Double, List<Short>> navigableMap, boolean byMax) {
+        Map<Short, SummaryStatistics> summaryStatisticsMap = new HashMap<>();
+        for (Map.Entry<Double, List<Short>> entry : navigableMap.entrySet()) {
+            for (short methodId : entry.getValue()) {
+                SummaryStatistics summaryStatistics = summaryStatisticsMap.computeIfAbsent(methodId, k -> new SummaryStatistics());
+                summaryStatistics.addValue(entry.getKey());
+            }
+        }
+
+        List<Map.Entry<Short, SummaryStatistics>> returnOrderList = new ArrayList<>();
+        returnOrderList.addAll(summaryStatisticsMap.entrySet());
+        returnOrderList.sort(Comparator.comparingDouble(o -> o.getValue().getMean()));
+        if (byMax) {
+            Collections.reverse(returnOrderList);
+        }
+
         List<Short> returnMethodIdList = new ArrayList<>();
-        NavigableMap<Double, List<Short>> navigableMap = slowestRelativeMethodDurationMap.descendingMap();
-        for (Map.Entry<Double, List<Short>> entry: navigableMap.entrySet()) {
-            returnMethodIdList.addAll(entry.getValue());
+        for (Map.Entry<Short, SummaryStatistics> entry: returnOrderList) {
+            returnMethodIdList.add(entry.getKey());
         }
         return returnMethodIdList;
     }
 
-    public List<Short> getFastestRelativeMethodIdList() {
+    private static List<Short> getOrderedMethodIdByPeak(NavigableMap<Double, List<Short>> navigableMap, boolean byMax) {
+        Map<Short, SummaryStatistics> summaryStatisticsMap = new HashMap<>();
+        for (Map.Entry<Double, List<Short>> entry : navigableMap.entrySet()) {
+            for (short methodId : entry.getValue()) {
+                SummaryStatistics summaryStatistics = summaryStatisticsMap.computeIfAbsent(methodId, k -> new SummaryStatistics());
+                summaryStatistics.addValue(entry.getKey());
+            }
+        }
+
+        List<Map.Entry<Short, SummaryStatistics>> returnOrderList = new ArrayList<>();
+        returnOrderList.addAll(summaryStatisticsMap.entrySet());
+        if (byMax) {
+            returnOrderList.sort(Comparator.comparingDouble(o -> o.getValue().getMax()));
+            Collections.reverse(returnOrderList);
+        } else {
+            returnOrderList.sort(Comparator.comparingDouble(o -> o.getValue().getMin()));
+        }
+
         List<Short> returnMethodIdList = new ArrayList<>();
-        for (Map.Entry<Double, List<Short>> entry: fastestRelativeMethodDurationMap.entrySet()) {
-            returnMethodIdList.addAll(entry.getValue());
+        for (Map.Entry<Short, SummaryStatistics> entry: returnOrderList) {
+            returnMethodIdList.add(entry.getKey());
         }
         return returnMethodIdList;
     }
 
-    public List<Short> getSlowestAbsoluteMethodIdList() {
-        List<Short> returnMethodIdList = new ArrayList<>();
-        NavigableMap<Double, List<Short>> navigableMap = slowestAbsoluteMethodDurationMap.descendingMap();
-        for (Map.Entry<Double, List<Short>> entry: navigableMap.entrySet()) {
-            returnMethodIdList.addAll(entry.getValue());
+    private static List<Short> getOrderedMethodIdByOverall(NavigableMap<Double, List<Short>> navigableMap, boolean byMax) {
+        Map<Short, SummaryStatistics> summaryStatisticsMap = new HashMap<>();
+        for (Map.Entry<Double, List<Short>> entry : navigableMap.entrySet()) {
+            for (short methodId : entry.getValue()) {
+                SummaryStatistics summaryStatistics = summaryStatisticsMap.computeIfAbsent(methodId, k -> new SummaryStatistics());
+                summaryStatistics.addValue(entry.getKey());
+            }
         }
-        return returnMethodIdList;
-    }
 
-    public List<Short> getFastestAbsoluteMethodIdList() {
+        List<Map.Entry<Short, SummaryStatistics>> returnOrderList = new ArrayList<>();
+        returnOrderList.addAll(summaryStatisticsMap.entrySet());
+        returnOrderList.sort(Comparator.comparingDouble(o -> o.getValue().getSum()));
+        if (byMax) {
+            Collections.reverse(returnOrderList);
+        }
+
         List<Short> returnMethodIdList = new ArrayList<>();
-        for (Map.Entry<Double, List<Short>> entry: fastestAbsoluteMethodDurationMap.entrySet()) {
-            returnMethodIdList.addAll(entry.getValue());
+        for (Map.Entry<Short, SummaryStatistics> entry: returnOrderList) {
+            returnMethodIdList.add(entry.getKey());
         }
         return returnMethodIdList;
     }
