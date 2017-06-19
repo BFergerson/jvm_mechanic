@@ -247,7 +247,7 @@ window.chartColors = {
 //
 // GLOBALS
 //
-var TOP_RESULTS_COUNT = 20
+var TOP_RESULTS_COUNT = viewMethodResults
 var sessionAccountedForCalcMap = {}
 var sessionAccountedFor = {}
 var sessionAccountedForEventCount = {}
@@ -497,147 +497,140 @@ function updateApplicationThroughputLineChart (startTime, endTime, applicationTh
 }
 
 function updatePerMethodCharts (playbackData) {
-  //sort by longest lived
-  var sortedList = []
-  Object.keys(playbackData.relativeMethodDurationStatisticsMap).forEach(function (methodId) {
-    var totalLive = playbackData.relativeMethodDurationStatisticsMap[methodId].sum
-    sortedList.push([methodId, totalLive])
-  })
-  sortedList.sort(function (a, b) {
-    return b[1] - a[1]
-  })
-
+  //show top slowest average methods
+  var topResults = TOP_RESULTS_COUNT
   var methodStatsHtml = ''
   var id = 0
-  sortedList.forEach(function (listArr) {
-    var methodId = listArr[0]
+  getMethodIdMapByStyle(playbackData, true).forEach(function (methodId) {
+    if (topResults > 0) {
+      topResults--
 
-    var relHtml = ''
-    relHtml += 'Minimum: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].min) + '<br/>'
-    relHtml += 'Maximum: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].max) + '<br/>'
-    relHtml += 'Average: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].mean) + '<br/>-<br/>'
-    relHtml += 'Deviation: ' + roundNumber(playbackData.relativeMethodDurationStatisticsMap[methodId].standardDeviation, 2) + '<br/>'
-    relHtml += 'Variance: ' + roundNumber(playbackData.relativeMethodDurationStatisticsMap[methodId].variance, 2) + '<br/>'
-    relHtml += 'Total: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].sum) + '<br/>'
+      var relHtml = ''
+      relHtml += 'Minimum: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].min) + '<br/>'
+      relHtml += 'Maximum: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].max) + '<br/>'
+      relHtml += 'Average: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].mean) + '<br/>'
+      relHtml += 'Total: ' + getPrettyTime(playbackData.relativeMethodDurationStatisticsMap[methodId].sum) + '<br/>-<br/>'
+      relHtml += 'Deviation: ' + roundNumber(playbackData.relativeMethodDurationStatisticsMap[methodId].standardDeviation, 2) + '<br/>'
+      relHtml += 'Variance: ' + roundNumber(playbackData.relativeMethodDurationStatisticsMap[methodId].variance, 2) + '<br/>'
 
-    var absHtml = ''
-    absHtml += 'Minimum: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].min) + '<br/>'
-    absHtml += 'Maximum: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].max) + '<br/>'
-    absHtml += 'Average: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].mean) + '<br/>-<br/>'
-    absHtml += 'Deviation: ' + roundNumber(playbackData.absoluteMethodDurationStatisticsMap[methodId].standardDeviation, 2) + '<br/>'
-    absHtml += 'Variance: ' + roundNumber(playbackData.absoluteMethodDurationStatisticsMap[methodId].variance, 2) + '<br/>'
-    absHtml += 'Total: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].sum) + '<br/>'
+      var absHtml = ''
+      absHtml += 'Minimum: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].min) + '<br/>'
+      absHtml += 'Maximum: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].max) + '<br/>'
+      absHtml += 'Average: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].mean) + '<br/>'
+      absHtml += 'Total: ' + getPrettyTime(playbackData.absoluteMethodDurationStatisticsMap[methodId].sum) + '<br/>-<br/>'
+      absHtml += 'Deviation: ' + roundNumber(playbackData.absoluteMethodDurationStatisticsMap[methodId].standardDeviation, 2) + '<br/>'
+      absHtml += 'Variance: ' + roundNumber(playbackData.absoluteMethodDurationStatisticsMap[methodId].variance, 2) + '<br/>'
 
-    //method frequency
-    var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(earliestSessionTimestamp))
-    var hours = duration.asHours()
-    var minutes = duration.asMinutes()
-    var seconds = duration.asSeconds()
-    var invocationCount = playbackData.methodInvocationCountMap[methodId]
+      //method frequency
+      var duration = moment.duration(moment(lastSessionTimestamp, 'x').diff(earliestSessionTimestamp))
+      var hours = duration.asHours()
+      var minutes = duration.asMinutes()
+      var seconds = duration.asSeconds()
+      var invocationCount = playbackData.methodInvocationCountMap[methodId]
 
-    var methodFrequency = ''
-    if (hours > 2 && ((invocationCount / hours) > 100)) {
-      methodFrequency = (invocationCount / hours) + '/hour'
-    } else if (minutes > 30 && ((invocationCount / minutes) > 100)) {
-      methodFrequency = Math.ceil(invocationCount / minutes) + '/min'
-    } else if (seconds > 0) {
-      methodFrequency = Math.ceil(invocationCount / seconds) + '/sec'
-    }
+      var methodFrequency = ''
+      if (hours > 2 && ((invocationCount / hours) > 100)) {
+        methodFrequency = (invocationCount / hours) + '/hour'
+      } else if (minutes > 30 && ((invocationCount / minutes) > 100)) {
+        methodFrequency = Math.ceil(invocationCount / minutes) + '/min'
+      } else if (seconds > 0) {
+        methodFrequency = Math.ceil(invocationCount / seconds) + '/sec'
+      }
 
-    methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-left: 5px; padding-right: 5px"><div class="panel panel-default">'
+      methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-left: 5px; padding-right: 5px"><div class="panel panel-default">'
 
-    var methodNameList = getClassMethodParamList(methodNameMap[methodId])
-    var titleHtml = '<b>Class: </b>N/A<br/><b>Method: </b>N/A<br/><b>Params: </b>N/A'
-    if (methodNameList) {
-      titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
-    }
-    methodStatsHtml += '<div class="panel-heading" style="white-space: nowrap; overflow: hidden;">'
-    methodStatsHtml += '<div class="panel panel-default panel-body" style="background-color: ' + methodColorMap[methodId] + '; padding: 0px; padding-bottom: 25px; margin-top: 5px; margin-bottom: 10px"></div>'
-    methodStatsHtml += titleHtml + '</div>'
+      var methodNameList = getClassMethodParamList(methodNameMap[methodId])
+      var titleHtml = '<b>Class: </b>N/A<br/><b>Method: </b>N/A<br/><b>Params: </b>N/A'
+      if (methodNameList) {
+        titleHtml = '<b>Class: </b>' + methodNameList[0] + '<br/><b>Method: </b>' + methodNameList[1] + '<br/><b>Params: </b>' + methodNameList[2]
+      }
+      methodStatsHtml += '<div class="panel-heading" style="white-space: nowrap; overflow: hidden;">'
+      methodStatsHtml += '<div class="panel panel-default panel-body" style="background-color: ' + methodColorMap[methodId] + '; padding: 0px; padding-bottom: 25px; margin-top: 5px; margin-bottom: 10px"></div>'
+      methodStatsHtml += titleHtml + '</div>'
 
-    //method insights
-    if (monitorMode === 'playback') {
+      //method insights
+      if (monitorMode === 'playback') {
         var usedInsightCount = 0
         methodStatsHtml += '<div class="panel panel-default panel-body" style="margin-bottom: 0px"><b>Insights:</b><ul>'
 
         var constantMethod = false
         playbackData.methodInsights.constantMethodIdSet.forEach(function (constantMethodId) {
-            if (methodId == constantMethodId) {
-                constantMethod = true
-            }
+          if (methodId == constantMethodId) {
+            constantMethod = true
+          }
         })
         if (constantMethod) {
-            methodStatsHtml += '<li style="color: blue">Constant Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: blue">Constant Method</li>'
+          usedInsightCount++
         }
 
         if (playbackData.methodInsights.highestExecutionCountMethodId == methodId) {
-            methodStatsHtml += '<li>Highest Execution Count</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li>Highest Execution Count</li>'
+          usedInsightCount++
         } else if (playbackData.methodInsights.lowestExecutionCountMethodId == methodId) {
-            methodStatsHtml += '<li>Lowest Execution Count</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li>Lowest Execution Count</li>'
+          usedInsightCount++
         }
 
         //relative
         if (playbackData.methodInsights.fastestRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: green">Fastest Method Execution</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: green">Fastest Method Execution</li>'
+          usedInsightCount++
         } else if (playbackData.methodInsights.slowestRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: red">Slowest Method Execution</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: red">Slowest Method Execution</li>'
+          usedInsightCount++
         }
         if (playbackData.methodInsights.fastestAverageRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: green">Fastest Average Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: green">Fastest Average Method</li>'
+          usedInsightCount++
         } else if (playbackData.methodInsights.slowestAverageRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: red">Slowest Average Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: red">Slowest Average Method</li>'
+          usedInsightCount++
         }
         if (playbackData.methodInsights.mostVolatileRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: red">Most Volatile Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: red">Most Volatile Method</li>'
+          usedInsightCount++
         } else if (playbackData.methodInsights.leastVolatileRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: green">Least Volatile Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: green">Least Volatile Method</li>'
+          usedInsightCount++
         }
         if (playbackData.methodInsights.mostVariantRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: red">Most Variant Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: red">Most Variant Method</li>'
+          usedInsightCount++
         } else if (playbackData.methodInsights.leastVariantRelativeMethodDurationMethodId == methodId) {
-            methodStatsHtml += '<li style="color: green">Least Variant Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li style="color: green">Least Variant Method</li>'
+          usedInsightCount++
         }
         if (playbackData.methodInsights.longestTotalLivedRelativeMethodId == methodId) {
-            methodStatsHtml += '<li>Longest Lived Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li>Longest Lived Method</li>'
+          usedInsightCount++
         } else if (playbackData.methodInsights.shortestTotalLivedRelativeMethodId == methodId) {
-            methodStatsHtml += '<li>Shortest Lived Method</li>'
-            usedInsightCount++
+          methodStatsHtml += '<li>Shortest Lived Method</li>'
+          usedInsightCount++
         }
 
         var usedBreakerCount = usedInsightCount
         while (usedBreakerCount < 7) {
-            methodStatsHtml += '<br/>'
-            usedBreakerCount++
+          methodStatsHtml += '<br/>'
+          usedBreakerCount++
         }
 
         methodStatsHtml += '</div>'
+      }
+
+      methodStatsHtml += '<div class="panel-body"><div class="panel panel-default panel-body" style="margin-bottom: 0px">'
+      methodStatsHtml += '<b>Invocation Count:</b> ' + playbackData.methodInvocationCountMap[methodId] + '<br/>'
+      methodStatsHtml += '<b>Execution Frequency:</b> ' + methodFrequency + '<br/>'
+      methodStatsHtml += '<li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-top: 10px; margin-bottom: 15px"></li>'
+      methodStatsHtml += '<b>Relative Execution Stats</b><br/>'
+      methodStatsHtml += relHtml
+      methodStatsHtml += '<li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-top: 10px; margin-bottom: 15px"></li>'
+      methodStatsHtml += '<b>Absolute Execution Stats</b><br/>'
+      methodStatsHtml += absHtml
+      methodStatsHtml += '</div></div></div></div>'
+
+      id++
     }
-
-    methodStatsHtml += '<div class="panel-body"><div class="panel panel-default panel-body" style="margin-bottom: 0px">'
-    methodStatsHtml += '<b>Invocation Count:</b> ' + playbackData.methodInvocationCountMap[methodId] + '<br/>'
-    methodStatsHtml += '<b>Execution Frequency:</b> ' + methodFrequency + '<br/>'
-    methodStatsHtml += '<li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-top: 10px; margin-bottom: 15px"></li>'
-    methodStatsHtml += '<b>Relative Execution Stats</b><br/>'
-    methodStatsHtml += relHtml
-    methodStatsHtml += '<li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-top: 10px; margin-bottom: 15px"></li>'
-    methodStatsHtml += '<b>Absolute Execution Stats</b><br/>'
-    methodStatsHtml += absHtml
-    methodStatsHtml += '</div></div></div></div>'
-
-    id++
-    //chart.update()
   })
 
   $('#method_stats_row').html(methodStatsHtml)
@@ -659,7 +652,7 @@ function updateAverageMethodDurationPolarChart (averageDurationMap, playbackData
 
   //show top slowest average methods
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.averageSlowestRelativeMethodIdList.forEach(function (methodId) {
+  getMethodIdMapByStyle(playbackData, true).forEach(function (methodId) {
     if (topResults > 0) {
       topResults--
       window.averageMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
@@ -690,7 +683,7 @@ function updateAbsoluteAverageMethodDurationPolarChart (averageDurationMap, play
 
   //show top slowest average methods
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.averageSlowestAbsoluteMethodIdList.forEach(function (methodId) {
+  getMethodIdMapByStyle(playbackData, false).forEach(function (methodId) {
     if (topResults > 0) {
       topResults--
       window.averageAbsoluteMethodDurationPolarChart.data.labels.push(methodNameMap[methodId])
@@ -714,7 +707,7 @@ function batchUpdateRelativeLineChart (methodRelativeDurationMap, playbackData) 
   //only show slowest methods
   var visibleMonitorMethodIdMap = {}
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.overallSlowestRelativeMethodIdList.forEach(function (methodId) {
+  getMethodIdMapByStyle(playbackData, true).forEach(function (methodId) {
     if (topResults > 0) {
       visibleMonitorMethodIdMap[methodId] = 1
       topResults--
@@ -778,7 +771,7 @@ function batchUpdateAbsoluteLineChart (methodAbsoluteDurationMap, playbackData) 
   //only show slowest methods
   var visibleMonitorMethodIdMap = {}
   var topResults = TOP_RESULTS_COUNT
-  playbackData.methodInsights.overallSlowestAbsoluteMethodIdList.forEach(function (methodId) {
+  getMethodIdMapByStyle(playbackData, false).forEach(function (methodId) {
     if (topResults > 0) {
       visibleMonitorMethodIdMap[methodId] = 1
       topResults--
@@ -889,14 +882,14 @@ function updateGeneralMonitoringInformation () {
     var eventCount = sessionAccountedForEventCount[key]
     eventsAccountedForCount += eventCount
   })
-  $('#eventsAccountedFor').text(eventsAccountedForCount)
+  $('#eventsAccountedFor').text(numberWithCommas(eventsAccountedForCount))
 
   //sessions
   var sessionAccountedForCount = 0
   Object.keys(sessionAccountedFor).forEach(function (key) {
     sessionAccountedForCount++
   })
-  $('#sessionsAccountedFor').text(sessionAccountedForCount)
+  $('#sessionsAccountedFor').text(numberWithCommas(sessionAccountedForCount))
 
   //calc
   if (earliestSessionTimestamp && lastSessionTimestamp && eventsAccountedForCount > 0) {
@@ -1179,6 +1172,28 @@ function addSessionToCharts (workSessionId, recordedSession) {
   window.averageAbsoluteMethodDurationPolarChart.update()
   window.relativeMethodRuntimeDurationLine.update()
   window.absoluteMethodRuntimeDurationLine.update()
+}
+
+function getMethodIdMapByStyle(playbackData, relative) {
+  if (viewMethodStyle === 'overall') {
+    if (relative) {
+      return playbackData.methodInsights.overallSlowestRelativeMethodIdList
+    } else {
+      return playbackData.methodInsights.overallSlowestAbsoluteMethodIdList
+    }
+  } else if (viewMethodStyle === 'average') {
+    if (relative) {
+      return playbackData.methodInsights.averageSlowestRelativeMethodIdList
+    } else {
+      return playbackData.methodInsights.averageSlowestAbsoluteMethodIdList
+    }
+  } else if (viewMethodStyle === 'peak') {
+    if (relative) {
+      return playbackData.methodInsights.peakSlowestRelativeMethodIdList
+    } else {
+      return playbackData.methodInsights.peakSlowestAbsoluteMethodIdList
+    }
+  }
 }
 
 function WorkSessionMethodDuration (methodId, timestamp) {

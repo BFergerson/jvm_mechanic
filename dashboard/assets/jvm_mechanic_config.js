@@ -30,9 +30,9 @@ function loadConfigSettings () {
     }
 
     $('#ledgerFileLocation').text(result.ledgerFileLocation)
-    $('#ledgerEntryCount').text(formatSizeUnits(result.ledgerFileSize) + ' (' + (result.ledgerFileSize / result.journalEntrySize) + ' events)')
+    $('#ledgerEntryCount').text(formatSizeUnits(result.ledgerFileSize) + ' (' + numberWithCommas(result.ledgerFileSize / result.journalEntrySize) + ' events)')
     $('#dataFileLocation').text(result.dataFileLocation)
-    $('#dataEntryCount').text(formatSizeUnits(result.dataFileSize) + ' (' + (result.ledgerFileSize / result.journalEntrySize) + ' events)')
+    $('#dataEntryCount').text(formatSizeUnits(result.dataFileSize) + ' (' + numberWithCommas(result.ledgerFileSize / result.journalEntrySize) + ' events)')
     $('#ledgerFileSize').text(result.ledgerFileSize)
     $('#dataFileSize').text(result.dataFileSize)
     $('#gcFileLocation').text(result.gcFileLocation)
@@ -45,7 +45,7 @@ function loadConfigSettings () {
         monitorMethodCount++
       })
     }
-    $('#monitorMethodCount').text(monitorMethodCount)
+    $('#monitorMethodCount').text(numberWithCommas(monitorMethodCount))
   }).fail(function (error) {
       if (monitorMode === 'playback') {
         //you shouldn't be here!
@@ -57,9 +57,9 @@ function loadConfigSettings () {
 }
 
 function formatSizeUnits (bytes) {
-  if (bytes >= 1000000000) {bytes = (bytes / 1000000000).toFixed(2) + ' GB'}
-  else if (bytes >= 1000000) {bytes = (bytes / 1000000).toFixed(2) + ' MB'}
-  else if (bytes >= 1000) {bytes = (bytes / 1000).toFixed(2) + ' KB'}
+  if (bytes >= 1000000000) {bytes = numberWithCommas((bytes / 1000000000).toFixed(2)) + ' GB'}
+  else if (bytes >= 1000000) {bytes = numberWithCommas((bytes / 1000000).toFixed(2)) + ' MB'}
+  else if (bytes >= 1000) {bytes = numberWithCommas((bytes / 1000).toFixed(2)) + ' KB'}
   else if (bytes > 1) {bytes = bytes + ' bytes'}
   else if (bytes === 1) {bytes = bytes + ' byte'}
   else {bytes = '0 bytes'}

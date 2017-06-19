@@ -68,26 +68,26 @@ function getPrettyTime (millisecondCount) {
   var milliseconds = duration.asMilliseconds()
 
   if (hours >= 1.5) {
-    return roundNumber(hours, 2) + ' hours'
+    return numberWithCommas(roundNumber(hours, 2)) + ' hours'
   } else if (minutes >= 1.5) {
-    return roundNumber(minutes, 2) + ' minutes'
+    return numberWithCommas(roundNumber(minutes, 2)) + ' minutes'
   } else if (seconds >= 1.5) {
-    return roundNumber(seconds, 2) + 's'
+    return numberWithCommas(roundNumber(seconds, 2)) + 's'
   } else {
-    return roundNumber(milliseconds, 2) + 'ms'
+    return numberWithCommas(roundNumber(milliseconds, 2)) + 'ms'
   }
 }
 
 function roundNumber (num, scale) {
   if (!('' + num).includes('e')) {
-    return +(Math.round(num + 'e+' + scale) + 'e-' + scale)
+    return numberWithCommas(+(Math.round(num + 'e+' + scale) + 'e-' + scale))
   } else {
     var arr = ('' + num).split('e')
     var sig = ''
     if (+arr[1] + scale > 0) {
       sig = '+'
     }
-    return +(Math.round(+arr[0] + 'e' + sig + (+arr[1] + scale)) + 'e-' + scale)
+    return numberWithCommas(+(Math.round(+arr[0] + 'e' + sig + (+arr[1] + scale)) + 'e-' + scale))
   }
 }
 
@@ -105,5 +105,9 @@ function humanFileSize (bytes) {
     bytes /= thresh
     ++u
   } while (Math.abs(bytes) >= thresh && u < units.length - 1)
-  return bytes.toFixed(2) + ' ' + units[u]
+  return numberWithCommas(bytes.toFixed(2)) + ' ' + units[u]
+}
+
+function numberWithCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

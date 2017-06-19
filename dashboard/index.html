@@ -22,11 +22,9 @@
         var cutOffMinutesTime = 5;
 
         //etc
+        window.scrollTo(0,0)//scroll to top
         window.onload = function () {
-            //hide by default
-            $('#sidebar').toggleClass('sidebar-toggle');
-            $('#page-content-wrapper').toggleClass('page-content-toggle');
-
+            window.scrollTo(0,0)//scroll to top
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
@@ -38,17 +36,29 @@
 
             if (monitorMode === 'playback') {
                 $.getJSON(host + '/playback/load', function (result) {
+                }).always(function (result) {
+                  window.scrollTo(0,0)//scroll to top
                 });
             }
         };
 
         //monitor mode
-        var monitorMode = getParameter('mode');
+        var monitorMode = getParameter('mode')
         if (!monitorMode) {
-            monitorMode = "live";
+            monitorMode = "live"
         }
         if (monitorMode === 'playback') {
-            document.title = 'jvm_mechanic - Playback';
+            document.title = 'jvm_mechanic - Playback'
+        }
+
+        var viewMethodResults = getParameter('results')
+        if (!viewMethodResults) {
+          viewMethodResults = '20'
+        }
+
+        var viewMethodStyle = getParameter('view')
+        if (!viewMethodStyle) {
+          viewMethodStyle = 'overall'
         }
     </script>
     <script src="assets/wNumb.js"></script>
@@ -73,7 +83,7 @@
 <!-- header -->
 <nav class="navbar navbar-fixed-top" id="header" style="height: 103px">
     <div class="row">
-        <div class="col-sm-3">
+        <div class="col-sm-6">
             <div class="container">
                 <div class="navbar-header" style="padding-top: 40px">
                     <div id="sidebar-toggle-button">
@@ -88,30 +98,81 @@
                             }
                         </script>
                     </div>
-                    <div class="dropdown" style="display: inline-block">
-                        <button class="btn btn-secondary dropdown-toggle disabled" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <script>
-                                if (!monitorMode || monitorMode === 'live') {
+                    <div style="display: inline-block">
+                        <div class="dropdown" style="display: inline-block">
+                            <button class="btn btn-secondary dropdown-toggle disabled" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <script>
+                                  if (!monitorMode || monitorMode === 'live') {
                                     document.write('Real Time');
-                                } else {
+                                  } else {
                                     document.write('Playback');
-                                }
-                            </script>
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <script>
-                                if (!monitorMode || monitorMode === 'live') {
+                                  }
+                                </script>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <script>
+                                  if (!monitorMode || monitorMode === 'live') {
                                     document.write('<a class="dropdown-item" href="?mode=playback">Playback</a>');
-                                } else {
+                                  } else {
                                     document.write('<a class="dropdown-item" href="?mode=live">Real Time</a>');
-                                }
-                            </script>
+                                  }
+                                </script>
+                            </div>
+                        </div>
+                        <div class="dropdown" style="display: inline-block; margin-left: 25px">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="relativeDurationDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <script>
+                                  if (viewMethodStyle === 'overall') {
+                                    document.write('Top Overall');
+                                  } else if (viewMethodStyle === 'average') {
+                                    document.write('Top Average');
+                                  } else {
+                                    document.write('Top Peak');
+                                  }
+                                </script>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="relativeDurationDropdownButton">
+                                <script>
+                                    if (viewMethodStyle === 'overall') {
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=average&results=' + viewMethodResults + '">Top Average</a>');
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=peak&results=' + viewMethodResults + '">Top Peak</a>');
+                                    } else if (viewMethodStyle === 'average') {
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=overall&results=' + viewMethodResults + '">Top Overall</a>');
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=peak&results=' + viewMethodResults + '">Top Peak</a>');
+                                    } else {
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=overall&results=' + viewMethodResults + '">Top Overall</a>');
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=average&results=' + viewMethodResults + '">Top Average</a>');
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                        <div class="dropdown" style="display: inline-block">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="methodViewCountDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <script>
+                                  document.write(viewMethodResults);
+                                </script>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="methodViewCountDropdownButton">
+                                <script>
+                                    if (viewMethodResults === '20') {
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=' + viewMethodStyle + '&results=10">10</a>');
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=' + viewMethodStyle + '&results=5">5</a>');
+                                    } else if (viewMethodResults === '10') {
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=' + viewMethodStyle + '&results=20">20</a>');
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=' + viewMethodStyle + '&results=5">5</a>');
+                                    } else {
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=' + viewMethodStyle + '&results=20">20</a>');
+                                      document.write('<a class="dropdown-item" href="?mode=' + monitorMode + '&view=' + viewMethodStyle + '&results=10">10</a>');
+                                    }
+                                </script>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
-        <div class="col-sm-9">
+        <div class="col-sm-6">
             <div class="container-fluid" style="padding-top: 59px">
                 <div id="slider-date" style="width: 95%; margin:0 auto;"></div>
             </div>
@@ -159,13 +220,13 @@
                             <b>Session Sample Accuracy:</b> <label id="sessionSampleAccuracy" style="margin-bottom: 0">n/a</label><br/>
                             <b>Playback Mode Enabled:</b> <label id="playbackModeEnabled" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>Ledger File Location:</b> <label id="ledgerFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Ledger Location:</b> <label id="ledgerFileLocation" style="margin-bottom: 0">n/a</label><br/>
                             <b>Leger File Size:</b> <label id="ledgerEntryCount" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>Data File Location:</b> <label id="dataFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>Data Location:</b> <label id="dataFileLocation" style="margin-bottom: 0">n/a</label><br/>
                             <b>Data File Size:</b> <label id="dataEntryCount" style="margin-bottom: 0">n/a</label><br/>
                             - <br/>
-                            <b>GC File Location:</b> <label id="gcFileLocation" style="margin-bottom: 0">n/a</label><br/>
+                            <b>GC Location:</b> <label id="gcFileLocation" style="margin-bottom: 0">n/a</label><br/>
                             <b>GC File Size:</b> <label id="gcFileSize" style="margin-bottom: 0">n/a</label><br/>
                             <br/>
                         </div>
@@ -224,39 +285,29 @@
                     </div>
                 </div>
             </div>
-            <div class="row" style="display: none">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Last Recorded Session (Request >> Response)</div>
-                    <div class="panel-body">
-                        <canvas id="current_relative_method_runtime_duration_canvas" height="40"></canvas>
-                    </div>
-                </div>
-            </div>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">Application Throughput</div>
                         <div class="panel-body">
-                            <canvas id="application_throughput_canvas" height="55"></canvas>
+                            <canvas id="application_throughput_canvas" height="60"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Method Duration - Relative</div>
-                        <div class="panel-body">
-                            <canvas id="relative_method_runtime_duration_canvas"></canvas>
-                        </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Method Duration - Relative</div>
+                    <div class="panel-body">
+                        <canvas id="relative_method_runtime_duration_canvas" height="60"></canvas>
                     </div>
                 </div>
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Method Duration - Absolute</div>
-                        <div class="panel-body">
-                            <canvas id="absolute_method_runtime_duration_canvas"></canvas>
-                        </div>
+            </div>
+            <div class="row">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Method Duration - Absolute</div>
+                    <div class="panel-body">
+                        <canvas id="absolute_method_runtime_duration_canvas" height="60"></canvas>
                     </div>
                 </div>
             </div>
@@ -265,7 +316,7 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Average Method Duration - Relative</div>
                         <div class="panel-body">
-                            <canvas id="average_relative_method_duration_polar_canvas" height="200"></canvas>
+                            <canvas id="average_relative_method_duration_polar_canvas" height="225"></canvas>
                         </div>
                     </div>
                 </div>
@@ -273,18 +324,10 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Average Method Duration - Absolute</div>
                         <div class="panel-body">
-                            <canvas id="average_absolute_method_duration_polar_canvas" height="200"></canvas>
+                            <canvas id="average_absolute_method_duration_polar_canvas" height="225"></canvas>
                         </div>
                     </div>
                 </div>
-                <!--<div class="col-sm-6">-->
-                    <!--<div class="panel panel-default">-->
-                        <!--<div class="panel-heading">Total Method Duration - Relative</div>-->
-                        <!--<div class="panel-body">-->
-                            <!--<canvas id="total_relative_method_duration_polar_canvas" height="200"></canvas>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
             </div>
             <div class="row" id="method_stats_row"></div>
         </div>

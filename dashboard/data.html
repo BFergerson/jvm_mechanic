@@ -18,10 +18,6 @@
     <script src="assets/utils.js"></script>
     <script>
         window.onload = function () {
-            //hide by default
-            $('#sidebar').toggleClass('sidebar-toggle');
-            $('#page-content-wrapper').toggleClass('page-content-toggle');
-
             $('#sidebar-toggle-button').on('click', function () {
                 $('#sidebar').toggleClass('sidebar-toggle');
                 $('#page-content-wrapper').toggleClass('page-content-toggle');
@@ -72,7 +68,7 @@
 <!-- header -->
 <nav class="navbar navbar-fixed-top" id="header" style="height: 103px">
     <div class="row" id="dontHideThisRowHack">
-        <div class="col-sm-3">
+        <div class="col-sm-4">
             <div class="container">
                 <div class="navbar-header" style="padding-top: 40px">
                     <div id="sidebar-toggle-button">
