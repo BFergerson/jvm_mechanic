@@ -283,8 +283,6 @@ function ledgerLoaded () {
   ctx = document.getElementById('application_throughput_canvas').getContext('2d')
   window.applicationThroughputChart = new Chart(ctx, applicationThroughputChartConfig)
 
-  //todo: add invocation count bar chart
-
   if (monitorMode === 'live') {
     //update charts every 3 seconds
     ledgerUpdated()
@@ -530,11 +528,11 @@ function updatePerMethodCharts (playbackData) {
 
       var methodFrequency = ''
       if (hours > 2 && ((invocationCount / hours) > 100)) {
-        methodFrequency = (invocationCount / hours) + '/hour'
+        methodFrequency = numberWithCommas(Math.ceil(invocationCount / hours), 2) + '/hour'
       } else if (minutes > 30 && ((invocationCount / minutes) > 100)) {
-        methodFrequency = Math.ceil(invocationCount / minutes) + '/min'
+        methodFrequency = numberWithCommas(Math.ceil(invocationCount / minutes), 2) + '/min'
       } else if (seconds > 0) {
-        methodFrequency = Math.ceil(invocationCount / seconds) + '/sec'
+        methodFrequency = numberWithCommas(Math.ceil(invocationCount / seconds), 2) + '/sec'
       }
 
       methodStatsHtml += '<div class="col-sm-3" style="width: 20%; padding-left: 5px; padding-right: 5px"><div class="panel panel-default">'
@@ -619,7 +617,7 @@ function updatePerMethodCharts (playbackData) {
       }
 
       methodStatsHtml += '<div class="panel-body"><div class="panel panel-default panel-body" style="margin-bottom: 0px">'
-      methodStatsHtml += '<b>Invocation Count:</b> ' + playbackData.methodInvocationCountMap[methodId] + '<br/>'
+      methodStatsHtml += '<b>Invocation Count:</b> ' + numberWithCommas(playbackData.methodInvocationCountMap[methodId]) + '<br/>'
       methodStatsHtml += '<b>Execution Frequency:</b> ' + methodFrequency + '<br/>'
       methodStatsHtml += '<li role="separator" class="sidebar ul divider" style="background-color: #ccc; height: 1px; overflow: hidden; margin-top: 10px; margin-bottom: 15px"></li>'
       methodStatsHtml += '<b>Relative Execution Stats</b><br/>'
@@ -901,24 +899,24 @@ function updateGeneralMonitoringInformation () {
 
     //events
     if (hours > 2 && ((eventsAccountedForCount / hours) > 100)) {
-      $('#eventRecordingRate').text((eventsAccountedForCount / hours) + '/hour')
+      $('#eventRecordingRate').text(numberWithCommas(Math.ceil(eventsAccountedForCount / hours)) + '/hour')
     } else if (minutes > 30 && ((eventsAccountedForCount / minutes) > 100)) {
-      $('#eventRecordingRate').text(Math.ceil(eventsAccountedForCount / minutes) + '/min')
+      $('#eventRecordingRate').text(numberWithCommas(Math.ceil(eventsAccountedForCount / minutes)) + '/min')
     } else if (seconds > 0) {
-      $('#eventRecordingRate').text(Math.ceil(eventsAccountedForCount / seconds) + '/sec')
+      $('#eventRecordingRate').text(numberWithCommas(Math.ceil(eventsAccountedForCount / seconds)) + '/sec')
     }
 
     //sessions
     if (hours > 2 && ((sessionAccountedForCount / hours) > 100)) {
-      $('#sessionRecordingRate').text((sessionAccountedForCount / hours) + '/hour')
+      $('#sessionRecordingRate').text(numberWithCommas(Math.ceil(sessionAccountedForCount / hours)) + '/hour')
     } else if (minutes > 30 && ((sessionAccountedForCount / minutes) > 100)) {
-      $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / minutes) + '/min')
+      $('#sessionRecordingRate').text(numberWithCommas(Math.ceil(sessionAccountedForCount / minutes)) + '/min')
     } else if (seconds > 0) {
       var perSecond = Math.ceil(sessionAccountedForCount / seconds)
       if (perSecond === 1) {
-        $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / minutes) + '/min')
+        $('#sessionRecordingRate').text(numberWithCommas(Math.ceil(sessionAccountedForCount / minutes)) + '/min')
       } else {
-        $('#sessionRecordingRate').text(Math.ceil(sessionAccountedForCount / seconds) + '/sec')
+        $('#sessionRecordingRate').text(numberWithCommas(Math.ceil(sessionAccountedForCount / seconds)) + '/sec')
       }
     }
   }
