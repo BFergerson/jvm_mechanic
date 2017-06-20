@@ -89,17 +89,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     public void exit(int eventMethodId, String eventContext) {
@@ -121,17 +113,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     public void error_exit(int eventMethodId, String eventContext) {
@@ -154,17 +138,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     public void begin_work(int eventMethodId, String eventContext) {
@@ -185,17 +161,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     public void error_begin_work(int eventMethodId, String eventContext) {
@@ -217,17 +185,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     public void end_work(int eventMethodId, String eventContext) {
@@ -248,17 +208,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     public void error_end_work(int eventMethodId, String eventContext) {
@@ -280,17 +232,9 @@ public class jvm_mechanic extends Helper {
         event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
         event.eventTriggerMethod = getTriggerMethod();
         event.eventAttribute = eventAttribute;
-
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(event.eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(event.eventMethodId, event.eventMethod);
-            prop.put("method_id_" + eventMethodId, event.eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
         stashStream.stashMechanicEvent(event);
+
+        registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
     private static String getTriggerMethod() {
@@ -306,6 +250,18 @@ public class jvm_mechanic extends Helper {
             }
         }
         return null;
+    }
+
+    private void registerEventMethodId(short eventMethodId, String eventMethod) {
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(eventMethodId, eventMethod);
+            prop.put("method_id_" + eventMethodId, eventMethod);
+            try {
+                prop.store(output);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
     }
 
 }
