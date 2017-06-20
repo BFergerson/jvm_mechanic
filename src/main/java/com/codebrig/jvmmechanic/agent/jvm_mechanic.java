@@ -237,6 +237,18 @@ public class jvm_mechanic extends Helper {
         registerEventMethodId(event.eventMethodId, event.eventMethod);
     }
 
+    private void registerEventMethodId(short eventMethodId, String eventMethod) {
+        if (!REGISTERED_METHOD_ID_MAP.containsKey(eventMethodId)) {
+            REGISTERED_METHOD_ID_MAP.put(eventMethodId, eventMethod);
+            prop.put("method_id_" + eventMethodId, eventMethod);
+            try {
+                prop.store(output);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
+    }
+
     private static String getTriggerMethod() {
         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
         for (int i = 1; i < stacktrace.length; i++) {
@@ -250,18 +262,6 @@ public class jvm_mechanic extends Helper {
             }
         }
         return null;
-    }
-
-    private void registerEventMethodId(short eventMethodId, String eventMethod) {
-        if (!REGISTERED_METHOD_ID_MAP.containsKey(eventMethodId)) {
-            REGISTERED_METHOD_ID_MAP.put(eventMethodId, eventMethod);
-            prop.put("method_id_" + eventMethodId, eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
     }
 
 }
