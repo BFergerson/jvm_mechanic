@@ -94,7 +94,9 @@ public class MechanicRuleGenerator {
                 String[] methodArr = method.split("\\.");
                 String className = methodArr[methodArr.length - 2];
                 String methodNameWithParams = methodArr[methodArr.length - 1];
-                ruleBuilder.append("\tCLASS ").append(className).append("\n");
+                String packageName = method.replace("." + className + "." + methodNameWithParams, "");
+                String qualifiedClassName = packageName + "." + className;
+                ruleBuilder.append("\tCLASS ").append(qualifiedClassName).append("\n");
                 ruleBuilder.append("\tMETHOD ").append(methodNameWithParams).append("\n");
                 ruleBuilder.append("\tHELPER com.codebrig.jvmmechanic.agent.jvm_mechanic\n");
 

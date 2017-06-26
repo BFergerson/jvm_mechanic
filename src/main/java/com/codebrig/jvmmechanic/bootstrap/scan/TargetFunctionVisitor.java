@@ -4,9 +4,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * todo: this
@@ -18,6 +16,11 @@ public class TargetFunctionVisitor extends VoidVisitorAdapter<JavaParserFacade> 
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
     static void shutdownExecutorService() {
         executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            //ignore
+        }
     }
 
     private final String qualifiedClassName;

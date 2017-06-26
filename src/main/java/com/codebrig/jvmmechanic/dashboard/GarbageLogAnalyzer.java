@@ -24,7 +24,7 @@ public class GarbageLogAnalyzer {
     private String logFileLocation;
     private ApplicationThroughput playbackAbsoluteThroughput;
 
-    GarbageLogAnalyzer(String logFileLocation) {
+    public GarbageLogAnalyzer(String logFileLocation) {
         this.logFileLocation = logFileLocation;
     }
 

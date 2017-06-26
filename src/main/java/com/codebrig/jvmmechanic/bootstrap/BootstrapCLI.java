@@ -162,6 +162,10 @@ public class BootstrapCLI {
             cli.enterFunctionList = new ArrayList<>();
         }
 
+        if (cli.targetFunctionList == null) {
+            cli.targetFunctionList = new ArrayList<>();
+        }
+
         //explore methods recursively
         System.out.println("\nExploring target function method hierarchy...");
         RecursiveMethodExplorer explorer = new RecursiveMethodExplorer(

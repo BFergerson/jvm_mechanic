@@ -11,6 +11,7 @@ import java.util.*;
  */
 public class PlaybackData {
 
+    private Map<Short, String> methodFunctionSignatureMap = new HashMap<>();
     private long firstRequestedEvent = -1;
     private long lastRequestedEvent = -1;
     private long firstIncludedEvent = -1;
@@ -30,6 +31,14 @@ public class PlaybackData {
     private Map<Short, Integer> methodGarbagePauseDurationMap = new HashMap<>();
     private Map<Short, SummaryStatistics> relativeMethodDurationStatisticsMap = new HashMap<>();
     private Map<Short, SummaryStatistics> absoluteMethodDurationStatisticsMap = new HashMap<>();
+
+    public Map<Short, String> getMethodFunctionSignatureMap() {
+        return methodFunctionSignatureMap;
+    }
+
+    public void setMethodFunctionSignatureMap(Map<Short, String> methodFunctionSignatureMap) {
+        this.methodFunctionSignatureMap = Objects.requireNonNull(methodFunctionSignatureMap);
+    }
 
     public long getFirstRequestedEvent() {
         return firstRequestedEvent;

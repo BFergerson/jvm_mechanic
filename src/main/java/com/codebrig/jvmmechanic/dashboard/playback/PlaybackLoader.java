@@ -29,6 +29,7 @@ public class PlaybackLoader {
     private final Map<Integer, Long> sessionStartTimeMap = new HashMap<>();
     private final TreeMap<Long, Integer> sessionEventTimeTreeMap = new TreeMap<>();
     private final Map<Integer, List<SessionMethodInvocationData>> sessionMethodInvocationMap = new HashMap<>();
+    private final Map<Short, String> methodFunctionSignatureMap = new HashMap<>();
 
     public PlaybackLoader(StashLedgerFile stashLedgerFile, StashDataFile stashDataFile, GarbageLogAnalyzer garbageLogAnalyzer) {
         this.stashLedgerFile = stashLedgerFile;
@@ -77,6 +78,8 @@ public class PlaybackLoader {
             entry.getValue().sort(Comparator.comparingInt(MechanicEvent::getEventId));
 
             for (MechanicEvent event : entry.getValue()) {
+                methodFunctionSignatureMap.put(event.eventMethodId, event.eventMethod);
+
                 switch (event.eventType) {
                     case ENTER_EVENT:
                         hasEnterEvent = true;
@@ -186,8 +189,13 @@ public class PlaybackLoader {
         }
     }
 
+    public PlaybackData getAllPlaybackData() {
+        return getPlaybackData(Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
     public PlaybackData getPlaybackData(long startTime, long endTime) {
         PlaybackData playbackData = new PlaybackData();
+        playbackData.setMethodFunctionSignatureMap(methodFunctionSignatureMap);
         playbackData.setFirstRequestedEvent(startTime);
         playbackData.setLastRequestedEvent(endTime);
         if (!sessionEventTimeTreeMap.isEmpty()) {
