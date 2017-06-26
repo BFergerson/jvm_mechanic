@@ -40,12 +40,14 @@ public class StashLedgerFile {
             journalRecords = limit;
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate((int) fileChannel.size());
-        fileChannel.read(buffer);
-        buffer.position(0);
-
         List<JournalEntry> journalEntryList = new ArrayList<>();
+        ByteBuffer buffer = ByteBuffer.allocate(JournalEntry.JOURNAL_ENTRY_SIZE);
         for (int i = 0; i < journalRecords; i++) {
+            if (fileChannel.read(buffer) == -1) {
+                break;
+            }
+            buffer.flip();
+
             int eventId = buffer.getInt();
             int ledgerId = buffer.getInt();
             int workSessionId = buffer.getInt();
@@ -54,6 +56,8 @@ public class StashLedgerFile {
             short eventMethodId = buffer.getShort();
             byte eventType = buffer.get();
             journalEntryList.add(new JournalEntry(eventId, ledgerId, workSessionId, eventTimestamp, eventSize, eventMethodId, eventType));
+
+            buffer.clear();
         }
 
         System.out.println("Read event size: " + journalEntryList.size());
