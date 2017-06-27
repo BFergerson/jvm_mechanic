@@ -24,6 +24,7 @@ public abstract class MechanicEvent {
     public String eventAttribute;
     public boolean success = true;
     public final MechanicEventType eventType;
+    String eventConfig; //internal use only
 
     public MechanicEvent(MechanicEvent mechanicEvent) {
         this.eventId = mechanicEvent.eventId;
@@ -37,6 +38,7 @@ public abstract class MechanicEvent {
         this.eventAttribute = mechanicEvent.eventAttribute;
         this.success = mechanicEvent.success;
         this.eventType = mechanicEvent.eventType;
+        this.eventConfig = mechanicEvent.eventConfig;
     }
 
     public MechanicEvent(MechanicEventType eventType) {
@@ -87,6 +89,13 @@ public abstract class MechanicEvent {
             buffer.put(eventAttributeBytes);
         }
 
+        buffer.put((byte)(eventConfig != null ? 1 : 0));
+        if (eventConfig != null) {
+            byte[] eventConfigBytes = eventConfig.getBytes();
+            buffer.putInt(eventConfigBytes.length);
+            buffer.put(eventConfigBytes);
+        }
+
         byte[] rawData = new byte[buffer.position()];
         System.arraycopy(buffer.array(), 0, rawData, 0, rawData.length);
         return rawData;
@@ -126,12 +135,20 @@ public abstract class MechanicEvent {
             eventTriggerMethod = new String(eventTriggerBytes);
         }
 
-        String eventAttributeMethod = null;
+        String eventAttribute = null;
         if (buffer.get() == 1) {
             int eventAttributeLength = buffer.getInt();
             byte[] eventAttributeBytes = new byte[eventAttributeLength];
             buffer.get(eventAttributeBytes);
-            eventAttributeMethod = new String(eventAttributeBytes);
+            eventAttribute = new String(eventAttributeBytes);
+        }
+
+        String eventConfig = null;
+        if (buffer.get() == 1) {
+            int eventConfigLength = buffer.getInt();
+            byte[] eventConfigBytes = new byte[eventConfigLength];
+            buffer.get(eventConfigBytes);
+            eventConfig = new String(eventConfigBytes);
         }
 
         MechanicEvent event;
@@ -143,6 +160,8 @@ public abstract class MechanicEvent {
             event = new BeginWorkEvent();
         } else if (eventType == MechanicEventType.END_WORK_EVENT.toEventTypeId()) {
             event = new EndWorkEvent();
+        } else if (eventType == MechanicEventType.COMPLETE_WORK_EVENT.toEventTypeId()) {
+            event = new CompleteWorkEvent();
         } else {
             throw new RuntimeException("Invalid event type:" + eventType);
         }
@@ -156,7 +175,8 @@ public abstract class MechanicEvent {
         event.eventThread = eventThread;
         event.eventMethod = eventMethod;
         event.eventTriggerMethod = eventTriggerMethod;
-        event.eventAttribute = eventAttributeMethod;
+        event.eventAttribute = eventAttribute;
+        event.eventConfig = eventConfig;
         return event;
     }
 

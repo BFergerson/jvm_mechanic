@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.dashboard.playback;
 
+import com.codebrig.jvmmechanic.agent.event.CompleteWorkEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEventType;
 import com.codebrig.jvmmechanic.agent.stash.DataEntry;
@@ -51,14 +52,13 @@ public class PlaybackLoader {
             filePosition += journalEntry.getEventSize();
 
             MechanicEvent event = dataEntry.toMechanicEvent();
-            if (event.eventTimestamp > 0) {
-                sessionEventTimeTreeMap.put(event.eventTimestamp, event.workSessionId);
+            if (event.eventType.equals(MechanicEventType.COMPLETE_WORK_EVENT)) {
+                CompleteWorkEvent completeWorkEvent = (CompleteWorkEvent) event;
+                registerEvent(completeWorkEvent.getBeginWorkEvent());
+                registerEvent(completeWorkEvent.getEndWorkEvent());
+            } else {
+                registerEvent(event);
             }
-            if (!sessionEventMap.containsKey(event.workSessionId)) {
-                sessionEventMap.put(event.workSessionId, new ArrayList<>());
-            }
-            sessionEventMap.get(event.workSessionId).add(event);
-            allSessionIdSet.add(event.workSessionId);
         }
 
         //calculate invocation data
@@ -74,12 +74,9 @@ public class PlaybackLoader {
             long sessionTimestamp = -1;
             long previousEventTimestamp = -1;
 
-            //sort session events by event id
+            //order session events by event id
             entry.getValue().sort(Comparator.comparingInt(MechanicEvent::getEventId));
-
             for (MechanicEvent event : entry.getValue()) {
-                methodFunctionSignatureMap.put(event.eventMethodId, event.eventMethod);
-
                 switch (event.eventType) {
                     case ENTER_EVENT:
                         hasEnterEvent = true;
@@ -130,6 +127,9 @@ public class PlaybackLoader {
                             selfInvocationData.incrementAbsoluteDuration((int) (event.eventTimestamp - parentEvent.eventTimestamp));
                             selfInvocationData.incrementInvocationCount();
                         }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException();
                 }
                 if (invocationDataMap.get(event.eventMethodId) == null) {
                     invalidSession = true;
@@ -160,6 +160,18 @@ public class PlaybackLoader {
             playbackAbsoluteApplicationThroughput = garbageLogAnalyzer.getGarbageCollectionReport().getPlaybackAbsoluteThroughput();
         }
         System.out.println("Finished pre-loading data for playback!");
+    }
+
+    private void registerEvent(MechanicEvent event) {
+        if (event.eventTimestamp > 0) {
+            sessionEventTimeTreeMap.put(event.eventTimestamp, event.workSessionId);
+        }
+        if (!sessionEventMap.containsKey(event.workSessionId)) {
+            sessionEventMap.put(event.workSessionId, new ArrayList<>());
+        }
+        sessionEventMap.get(event.workSessionId).add(event);
+        allSessionIdSet.add(event.workSessionId);
+        methodFunctionSignatureMap.put(event.eventMethodId, event.eventMethod);
     }
 
     private void associateGarbagePauses() throws IOException {

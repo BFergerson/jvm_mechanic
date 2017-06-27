@@ -16,12 +16,17 @@ public class MechanicRuleGenerator {
     private final Set<String> methodSet;
     private final Set<String> constructorClassSet;
     private final Set<String> enterFunctionSet;
+    private final boolean useCompleteEvents;
     private final Set<String> usedRuleNameSet;
 
-    public MechanicRuleGenerator(Set<String> methodSet, Set<String> constructorClassSet, Set<String> enterFunctionSet) {
+    public MechanicRuleGenerator(Set<String> methodSet,
+                                 Set<String> constructorClassSet,
+                                 Set<String> enterFunctionSet,
+                                 boolean useCompleteEvents) {
         this.methodSet = methodSet;
         this.constructorClassSet = constructorClassSet;
         this.enterFunctionSet = enterFunctionSet;
+        this.useCompleteEvents = useCompleteEvents;
         this.usedRuleNameSet = new HashSet<>();
     }
 
@@ -88,7 +93,14 @@ public class MechanicRuleGenerator {
             int methodId = methodIdIndex.getAndIncrement();
             for (String eventType : type) {
                 String method = methodList.get(i);
-                String ruleName = generateRuleName(method, eventType);
+                String ruleName;
+                if ("begin_work".equals(eventType)) {
+                    ruleName = generateRuleName(method, "init_complete_work");
+                } else if ("end_work".equals(eventType)) {
+                    ruleName = generateRuleName(method, "complete_work");
+                } else {
+                    ruleName = generateRuleName(method, "error_complete_work");
+                }
                 ruleBuilder.append(getRuleHeader(ruleName));
 
                 String[] methodArr = method.split("\\.");
@@ -118,9 +130,19 @@ public class MechanicRuleGenerator {
                 ruleBuilder.append("\tDO\n");
 
                 if ("begin_work".equals(eventType)) {
-                    ruleBuilder.append("\t\tbegin_work(").append(methodId).append(",\"app\")\n");
+                    if (useCompleteEvents) {
+                        ruleBuilder.append("\t\tpushLocalConfig(Long.toString(System.currentTimeMillis()))\n");
+                    } else {
+                        ruleBuilder.append("\t\tbegin_work(").append(methodId).append(",\"app\")\n");
+                    }
                 } else if ("end_work".equals(eventType)) {
-                    ruleBuilder.append("\t\tend_work(").append(methodId).append(",\"app\")\n");
+                    if (useCompleteEvents) {
+                        ruleBuilder.append("\t\tcomplete_work(").append(methodId).append(",\"app\")\n");
+                    } else {
+                        ruleBuilder.append("\t\tend_work(").append(methodId).append(",\"app\")\n");
+                    }
+                } else if (useCompleteEvents) {
+                    ruleBuilder.append("\t\terror_complete_work(").append(methodId).append(",\"app\")\n");
                 } else {
                     ruleBuilder.append("\t\terror_end_work(").append(methodId).append(",\"app\")\n");
                 }
@@ -163,7 +185,7 @@ public class MechanicRuleGenerator {
         StringBuilder header = new StringBuilder();
         header.append("#jvm_mechanic - Mechanic Event Rules\n");
         header.append("#Version: 1.0\n");
-        header.append("#Date: ").append( new SimpleDateFormat("yyyy/MM/dd").format(new Date())).append("\n\n");
+        header.append("#Date: ").append(new SimpleDateFormat("yyyy/MM/dd").format(new Date())).append("\n\n");
         return header;
     }
 

@@ -332,7 +332,10 @@ public class MechanicDashboard {
                     if (key != null && key.startsWith("method_id_")) {
                         int methodId = Integer.parseInt(key.replace("method_id_", ""));
                         String methodName = prop.getProperty(key);
-                        config.addMethodName((short) methodId, methodName);
+                        String[] methodArr = methodName.split("\\.");
+                        String className = methodArr[methodArr.length - 2];
+                        String methodNameWithParams = methodArr[methodArr.length - 1];
+                        config.addMethodName((short) methodId, className + "." + methodNameWithParams);
                     }
                 }
             } catch(IOException ex) {

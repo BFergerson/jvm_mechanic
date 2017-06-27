@@ -57,6 +57,9 @@ public class BootstrapCLI {
     @Parameter(names = {"-include_setters"}, description = "Whether or not to include monitoring setter methods")
     private boolean includeSetters = false;
 
+    @Parameter(names = {"-use_complete_events"}, description = "Whether or not to use complete work events as opposed to begin/end work events")
+    private boolean useCompleteEvents = true;
+
     @Parameter(names = {"-help", "--help"}, description = "Displays help information")
     private boolean help;
 
@@ -247,7 +250,8 @@ public class BootstrapCLI {
         MechanicRuleGenerator ruleGenerator = new MechanicRuleGenerator(
                 explorer.getVisitedFunctionSet(),
                 explorer.getVisitedConstructorSet(),
-                new HashSet<>(cli.enterFunctionList));
+                new HashSet<>(cli.enterFunctionList),
+                cli.useCompleteEvents);
         System.out.println(ruleGenerator.getGeneratedRules().toString());
     }
 

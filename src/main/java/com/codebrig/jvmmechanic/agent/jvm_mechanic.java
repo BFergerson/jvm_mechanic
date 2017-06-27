@@ -1,9 +1,6 @@
 package com.codebrig.jvmmechanic.agent;
 
-import com.codebrig.jvmmechanic.agent.event.BeginWorkEvent;
-import com.codebrig.jvmmechanic.agent.event.EndWorkEvent;
-import com.codebrig.jvmmechanic.agent.event.EnterEvent;
-import com.codebrig.jvmmechanic.agent.event.ExitEvent;
+import com.codebrig.jvmmechanic.agent.event.*;
 import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 import com.codebrig.jvmmechanic.agent.stash.StashPersistenceStream;
 import com.google.common.collect.Maps;
@@ -14,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -26,7 +24,8 @@ public class jvm_mechanic extends Helper {
     private final double sessionSampleAccuracy;
     private static StashPersistenceStream stashStream;
     private static final Object singletonLock = new Object();
-    private static final ThreadLocal<Integer> threadLocalStorage = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> localSessionIdStorage = new ThreadLocal<>();
+    private static final ThreadLocal<Stack<String>> localEventConfigStackStorage = new ThreadLocal<>();
     private static final Map<Short, String> REGISTERED_METHOD_ID_MAP = Maps.newConcurrentMap();
     private static final ConfigProperties prop = new ConfigProperties();
     private static OutputStream output = null;
@@ -37,6 +36,25 @@ public class jvm_mechanic extends Helper {
         String sessionSampleAccuracyProperty = System.getProperty("jvm_mechanic.event.session_sample_accuracy", "100.00");
         sessionSampleAccuracy = Double.valueOf(sessionSampleAccuracyProperty) / 100.00;
         initStashStream();
+    }
+
+    public void pushLocalConfig(String configValue) {
+        Stack<String> localStack = localEventConfigStackStorage.get();
+        if (localStack == null) {
+            localStack = new Stack<>();
+            localEventConfigStackStorage.set(localStack);
+        }
+        localStack.push(configValue);
+    }
+
+    public String popLocalConfig() {
+        Stack<String> localStack = localEventConfigStackStorage.get();
+        if (localStack == null) {
+            localStack = new Stack<>();
+            localEventConfigStackStorage.set(localStack);
+            return null;
+        }
+        return localStack.pop();
     }
 
     private void initStashStream() throws IOException {
@@ -78,7 +96,7 @@ public class jvm_mechanic extends Helper {
             return; //ignore sample
         } else {
             System.out.println("jvm_mechanic: Capturing new work stream! Sample accuracy: " + sessionSampleAccuracy);
-            threadLocalStorage.set(workSessionId = ThreadLocalRandom.current().nextInt());
+            localSessionIdStorage.set(workSessionId = ThreadLocalRandom.current().nextInt());
         }
 
         EnterEvent event = new EnterEvent();
@@ -99,12 +117,12 @@ public class jvm_mechanic extends Helper {
     }
 
     public void exit(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = threadLocalStorage.get();
+        Integer workSessionId = localSessionIdStorage.get();
         if (workSessionId == null) {
             return;
         }
 
-        threadLocalStorage.remove();
+        localSessionIdStorage.remove();
         ExitEvent event = new ExitEvent();
         event.workSessionId = workSessionId;
         event.eventMethodId = (short) eventMethodId;
@@ -123,12 +141,12 @@ public class jvm_mechanic extends Helper {
     }
 
     public void error_exit(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = threadLocalStorage.get();
+        Integer workSessionId = localSessionIdStorage.get();
         if (workSessionId == null) {
             return;
         }
 
-        threadLocalStorage.remove();
+        localSessionIdStorage.remove();
         ExitEvent event = new ExitEvent();
         event.workSessionId = workSessionId;
         event.eventMethodId = (short) eventMethodId;
@@ -148,7 +166,7 @@ public class jvm_mechanic extends Helper {
     }
 
     public void begin_work(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = threadLocalStorage.get();
+        Integer workSessionId = localSessionIdStorage.get();
         if (workSessionId == null) {
             return;
         }
@@ -171,7 +189,7 @@ public class jvm_mechanic extends Helper {
     }
 
     public void error_begin_work(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = threadLocalStorage.get();
+        Integer workSessionId = localSessionIdStorage.get();
         if (workSessionId == null) {
             return;
         }
@@ -195,7 +213,7 @@ public class jvm_mechanic extends Helper {
     }
 
     public void end_work(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = threadLocalStorage.get();
+        Integer workSessionId = localSessionIdStorage.get();
         if (workSessionId == null) {
             return;
         }
@@ -218,7 +236,7 @@ public class jvm_mechanic extends Helper {
     }
 
     public void error_end_work(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = threadLocalStorage.get();
+        Integer workSessionId = localSessionIdStorage.get();
         if (workSessionId == null) {
             return;
         }
@@ -235,6 +253,63 @@ public class jvm_mechanic extends Helper {
         stashStream.stashMechanicEvent(event);
 
         registerEventMethodId(event.eventMethodId, event.eventMethod);
+    }
+
+    public void complete_work(int eventMethodId, String eventContext) {
+        complete_work(eventMethodId, eventContext, null);
+    }
+
+    public void complete_work(int eventMethodId, String eventContext, String eventAttribute) {
+        Integer workSessionId = localSessionIdStorage.get();
+        if (workSessionId == null) {
+            return;
+        }
+
+        String localConfig = popLocalConfig();
+        if (localConfig != null) {
+            CompleteWorkEvent event = new CompleteWorkEvent(Long.valueOf(localConfig));
+            event.workSessionId = workSessionId;
+            event.eventMethodId = (short) eventMethodId;
+            event.eventContext = eventContext;
+            event.eventThread = Thread.currentThread().getName();
+            event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+            event.eventTriggerMethod = getTriggerMethod();
+            event.eventAttribute = eventAttribute;
+            stashStream.stashMechanicEvent(event);
+
+            registerEventMethodId(event.eventMethodId, event.eventMethod);
+        } else {
+            System.out.println("NULL LOCAL CONFIG!");
+        }
+    }
+
+    public void error_complete_work(int eventMethodId, String eventContext) {
+        error_complete_work(eventMethodId, eventContext, null);
+    }
+
+    public void error_complete_work(int eventMethodId, String eventContext, String eventAttribute) {
+        Integer workSessionId = localSessionIdStorage.get();
+        if (workSessionId == null) {
+            return;
+        }
+
+        String localConfig = popLocalConfig();
+        if (localConfig != null) {
+            CompleteWorkEvent event = new CompleteWorkEvent(Long.valueOf(localConfig));
+            event.workSessionId = workSessionId;
+            event.eventMethodId = (short) eventMethodId;
+            event.success = false;
+            event.eventContext = eventContext;
+            event.eventThread = Thread.currentThread().getName();
+            event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
+            event.eventTriggerMethod = getTriggerMethod();
+            event.eventAttribute = eventAttribute;
+            stashStream.stashMechanicEvent(event);
+
+            registerEventMethodId(event.eventMethodId, event.eventMethod);
+        } else {
+            System.out.println("NULL LOCAL CONFIG!");
+        }
     }
 
     private void registerEventMethodId(short eventMethodId, String eventMethod) {
