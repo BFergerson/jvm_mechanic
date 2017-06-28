@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
+import com.codebrig.jvmmechanic.agent.ConfigProperties;
 import com.codebrig.jvmmechanic.agent.event.CorruptMechanicalEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
 
@@ -39,9 +40,9 @@ public class DataEntry {
         return buffer;
     }
 
-    public MechanicEvent toMechanicEvent() {
+    public MechanicEvent toMechanicEvent(ConfigProperties configProperties) {
         try {
-            return MechanicEvent.toMechanicEvent(ByteBuffer.wrap(rawData));
+            return MechanicEvent.toMechanicEvent(configProperties, ByteBuffer.wrap(rawData));
         } catch (Exception ex) {
             return new CorruptMechanicalEvent(ex);
         }

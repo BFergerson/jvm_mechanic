@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.dashboard.playback;
 
+import com.codebrig.jvmmechanic.agent.ConfigProperties;
 import com.codebrig.jvmmechanic.agent.event.CompleteWorkEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEventType;
@@ -21,6 +22,7 @@ import java.util.*;
  */
 public class PlaybackLoader {
 
+    private ConfigProperties configProperties;
     private StashLedgerFile stashLedgerFile;
     private StashDataFile stashDataFile;
     private GarbageLogAnalyzer garbageLogAnalyzer;
@@ -32,7 +34,9 @@ public class PlaybackLoader {
     private final Map<Integer, List<SessionMethodInvocationData>> sessionMethodInvocationMap = new HashMap<>();
     private final Map<Short, String> methodFunctionSignatureMap = new HashMap<>();
 
-    public PlaybackLoader(StashLedgerFile stashLedgerFile, StashDataFile stashDataFile, GarbageLogAnalyzer garbageLogAnalyzer) {
+    public PlaybackLoader(ConfigProperties configProperties, StashLedgerFile stashLedgerFile,
+                          StashDataFile stashDataFile, GarbageLogAnalyzer garbageLogAnalyzer) {
+        this.configProperties = configProperties;
         this.stashLedgerFile = stashLedgerFile;
         this.stashDataFile = stashDataFile;
         this.garbageLogAnalyzer = garbageLogAnalyzer;
@@ -51,7 +55,7 @@ public class PlaybackLoader {
             DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
             filePosition += journalEntry.getEventSize();
 
-            MechanicEvent event = dataEntry.toMechanicEvent();
+            MechanicEvent event = dataEntry.toMechanicEvent(configProperties);
             if (event.eventType.equals(MechanicEventType.COMPLETE_WORK_EVENT)) {
                 CompleteWorkEvent completeWorkEvent = (CompleteWorkEvent) event;
                 registerEvent(completeWorkEvent.getBeginWorkEvent());
@@ -171,7 +175,7 @@ public class PlaybackLoader {
         }
         sessionEventMap.get(event.workSessionId).add(event);
         allSessionIdSet.add(event.workSessionId);
-        methodFunctionSignatureMap.put(event.eventMethodId, event.eventMethod);
+        methodFunctionSignatureMap.put(event.eventMethodId, event.eventMethod.getString());
     }
 
     private void associateGarbagePauses() throws IOException {

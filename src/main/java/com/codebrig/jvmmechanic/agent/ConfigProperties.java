@@ -2,10 +2,7 @@ package com.codebrig.jvmmechanic.agent;
 
 import com.google.common.collect.Maps;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
@@ -16,9 +13,31 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
-class ConfigProperties extends Properties {
+public class ConfigProperties extends Properties {
 
     private ConcurrentMap<Object, Object> updatedPropertiesMap = Maps.newConcurrentMap();
+    private String configFilePath;
+    private OutputStream out;
+
+    public ConfigProperties(String configFilePath) throws IOException {
+        this.configFilePath = configFilePath;
+        if (new File(configFilePath).exists()) {
+            load(new FileInputStream(configFilePath));
+        }
+    }
+
+    public void sync() {
+        try {
+            if (out == null) {
+                synchronized (this) {
+                    out = new FileOutputStream(configFilePath);
+                }
+            }
+            store(out);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     @Override
     public synchronized Object put(Object key, Object value) {

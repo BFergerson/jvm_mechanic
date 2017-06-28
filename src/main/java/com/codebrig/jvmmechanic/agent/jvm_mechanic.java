@@ -7,9 +7,7 @@ import com.google.common.collect.Maps;
 import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ThreadLocalRandom;
@@ -27,8 +25,7 @@ public class jvm_mechanic extends Helper {
     private static final ThreadLocal<Integer> localSessionIdStorage = new ThreadLocal<>();
     private static final ThreadLocal<Stack<String>> localEventConfigStackStorage = new ThreadLocal<>();
     private static final Map<Short, String> REGISTERED_METHOD_ID_MAP = Maps.newConcurrentMap();
-    private static final ConfigProperties prop = new ConfigProperties();
-    private static OutputStream output = null;
+    private static ConfigProperties prop = null;
 
     public jvm_mechanic(Rule rule) throws IOException {
         super(rule);
@@ -69,19 +66,15 @@ public class jvm_mechanic extends Helper {
                 String playbackProperty = System.getProperty("jvm_mechanic.config.playback_enabled", "false");
                 String configFileProperty = System.getProperty("jvm_mechanic.config.filename", "C:\\temp\\jvm_mechanic.config");
                 String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
-                try {
-                    output = new FileOutputStream(configFileProperty);
-                    prop.setProperty("jvm_mechanic.config.playback_enabled", playbackProperty);
-                    prop.setProperty("jvm_mechanic.stash.ledger.filename", ledgerFileProperty);
-                    prop.setProperty("jvm_mechanic.stash.data.filename", dataFileProperty);
-                    prop.setProperty("jvm_mechanic.config.filename", configFileProperty);
-                    prop.setProperty("jvm_mechanic.config.journal_entry_size", Integer.toString(JournalEntry.JOURNAL_ENTRY_SIZE));
-                    prop.setProperty("jvm_mechanic.gc.filename", gcLogFileName);
-                    prop.setProperty("jvm_mechanic.event.session_sample_accuracy", Double.toString(sessionSampleAccuracy * 100.00d));
-                    prop.store(output);
-                } catch (IOException io) {
-                    io.printStackTrace();
-                }
+                prop = new ConfigProperties(configFileProperty);
+                prop.setProperty("jvm_mechanic.config.playback_enabled", playbackProperty);
+                prop.setProperty("jvm_mechanic.stash.ledger.filename", ledgerFileProperty);
+                prop.setProperty("jvm_mechanic.stash.data.filename", dataFileProperty);
+                prop.setProperty("jvm_mechanic.config.filename", configFileProperty);
+                prop.setProperty("jvm_mechanic.config.journal_entry_size", Integer.toString(JournalEntry.JOURNAL_ENTRY_SIZE));
+                prop.setProperty("jvm_mechanic.gc.filename", gcLogFileName);
+                prop.setProperty("jvm_mechanic.event.session_sample_accuracy", Double.toString(sessionSampleAccuracy * 100.00d));
+                prop.sync();
             }
         }
     }
@@ -99,17 +92,7 @@ public class jvm_mechanic extends Helper {
             localSessionIdStorage.set(workSessionId = ThreadLocalRandom.current().nextInt());
         }
 
-        EnterEvent event = new EnterEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
+        processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, new EnterEvent());
     }
 
     public void exit(int eventMethodId, String eventContext) {
@@ -123,17 +106,7 @@ public class jvm_mechanic extends Helper {
         }
 
         localSessionIdStorage.remove();
-        ExitEvent event = new ExitEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
+        processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, new ExitEvent());
     }
 
     public void error_exit(int eventMethodId, String eventContext) {
@@ -147,18 +120,7 @@ public class jvm_mechanic extends Helper {
         }
 
         localSessionIdStorage.remove();
-        ExitEvent event = new ExitEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.success = false;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
+        processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, new ExitEvent());
     }
 
     public void begin_work(int eventMethodId, String eventContext) {
@@ -171,41 +133,7 @@ public class jvm_mechanic extends Helper {
             return;
         }
 
-        BeginWorkEvent event = new BeginWorkEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
-    }
-
-    public void error_begin_work(int eventMethodId, String eventContext) {
-        error_begin_work(eventMethodId, eventContext, null);
-    }
-
-    public void error_begin_work(int eventMethodId, String eventContext, String eventAttribute) {
-        Integer workSessionId = localSessionIdStorage.get();
-        if (workSessionId == null) {
-            return;
-        }
-
-        BeginWorkEvent event = new BeginWorkEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.success = false;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
+        processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, new BeginWorkEvent());
     }
 
     public void end_work(int eventMethodId, String eventContext) {
@@ -218,17 +146,7 @@ public class jvm_mechanic extends Helper {
             return;
         }
 
-        EndWorkEvent event = new EndWorkEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
+        processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, new EndWorkEvent());
     }
 
     public void error_end_work(int eventMethodId, String eventContext) {
@@ -241,18 +159,7 @@ public class jvm_mechanic extends Helper {
             return;
         }
 
-        EndWorkEvent event = new EndWorkEvent();
-        event.workSessionId = workSessionId;
-        event.eventMethodId = (short) eventMethodId;
-        event.success = false;
-        event.eventContext = eventContext;
-        event.eventThread = Thread.currentThread().getName();
-        event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-        event.eventTriggerMethod = getTriggerMethod();
-        event.eventAttribute = eventAttribute;
-        stashStream.stashMechanicEvent(event);
-
-        registerEventMethodId(event.eventMethodId, event.eventMethod);
+        processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, new EndWorkEvent());
     }
 
     public void complete_work(int eventMethodId, String eventContext) {
@@ -268,16 +175,7 @@ public class jvm_mechanic extends Helper {
         String localConfig = popLocalConfig();
         if (localConfig != null) {
             CompleteWorkEvent event = new CompleteWorkEvent(Long.valueOf(localConfig));
-            event.workSessionId = workSessionId;
-            event.eventMethodId = (short) eventMethodId;
-            event.eventContext = eventContext;
-            event.eventThread = Thread.currentThread().getName();
-            event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-            event.eventTriggerMethod = getTriggerMethod();
-            event.eventAttribute = eventAttribute;
-            stashStream.stashMechanicEvent(event);
-
-            registerEventMethodId(event.eventMethodId, event.eventMethod);
+            processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, event);
         } else {
             System.out.println("NULL LOCAL CONFIG!");
         }
@@ -296,31 +194,31 @@ public class jvm_mechanic extends Helper {
         String localConfig = popLocalConfig();
         if (localConfig != null) {
             CompleteWorkEvent event = new CompleteWorkEvent(Long.valueOf(localConfig));
-            event.workSessionId = workSessionId;
-            event.eventMethodId = (short) eventMethodId;
-            event.success = false;
-            event.eventContext = eventContext;
-            event.eventThread = Thread.currentThread().getName();
-            event.eventMethod = rule.getTargetClass() + "." + rule.getTargetMethod();
-            event.eventTriggerMethod = getTriggerMethod();
-            event.eventAttribute = eventAttribute;
-            stashStream.stashMechanicEvent(event);
-
-            registerEventMethodId(event.eventMethodId, event.eventMethod);
+            processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, event);
         } else {
             System.out.println("NULL LOCAL CONFIG!");
         }
+    }
+
+    private void processEvent(short eventMethodId, String eventContext, String eventAttribute,
+                              Integer workSessionId, MechanicEvent event) {
+        event.workSessionId = workSessionId;
+        event.eventMethodId = eventMethodId;
+        event.eventContext = new CacheString(prop, eventContext);
+        event.eventThread = new CacheString(prop, Thread.currentThread().getName());
+        event.eventMethod = new CacheString(prop, rule.getTargetClass() + "." + rule.getTargetMethod());
+        event.eventTriggerMethod = new CacheString(prop, getTriggerMethod());
+        event.eventAttribute = new CacheString(prop, eventAttribute);
+
+        stashStream.stashMechanicEvent(event);
+        registerEventMethodId(event.eventMethodId, event.eventMethod.getString());
     }
 
     private void registerEventMethodId(short eventMethodId, String eventMethod) {
         if (!REGISTERED_METHOD_ID_MAP.containsKey(eventMethodId)) {
             REGISTERED_METHOD_ID_MAP.put(eventMethodId, eventMethod);
             prop.put("method_id_" + eventMethodId, eventMethod);
-            try {
-                prop.store(output);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
+            prop.sync();
         }
     }
 

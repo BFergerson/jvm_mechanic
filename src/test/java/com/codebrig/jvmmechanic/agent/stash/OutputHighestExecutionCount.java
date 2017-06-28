@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
+import com.codebrig.jvmmechanic.agent.ConfigProperties;
 import com.codebrig.jvmmechanic.dashboard.GarbageLogAnalyzer;
 import com.codebrig.jvmmechanic.dashboard.playback.PlaybackData;
 import com.codebrig.jvmmechanic.dashboard.playback.PlaybackLoader;
@@ -10,6 +11,7 @@ import java.util.*;
 public class OutputHighestExecutionCount {
 
     public static void main(String[] args) throws Exception {
+        String configFileProperty = System.getProperty("jvm_mechanic.config.filename", "C:\\temp\\jvm_mechanic.config");
         String ledgerFileProperty = System.getProperty("jvm_mechanic.stash.ledger.filename", "C:\\temp\\jvm_mechanic.ledger");
         String dataFileProperty = System.getProperty("jvm_mechanic.stash.data.filename", "C:\\temp\\jvm_mechanic.data");
 
@@ -20,7 +22,7 @@ public class OutputHighestExecutionCount {
 
         String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
         GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
-        PlaybackLoader playbackLoader = new PlaybackLoader(stashLedgerFile, stashDataFile, logAnalyzer);
+        PlaybackLoader playbackLoader = new PlaybackLoader(new ConfigProperties(configFileProperty), stashLedgerFile, stashDataFile, logAnalyzer);
         playbackLoader.preloadAllEvents();
 
         PlaybackData playbackData = playbackLoader.getAllPlaybackData();

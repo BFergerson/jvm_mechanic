@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.agent.event;
 
+import com.codebrig.jvmmechanic.agent.CacheString;
+import com.codebrig.jvmmechanic.agent.ConfigProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.nio.ByteBuffer;
@@ -17,11 +19,11 @@ public abstract class MechanicEvent {
     public long eventTimestamp;
     public int workSessionId;
     public short eventMethodId;
-    public String eventContext;
-    public String eventThread;
-    public String eventMethod;
-    public String eventTriggerMethod;
-    public String eventAttribute;
+    public CacheString eventContext;
+    public CacheString eventThread;
+    public CacheString eventMethod;
+    public CacheString eventTriggerMethod;
+    public CacheString eventAttribute;
     public boolean success = true;
     public final MechanicEventType eventType;
     String eventConfig; //internal use only
@@ -60,34 +62,11 @@ public abstract class MechanicEvent {
         buffer.put((byte)(success ? 1 : 0));
         buffer.put(eventType.toEventTypeId());
 
-        //buffer.put((byte)(eventContext != null ? 1 : 0));
-        byte[] eventContextBytes = eventContext.getBytes();
-        buffer.putInt(eventContextBytes.length);
-        buffer.put(eventContextBytes);
-
-        //buffer.put((byte)(eventThread != null ? 1 : 0));
-        byte[] eventThreadBytes = eventThread.getBytes();
-        buffer.putInt(eventThreadBytes.length);
-        buffer.put(eventThreadBytes);
-
-        //buffer.put((byte)(eventMethod != null ? 1 : 0));
-        byte[] eventMethodBytes = eventMethod.getBytes();
-        buffer.putInt(eventMethodBytes.length);
-        buffer.put(eventMethodBytes);
-
-        buffer.put((byte)(eventTriggerMethod != null ? 1 : 0));
-        if (eventTriggerMethod != null) {
-            byte[] eventTriggerMethodBytes = eventTriggerMethod.getBytes();
-            buffer.putInt(eventTriggerMethodBytes.length);
-            buffer.put(eventTriggerMethodBytes);
-        }
-
-        buffer.put((byte)(eventAttribute != null ? 1 : 0));
-        if (eventAttribute != null) {
-            byte[] eventAttributeBytes = eventAttribute.getBytes();
-            buffer.putInt(eventAttributeBytes.length);
-            buffer.put(eventAttributeBytes);
-        }
+        eventContext.writeToBuffer(buffer);
+        eventThread.writeToBuffer(buffer);
+        eventMethod.writeToBuffer(buffer);
+        eventTriggerMethod.writeToBuffer(buffer);
+        eventAttribute.writeToBuffer(buffer);
 
         buffer.put((byte)(eventConfig != null ? 1 : 0));
         if (eventConfig != null) {
@@ -101,7 +80,7 @@ public abstract class MechanicEvent {
         return rawData;
     }
 
-    public static MechanicEvent toMechanicEvent(ByteBuffer buffer) {
+    public static MechanicEvent toMechanicEvent(ConfigProperties configProperties, ByteBuffer buffer) {
         int eventId = buffer.getInt();
         long eventTimestamp = buffer.getLong();
         int workSessionId = buffer.getInt();
@@ -109,39 +88,11 @@ public abstract class MechanicEvent {
         boolean success = buffer.get() == 1;
         byte eventType = buffer.get();
 
-        //buffer.put((byte)(eventContext != null ? 1 : 0));
-        int eventContextLength = buffer.getInt();
-        byte[] eventContextBytes = new byte[eventContextLength];
-        buffer.get(eventContextBytes);
-        String eventContext = new String(eventContextBytes);
-
-        //buffer.put((byte)(eventThread != null ? 1 : 0));
-        int eventThreadLength = buffer.getInt();
-        byte[] eventThreadBytes = new byte[eventThreadLength];
-        buffer.get(eventThreadBytes);
-        String eventThread = new String(eventThreadBytes);
-
-        //buffer.put((byte)(eventMethod != null ? 1 : 0));
-        int eventMethodLength = buffer.getInt();
-        byte[] eventMethodBytes = new byte[eventMethodLength];
-        buffer.get(eventMethodBytes);
-        String eventMethod = new String(eventMethodBytes);
-
-        String eventTriggerMethod = null;
-        if (buffer.get() == 1) {
-            int eventTriggerLength = buffer.getInt();
-            byte[] eventTriggerBytes = new byte[eventTriggerLength];
-            buffer.get(eventTriggerBytes);
-            eventTriggerMethod = new String(eventTriggerBytes);
-        }
-
-        String eventAttribute = null;
-        if (buffer.get() == 1) {
-            int eventAttributeLength = buffer.getInt();
-            byte[] eventAttributeBytes = new byte[eventAttributeLength];
-            buffer.get(eventAttributeBytes);
-            eventAttribute = new String(eventAttributeBytes);
-        }
+        CacheString eventContext = CacheString.readFromBuffer(configProperties, buffer);
+        CacheString eventThread = CacheString.readFromBuffer(configProperties, buffer);
+        CacheString eventMethod = CacheString.readFromBuffer(configProperties, buffer);
+        CacheString eventTriggerMethod = CacheString.readFromBuffer(configProperties, buffer);
+        CacheString eventAttribute = CacheString.readFromBuffer(configProperties, buffer);
 
         String eventConfig = null;
         if (buffer.get() == 1) {

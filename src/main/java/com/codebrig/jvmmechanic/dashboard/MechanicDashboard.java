@@ -1,7 +1,7 @@
 package com.codebrig.jvmmechanic.dashboard;
 
+import com.codebrig.jvmmechanic.agent.ConfigProperties;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
-import com.codebrig.jvmmechanic.agent.stash.DataEntry;
 import com.codebrig.jvmmechanic.agent.stash.JournalEntry;
 import com.codebrig.jvmmechanic.agent.stash.StashDataFile;
 import com.codebrig.jvmmechanic.agent.stash.StashLedgerFile;
@@ -44,9 +44,10 @@ public class MechanicDashboard {
             try {
                 String playbackProperty = System.getProperty("jvm_mechanic.config.playback_enabled", "false");
                 if (playbackProperty.equalsIgnoreCase("true")) {
+                    String configFileProperty = System.getProperty("jvm_mechanic.config.filename", "C:\\temp\\jvm_mechanic.config");
                     String gcLogFileName = System.getProperty("jvm_mechanic.gc.filename", "C:\\temp\\jvm_gc.log");
                     GarbageLogAnalyzer logAnalyzer = new GarbageLogAnalyzer(gcLogFileName);
-                    PlaybackLoader playbackLoader = new PlaybackLoader(stashLedgerFile, stashDataFile, logAnalyzer);
+                    PlaybackLoader playbackLoader = new PlaybackLoader(new ConfigProperties(configFileProperty), stashLedgerFile, stashDataFile, logAnalyzer);
                     playbackLoader.preloadAllEvents();
                     MechanicDashboard.playbackLoader = playbackLoader;
                 }
