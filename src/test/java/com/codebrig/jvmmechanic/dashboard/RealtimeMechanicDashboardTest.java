@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.dashboard;
 
+import com.codebrig.jvmmechanic.agent.CacheString;
 import com.codebrig.jvmmechanic.agent.event.EnterEvent;
 import com.codebrig.jvmmechanic.agent.event.ExitEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
@@ -34,10 +35,10 @@ public class RealtimeMechanicDashboardTest {
             MechanicEvent mechanicEvent = new EnterEvent();
             mechanicEvent.workSessionId = sessionId;
             mechanicEvent.eventMethodId = (short) 1;
-            mechanicEvent.eventContext = "server";
-            mechanicEvent.eventThread = Thread.currentThread().getName();
-            mechanicEvent.eventMethod = "com.codebrig.jvmmechanic.some_event_class.some_event_function()";
-            mechanicEvent.eventTriggerMethod = "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()";
+            mechanicEvent.eventContext = new CacheString(null, "server");
+            mechanicEvent.eventThread = new CacheString(null, Thread.currentThread().getName());
+            mechanicEvent.eventMethod = new CacheString(null, "com.codebrig.jvmmechanic.some_event_class.some_event_function()");
+            mechanicEvent.eventTriggerMethod = new CacheString(null, "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()");
             mechanicEvent.eventId = eventIdIndex.getAndIncrement();
             DataEntry dataEntry = new DataEntry(mechanicEvent.getEventData());
             JournalEntry journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventId, mechanicEvent.workSessionId,
@@ -55,10 +56,10 @@ public class RealtimeMechanicDashboardTest {
             mechanicEvent = new ExitEvent();
             mechanicEvent.workSessionId = sessionId;
             mechanicEvent.eventMethodId = (short) 1;
-            mechanicEvent.eventContext = "server";
-            mechanicEvent.eventThread = Thread.currentThread().getName();
-            mechanicEvent.eventMethod = "com.codebrig.jvmmechanic.some_event_class.some_event_function()";
-            mechanicEvent.eventTriggerMethod = "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()";
+            mechanicEvent.eventContext = new CacheString(null, "server");
+            mechanicEvent.eventThread = new CacheString(null, Thread.currentThread().getName());
+            mechanicEvent.eventMethod = new CacheString(null, "com.codebrig.jvmmechanic.some_event_class.some_event_function()");
+            mechanicEvent.eventTriggerMethod = new CacheString(null, "com.codebrig.jvmmechanic.some_trigger_class.some_trigger_function()");
             mechanicEvent.eventId = eventIdIndex.getAndIncrement();
             dataEntry = new DataEntry(mechanicEvent.getEventData());
             journalEntry = new JournalEntry(mechanicEvent.eventId, mechanicEvent.eventId, mechanicEvent.workSessionId,

@@ -80,7 +80,7 @@ public class CacheString {
     }
 
     private void tryToCache() {
-        if (getString() == null) {
+        if (getString() == null || configProperties == null) {
             return;
         }
 
