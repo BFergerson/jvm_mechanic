@@ -50,8 +50,9 @@ public class CacheString {
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
-        buffer.put((byte)(isCachable() ? 1 : 0));
-        if (isCachable()) {
+        boolean cache = isCachable();
+        buffer.put((byte)(cache ? 1 : 0));
+        if (cache) {
             buffer.putInt(cacheIndex);
         } else {
             buffer.put((byte)(getString() != null ? 1 : 0));
@@ -61,7 +62,6 @@ public class CacheString {
                 buffer.put(strBytes);
             }
         }
-
     }
 
     public String getString() {
