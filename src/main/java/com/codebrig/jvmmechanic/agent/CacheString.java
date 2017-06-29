@@ -18,7 +18,8 @@ public class CacheString {
         if (buffer.get() == 1) {
             //cached
             int cacheIndex = buffer.getInt();
-            return new CacheString(configProperties, cachedStrings.get(cacheIndex));
+            String cacheString = cachedStrings.computeIfAbsent(cacheIndex, i -> (String) configProperties.get("cache_string_" + i));
+            return new CacheString(configProperties, cacheString);
         } else {
             //raw string
             if (buffer.get() == 1) {
@@ -87,6 +88,8 @@ public class CacheString {
         Integer possibleCacheIndex = cacheCandiates.getIfPresent(getString());
         if (possibleCacheIndex != null) {
             configProperties.put("cache_string_" + possibleCacheIndex, getString());
+            configProperties.sync();
+
             cachedStrings.put(possibleCacheIndex, getString());
             setCacheIndex(possibleCacheIndex);
         } else {
