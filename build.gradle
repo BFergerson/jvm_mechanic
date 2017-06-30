@@ -20,6 +20,7 @@ dependencies {
     compile group: 'commons-cli', name: 'commons-cli', version: '1.1'
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     compile files('libs/garbagecat-2.0.5.jar')
+    compile 'org.mapdb:mapdb:3.0.4'
 }
 
 task uberJar(type: Jar, dependsOn:[':compileJava']) {

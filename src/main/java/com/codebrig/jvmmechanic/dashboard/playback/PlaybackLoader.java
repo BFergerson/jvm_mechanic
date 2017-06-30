@@ -11,8 +11,17 @@ import com.codebrig.jvmmechanic.agent.stash.StashLedgerFile;
 import com.codebrig.jvmmechanic.dashboard.ApplicationThroughput;
 import com.codebrig.jvmmechanic.dashboard.GarbageCollectionPause;
 import com.codebrig.jvmmechanic.dashboard.GarbageLogAnalyzer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -27,12 +36,13 @@ public class PlaybackLoader {
     private StashDataFile stashDataFile;
     private GarbageLogAnalyzer garbageLogAnalyzer;
     private ApplicationThroughput playbackAbsoluteApplicationThroughput;
-    private final Map<Integer, List<MechanicEvent>> sessionEventMap = new HashMap<>();
-    private final Set<Integer> allSessionIdSet = new HashSet<>();
-    private final Map<Integer, Long> sessionStartTimeMap = new HashMap<>();
-    private final TreeMap<Long, Integer> sessionEventTimeTreeMap = new TreeMap<>();
-    private final Map<Integer, List<SessionMethodInvocationData>> sessionMethodInvocationMap = new HashMap<>();
-    private final Map<Short, String> methodFunctionSignatureMap = new HashMap<>();
+    private final Map<Integer, byte[]> sessionEventMap;
+    private final Set<Integer> allSessionIdSet;
+    private final Map<Integer, Long> sessionStartTimeMap;
+    private final BTreeMap<Long, Integer> sessionEventTimeTreeMap;
+    private final Map<Integer, String> sessionMethodInvocationMap;
+    private final Map<Short, String> methodFunctionSignatureMap;
+    private DB db;
 
     public PlaybackLoader(ConfigProperties configProperties, StashLedgerFile stashLedgerFile,
                           StashDataFile stashDataFile, GarbageLogAnalyzer garbageLogAnalyzer) {
@@ -40,6 +50,73 @@ public class PlaybackLoader {
         this.stashLedgerFile = stashLedgerFile;
         this.stashDataFile = stashDataFile;
         this.garbageLogAnalyzer = garbageLogAnalyzer;
+
+        try {
+            db = DBMaker.fileDB("C:\\temp\\jvm_mechanic-playback.cache")
+                    .fileMmapEnableIfSupported()
+                    .make();
+        } catch (Exception ex) {
+            new File("C:\\temp\\jvm_mechanic-playback.cache").delete();
+            db = DBMaker.fileDB("C:\\temp\\jvm_mechanic-playback.cache")
+                    .fileMmapEnableIfSupported()
+                    .make();
+        }
+        sessionEventMap = db.hashMap("sessionEventMap", Serializer.INTEGER, Serializer.BYTE_ARRAY).createOrOpen();
+        allSessionIdSet = db.hashSet("allSessionIdSet", Serializer.INTEGER).createOrOpen();
+        sessionStartTimeMap = db.hashMap("sessionStartTimeMap", Serializer.INTEGER, Serializer.LONG).createOrOpen();
+        sessionEventTimeTreeMap = db.treeMap("sessionEventTimeTreeMap", Serializer.LONG, Serializer.INTEGER).createOrOpen();
+        sessionMethodInvocationMap = db.hashMap("sessionMethodInvocationMap", Serializer.INTEGER, Serializer.STRING).createOrOpen();
+        methodFunctionSignatureMap = db.hashMap("methodFunctionSignatureMap", Serializer.SHORT, Serializer.STRING).createOrOpen();
+    }
+
+    private List<MechanicEvent> toMechanicEventList(byte[] value) {
+        List<MechanicEvent> returnList = new ArrayList<>();
+        try {
+            List<byte[]> conversion = new ObjectMapper().readValue(value, new TypeReference<List<byte[]>>(){});
+            for (byte[] data : conversion) {
+                returnList.add(MechanicEvent.toMechanicEvent(configProperties, ByteBuffer.wrap(data)));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return returnList;
+    }
+
+    private byte[] fromMechanicEventList(List<MechanicEvent> list) {
+        List<byte[]> conversion = new ArrayList<>();
+        try {
+            for (MechanicEvent event : Objects.requireNonNull(list)) {
+                conversion.add(event.getEventData());
+            }
+            return new ObjectMapper().writeValueAsBytes(conversion);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<SessionMethodInvocationData> toSessionMethodInvocationDataList(String value) {
+        List<SessionMethodInvocationData> returnList = new ArrayList<>();
+        try {
+            List<String> conversion = new ObjectMapper().readValue(value, new TypeReference<List<String>>(){});
+            for (String string : conversion) {
+                returnList.add(new ObjectMapper().readValue(string, SessionMethodInvocationData.class));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return returnList;
+    }
+
+    private String fromSessionMethodInvocationDataList(List<SessionMethodInvocationData> list) {
+        try {
+            List<String> conversion = new ArrayList<>();
+            for (SessionMethodInvocationData data : Objects.requireNonNull(list)) {
+                conversion.add(new ObjectMapper().writeValueAsString(data));
+            }
+            return new ObjectMapper().writeValueAsString(conversion);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void preloadAllEvents() throws IOException {
@@ -50,7 +127,9 @@ public class PlaybackLoader {
         journalEntryList.sort(Comparator.comparingInt(JournalEntry::getLedgerId));
 
         //load mechanic events
+        double x = 0.0;
         long filePosition = 0;
+        int pos = 0;
         for (JournalEntry journalEntry : journalEntryList) {
             DataEntry dataEntry = stashDataFile.readDataEntry(filePosition, journalEntry.getEventSize());
             filePosition += journalEntry.getEventSize();
@@ -63,10 +142,18 @@ public class PlaybackLoader {
             } else {
                 registerEvent(event);
             }
+
+            float percent = pos * 100f / journalEntryList.size();
+            if (Math.round(percent) != x) {
+                System.out.println("Playback data analyzed: " + x + "%");
+                x = Math.round(percent);
+            }
+            pos++;
         }
 
         //calculate invocation data
-        for (Map.Entry<Integer, List<MechanicEvent>> entry : sessionEventMap.entrySet()) {
+        for (Map.Entry<Integer, byte[]> entry : sessionEventMap.entrySet()) {
+            List<MechanicEvent> eventList = toMechanicEventList(entry.getValue());
             Map<Short, SessionMethodInvocationData> invocationDataMap = new HashMap<>();
             LinkedList<SessionMethodInvocationData> parentMethodDataList = new LinkedList<>();
             LinkedList<MechanicEvent> parentEventList = new LinkedList<>();
@@ -79,8 +166,8 @@ public class PlaybackLoader {
             long previousEventTimestamp = -1;
 
             //order session events by event id
-            entry.getValue().sort(Comparator.comparingInt(MechanicEvent::getEventId));
-            for (MechanicEvent event : entry.getValue()) {
+            eventList.sort(Comparator.comparingInt(MechanicEvent::getEventId));
+            for (MechanicEvent event : eventList) {
                 switch (event.eventType) {
                     case ENTER_EVENT:
                         hasEnterEvent = true;
@@ -154,7 +241,7 @@ public class PlaybackLoader {
                 //invalid session
                 System.out.println("Invalid session: " + currentSessionId);
             } else {
-                sessionMethodInvocationMap.put(currentSessionId, new ArrayList<>(invocationDataMap.values()));
+                sessionMethodInvocationMap.put(currentSessionId, fromSessionMethodInvocationDataList(new ArrayList<>(invocationDataMap.values())));
             }
         }
 
@@ -163,6 +250,12 @@ public class PlaybackLoader {
             associateGarbagePauses();
             playbackAbsoluteApplicationThroughput = garbageLogAnalyzer.getGarbageCollectionReport().getPlaybackAbsoluteThroughput();
         }
+
+        //close and reopen (flushes)
+        db.close();
+        db = DBMaker.fileDB("C:\\temp\\jvm_mechanic-playback.cache")
+                .fileMmapEnableIfSupported()
+                .make();
         System.out.println("Finished pre-loading data for playback!");
     }
 
@@ -171,9 +264,12 @@ public class PlaybackLoader {
             sessionEventTimeTreeMap.put(event.eventTimestamp, event.workSessionId);
         }
         if (!sessionEventMap.containsKey(event.workSessionId)) {
-            sessionEventMap.put(event.workSessionId, new ArrayList<>());
+            sessionEventMap.put(event.workSessionId, fromMechanicEventList(new ArrayList<>()));
         }
-        sessionEventMap.get(event.workSessionId).add(event);
+        List<MechanicEvent> updateList = toMechanicEventList(sessionEventMap.get(event.workSessionId));
+        updateList.add(event);
+
+        sessionEventMap.put(event.workSessionId, fromMechanicEventList(updateList));
         allSessionIdSet.add(event.workSessionId);
         methodFunctionSignatureMap.put(event.eventMethodId, event.eventMethod.getString());
     }
@@ -186,8 +282,9 @@ public class PlaybackLoader {
                     pause.getPauseTimestamp() + pause.getPauseDuration(), true);
             for (int sessionId : sortedMap.values()) {
                 if (sessionMethodInvocationMap.containsKey(sessionId)) {
-                    for (SessionMethodInvocationData invocationData : sessionMethodInvocationMap.get(sessionId)) {
-                        for (SessionMethodInvocationData.MethodExecutionTime methodActiveTime : invocationData.getMethodActiveTimeList()) {
+                    List<SessionMethodInvocationData> sessionList = toSessionMethodInvocationDataList(sessionMethodInvocationMap.get(sessionId));
+                    for (SessionMethodInvocationData invocationData : sessionList) {
+                        for (MethodExecutionTime methodActiveTime : invocationData.getMethodActiveTimeList()) {
                             long start = methodActiveTime.getStartTimestamp();
                             long end = methodActiveTime.getEndTimestamp();
 
@@ -200,6 +297,9 @@ public class PlaybackLoader {
                             }
                         }
                     }
+
+                    //update sessionMethodInvocationMap
+                    sessionMethodInvocationMap.put(sessionId, fromSessionMethodInvocationDataList(sessionList));
                 }
             }
         }
@@ -234,14 +334,14 @@ public class PlaybackLoader {
                 }
                 playbackData.addSessionId(sessionId, sessionStartTimeMap.get(sessionId), false);
 
-                for (SessionMethodInvocationData invocationData : sessionMethodInvocationMap.get(sessionId)) {
+                for (SessionMethodInvocationData invocationData : toSessionMethodInvocationDataList(sessionMethodInvocationMap.get(sessionId))) {
                     playbackData.setFirstIncludedEvent(invocationData.getFirstEventTimestamp());
                     playbackData.setLastIncludedEvent(invocationData.getLastEventTimestamp());
                     playbackData.addSessionEventCount(sessionId, invocationData.getEventCount());
                     playbackData.addMethodDuration(invocationData.getMethodId(), sessionId, invocationData.getRelativeDuration(),
                             invocationData.getAbsoluteDuration(), invocationData.getInvocationCount());
 
-                    for (SessionMethodInvocationData.MethodExecutionTime methodTime : invocationData.getMethodPausedTimeList()) {
+                    for (MethodExecutionTime methodTime : invocationData.getMethodPausedTimeList()) {
                         playbackData.addGarbagePause(invocationData.getMethodId(), (int) methodTime.getDuration());
                     }
                 }
@@ -254,7 +354,7 @@ public class PlaybackLoader {
     }
 
     public List<MechanicEvent> getSessionEvents(int sessionId) {
-        List<MechanicEvent> events = sessionEventMap.get(sessionId);
+        List<MechanicEvent> events = toMechanicEventList(sessionEventMap.get(sessionId));
         if (events == null) {
             return new ArrayList<>();
         } else {

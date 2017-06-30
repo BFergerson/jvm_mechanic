@@ -60,7 +60,7 @@ public class MechanicDashboard {
         public Response serve(IHTTPSession session) {
             System.out.println("Dashboard request: " + session.getUri() + "; Method: " + session.getMethod().toString());
             if (session.getUri().startsWith("/playback/load") && session.getMethod().equals(Method.GET)) {
-                preloadPlaybackData();
+                //preloadPlaybackData();
 
                 NanoHTTPD.Response res = newFixedLengthResponse(Response.Status.OK, "application/javascript", "");
                 res.addHeader("Access-Control-Allow-Origin", "*");

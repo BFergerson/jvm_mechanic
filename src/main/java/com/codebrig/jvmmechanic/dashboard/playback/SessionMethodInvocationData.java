@@ -1,5 +1,7 @@
 package com.codebrig.jvmmechanic.dashboard.playback;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import java.util.List;
  *
  * @author Brandon Fergerson <brandon.fergerson@codebrig.com>
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SessionMethodInvocationData {
 
     private short methodId;
@@ -114,28 +117,6 @@ public class SessionMethodInvocationData {
 
     public int getEventCount() {
         return eventCount;
-    }
-
-    static class MethodExecutionTime {
-        private long startTimestamp;
-        private long endTimestamp;
-
-        MethodExecutionTime(long startTimestamp, long endTimestamp) {
-            this.startTimestamp = startTimestamp;
-            this.endTimestamp = endTimestamp;
-        }
-
-        long getStartTimestamp() {
-            return startTimestamp;
-        }
-
-        long getEndTimestamp() {
-            return endTimestamp;
-        }
-
-        long getDuration() {
-            return endTimestamp - startTimestamp;
-        }
     }
 
 }
