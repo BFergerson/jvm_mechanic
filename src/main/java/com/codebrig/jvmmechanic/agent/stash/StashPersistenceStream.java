@@ -1,5 +1,6 @@
 package com.codebrig.jvmmechanic.agent.stash;
 
+import com.codebrig.jvmmechanic.agent.event.CompleteWorkEvent;
 import com.codebrig.jvmmechanic.agent.event.MechanicEvent;
 
 import java.io.IOException;
@@ -40,7 +41,12 @@ public class StashPersistenceStream {
         if (eventIdIndex == null) {
             threadLocalEventIndex.set(eventIdIndex = new AtomicInteger());
         }
-        mechanicEvent.eventId = eventIdIndex.getAndIncrement();
+        if (mechanicEvent instanceof CompleteWorkEvent) {
+            //give it space to hold two event ids
+            mechanicEvent.eventId = eventIdIndex.getAndAdd(2);
+        } else {
+            mechanicEvent.eventId = eventIdIndex.getAndIncrement();
+        }
 
         executorService.execute(() -> {
             try {

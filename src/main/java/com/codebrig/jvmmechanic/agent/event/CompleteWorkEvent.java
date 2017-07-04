@@ -24,7 +24,7 @@ public class CompleteWorkEvent extends MechanicEvent {
 
     public BeginWorkEvent getBeginWorkEvent() {
         BeginWorkEvent event = new BeginWorkEvent();
-        event.eventId = eventId;
+        event.eventId = eventId - 1; //so begin event always has lower event id than end event
         event.eventTimestamp = getBeginWorkTimestamp();
         event.workSessionId = workSessionId;
         event.eventMethodId = eventMethodId;
