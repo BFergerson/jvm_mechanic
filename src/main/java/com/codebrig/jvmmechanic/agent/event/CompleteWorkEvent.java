@@ -14,12 +14,6 @@ public class CompleteWorkEvent extends MechanicEvent {
 
     CompleteWorkEvent() {
         super(MechanicEventType.COMPLETE_WORK_EVENT);
-
-        try {
-            eventData = new ObjectMapper().readValue(eventConfig, EventData.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public CompleteWorkEvent(int beginWorkEventId, long beginWorkTimestamp) {
@@ -34,10 +28,26 @@ public class CompleteWorkEvent extends MechanicEvent {
     }
 
     public int getBeginWorkEventId() {
+        try {
+            if (eventData == null) {
+                eventData = new ObjectMapper().readValue(eventConfig, EventData.class);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         return eventData.beginWorkEventId;
     }
 
     public long getBeginWorkTimestamp() {
+        try {
+            if (eventData == null) {
+                eventData = new ObjectMapper().readValue(eventConfig, EventData.class);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         return eventData.beginWorkTimestamp;
     }
 
