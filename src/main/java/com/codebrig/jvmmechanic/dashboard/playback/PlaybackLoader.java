@@ -113,10 +113,9 @@ public class PlaybackLoader {
                 }
 
                 float percent = pos * 100f / ledgerDataSizeTreeMap.size();
-                if (Math.round(percent * 100) / 100.00 != dataLoadPercent) {
+                if (Math.round(percent) != dataLoadPercent) {
                     System.out.println("Data loaded: " + dataLoadPercent + "%");
-
-                    dataLoadPercent = Math.round(percent * 100) / 100.00;
+                    dataLoadPercent = Math.round(percent);
                 }
                 pos++;
 
