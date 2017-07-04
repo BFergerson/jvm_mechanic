@@ -131,7 +131,7 @@ public class MechanicRuleGenerator {
 
                 if ("begin_work".equals(eventType)) {
                     if (useCompleteEvents) {
-                        ruleBuilder.append("\t\tpushLocalConfig(Long.toString(System.currentTimeMillis()))\n");
+                        ruleBuilder.append("\t\tpushLocalConfig(getNextEventId() + \"-\" + Long.toString(System.currentTimeMillis()))\n");
                     } else {
                         ruleBuilder.append("\t\tbegin_work(").append(methodId).append(",\"app\")\n");
                     }

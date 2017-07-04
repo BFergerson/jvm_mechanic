@@ -54,6 +54,10 @@ public class jvm_mechanic extends Helper {
         return localStack.pop();
     }
 
+    public int getNextEventId() {
+        return stashStream.getNextEventId();
+    }
+
     private void initStashStream() throws IOException {
         if (stashStream != null) return;
         synchronized (singletonLock) {
@@ -173,12 +177,7 @@ public class jvm_mechanic extends Helper {
         }
 
         String localConfig = popLocalConfig();
-        if (localConfig != null) {
-            CompleteWorkEvent event = new CompleteWorkEvent(Long.valueOf(localConfig));
-            processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, event);
-        } else {
-            System.out.println("NULL LOCAL CONFIG!");
-        }
+        finishCompleteWorkEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, localConfig);
     }
 
     public void error_complete_work(int eventMethodId, String eventContext) {
@@ -192,16 +191,22 @@ public class jvm_mechanic extends Helper {
         }
 
         String localConfig = popLocalConfig();
+        finishCompleteWorkEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, localConfig);
+    }
+
+    private void finishCompleteWorkEvent(short eventMethodId, String eventContext, String eventAttribute,
+                                         int workSessionId, String localConfig) {
         if (localConfig != null) {
-            CompleteWorkEvent event = new CompleteWorkEvent(Long.valueOf(localConfig));
-            processEvent((short) eventMethodId, eventContext, eventAttribute, workSessionId, event);
+            String[] parts = localConfig.split("-");
+            CompleteWorkEvent event = new CompleteWorkEvent(Integer.valueOf(parts[0]), Long.valueOf(parts[1]));
+            processEvent(eventMethodId, eventContext, eventAttribute, workSessionId, event);
         } else {
             System.out.println("NULL LOCAL CONFIG!");
         }
     }
 
     private void processEvent(short eventMethodId, String eventContext, String eventAttribute,
-                              Integer workSessionId, MechanicEvent event) {
+                              int workSessionId, MechanicEvent event) {
         event.workSessionId = workSessionId;
         event.eventMethodId = eventMethodId;
         event.eventContext = new CacheString(prop, eventContext);

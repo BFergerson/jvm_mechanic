@@ -36,12 +36,7 @@ public class StashPersistenceStream {
     }
 
     public void stashMechanicEvent(final MechanicEvent mechanicEvent) {
-        AtomicInteger eventIdIndex = threadLocalEventIndex.get();
-        if (eventIdIndex == null) {
-            threadLocalEventIndex.set(eventIdIndex = new AtomicInteger());
-        }
-        mechanicEvent.eventId = eventIdIndex.getAndIncrement();
-
+        mechanicEvent.eventId = getNextEventId();
         executorService.execute(() -> {
             try {
                 synchronized (syncLock) {
@@ -58,6 +53,14 @@ public class StashPersistenceStream {
                 ex.printStackTrace();
             }
         });
+    }
+
+    public int getNextEventId() {
+        AtomicInteger eventIdIndex = threadLocalEventIndex.get();
+        if (eventIdIndex == null) {
+            threadLocalEventIndex.set(eventIdIndex = new AtomicInteger());
+        }
+        return eventIdIndex.getAndIncrement();
     }
 
     public void close() throws IOException {
