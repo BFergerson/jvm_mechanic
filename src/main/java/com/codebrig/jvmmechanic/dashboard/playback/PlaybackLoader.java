@@ -92,9 +92,7 @@ public class PlaybackLoader {
             double dataLoadPercent = 0.0;
             int pos = 0;
             long filePosition = 0;
-            final Cache<Integer, List<MechanicEvent>> sessionEventCache = CacheBuilder.newBuilder()
-                    .expireAfterAccess(5, TimeUnit.MINUTES)
-                    .build();
+            final Cache<Integer, List<MechanicEvent>> sessionEventCache = CacheBuilder.newBuilder().build();
 
             for (short dataSize : ledgerDataSizeTreeMap.values()) {
                 DataEntry dataEntry;
@@ -130,8 +128,8 @@ public class PlaybackLoader {
                 }
                 cachedEvents.add(event);
 
-                if (cachedEvents.size() == sessionEventCountMap.get(event.workSessionId)
-                        && sessionMethodInvocationMap.get(event.workSessionId) == null) {
+                if (sessionMethodInvocationMap.get(event.workSessionId) == null
+                        && cachedEvents.size() == sessionEventCountMap.get(event.workSessionId)) {
                     //calculate session invocation data
                     calculateSessionInvocationData(event.workSessionId, cachedEvents);
                     sessionEventCache.invalidate(event.workSessionId);
