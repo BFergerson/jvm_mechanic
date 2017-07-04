@@ -10,9 +10,8 @@ public class CorruptMechanicalEvent extends MechanicEvent {
 
     public CorruptMechanicalEvent(Exception ex) {
         super(MechanicEventType.CORRUPT_EVENT);
-//        this.eventThread = ex.getMessage();
-//        this.eventAttribute = ex.getMessage();
         this.eventTimestamp = -1;
+        ex.printStackTrace();
     }
 
 }
