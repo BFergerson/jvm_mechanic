@@ -32,7 +32,7 @@ public class StashLedgerFile {
         return readAllJournalEntries(startEntry, -1);
     }
 
-    public List<JournalEntry> readAllJournalEntries(int startEntry, int limit) throws IOException {
+    public synchronized List<JournalEntry> readAllJournalEntries(int startEntry, int limit) throws IOException {
         fileChannel.position(startEntry * JournalEntry.JOURNAL_ENTRY_SIZE);
 
         int journalRecords = (int) (fileChannel.size() / JournalEntry.JOURNAL_ENTRY_SIZE) - startEntry;
@@ -60,7 +60,7 @@ public class StashLedgerFile {
             buffer.clear();
         }
 
-        System.out.println("Read event size: " + journalEntryList.size());
+        //System.out.println("Read event size: " + journalEntryList.size());
         return journalEntryList;
     }
 

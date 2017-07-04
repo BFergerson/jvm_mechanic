@@ -12,6 +12,7 @@ import java.nio.channels.FileChannel;
 public class StashDataFile {
 
     private final FileChannel fileChannel;
+    private final Object readLock = new Object();
 
     public StashDataFile(FileChannel fileChannel) {
         this.fileChannel = fileChannel;
@@ -23,15 +24,17 @@ public class StashDataFile {
     }
 
     public DataEntry readDataEntry(long filePosition, int length) throws IOException {
-        fileChannel.position(filePosition);
+        synchronized (readLock) {
+            fileChannel.position(filePosition);
 
-        ByteBuffer buffer = ByteBuffer.allocate(length);
-        fileChannel.read(buffer);
-        buffer.position(0);
+            ByteBuffer buffer = ByteBuffer.allocate(length);
+            fileChannel.read(buffer);
+            buffer.position(0);
 
-        byte[] rawData = new byte[length];
-        buffer.get(rawData);
-        return new DataEntry(rawData);
+            byte[] rawData = new byte[length];
+            buffer.get(rawData);
+            return new DataEntry(rawData);
+        }
     }
 
     public long getSize() throws IOException {
