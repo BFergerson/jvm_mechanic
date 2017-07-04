@@ -67,11 +67,11 @@ function getPrettyTime (millisecondCount) {
   var seconds = duration.asSeconds()
   var milliseconds = duration.asMilliseconds()
 
-  if (hours >= 1.5) {
+  if (hours >= 1) {
     return numberWithCommas(roundNumber(hours, 2)) + ' hours'
-  } else if (minutes >= 1.5) {
+  } else if (minutes >= 1) {
     return numberWithCommas(roundNumber(minutes, 2)) + ' minutes'
-  } else if (seconds >= 1.5) {
+  } else if (seconds >= 1) {
     return numberWithCommas(roundNumber(seconds, 2)) + 's'
   } else {
     return numberWithCommas(roundNumber(milliseconds, 2)) + 'ms'
