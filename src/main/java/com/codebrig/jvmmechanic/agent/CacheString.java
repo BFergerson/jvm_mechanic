@@ -18,7 +18,8 @@ public class CacheString {
         if (buffer.get() == 1) {
             //cached
             int cacheIndex = buffer.getInt();
-            String cacheString = cachedStrings.computeIfAbsent(cacheIndex, i -> (String) configProperties.get("cache_string_" + i));
+            String cacheString = cachedStrings.computeIfAbsent(
+                    cacheIndex, i -> (String) configProperties.get("cache_string_" + i));
             return new CacheString(configProperties, cacheString);
         } else {
             //raw string
@@ -51,11 +52,11 @@ public class CacheString {
 
     public void writeToBuffer(ByteBuffer buffer) {
         boolean cache = isCachable();
-        buffer.put((byte)(cache ? 1 : 0));
+        buffer.put((byte) (cache ? 1 : 0));
         if (cache) {
             buffer.putInt(cacheIndex);
         } else {
-            buffer.put((byte)(getString() != null ? 1 : 0));
+            buffer.put((byte) (getString() != null ? 1 : 0));
             if (getString() != null) {
                 byte[] strBytes = getString().getBytes();
                 buffer.putInt(strBytes.length);
